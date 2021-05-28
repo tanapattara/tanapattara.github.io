@@ -1,6 +1,6 @@
-# Web Application Programming
+# 935 304 WEB APPLICATION PROGRAMMING
 
-935 304 การเขียนโปรแกรมประยุกต์บนเว็บ
+การเขียนโปรแกรมประยุกต์บนเว็บ
 
 ### คำอธิบายรายวิชา
 
@@ -8,4 +8,4 @@
 
 ## Codelab
 
-- [HTML and CSS](/codelab/webapp/oop-class-and-object/)
+- [Class and Object](/codelab/oop/oop-class-and-object/)
