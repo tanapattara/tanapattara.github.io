@@ -1,0 +1,17 @@
+p {
+    color: blueviolet;
+    font-size: 15px;
+}
+img {
+    width: 220px;height: 220px;
+}
+
+/* class */
+.universityname {
+    font-family:'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+}
+
+/* id */
+#major{
+    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+}
