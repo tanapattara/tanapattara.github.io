@@ -1,2 +1,4 @@
-# Web Application
-- [2564](/web64.md)
+# Web Application Codelab
+
+- [JavaScript](/web/javascript)
+- [JavaScript with DOM](/web/javascript-with-dom)
