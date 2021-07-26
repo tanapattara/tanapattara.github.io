@@ -1,0 +1,397 @@
+
+<!doctype html>
+
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+  <meta name="theme-color" content="#4F7DC9">
+  <meta charset="UTF-8">
+  <title>Javascript</title>
+  <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Source+Code+Pro:400|Roboto:400,300,400italic,500,700|Roboto+Mono">
+  <link rel="stylesheet" href="//fonts.googleapis.com/icon?family=Material+Icons">
+  <link rel="stylesheet" href="https://storage.googleapis.com/codelab-elements/codelab-elements.css">
+  <style>
+    .success {
+      color: #1e8e3e;
+    }
+    .error {
+      color: red;
+    }
+  </style>
+</head>
+<body>
+  <google-codelab-analytics gaid="UA-49880327-14"></google-codelab-analytics>
+  <google-codelab codelab-gaid="G-DSKNQHDNJK"
+                  id="javascript"
+                  title="Javascript"
+                  environment="web"
+                  feedback-link="">
+    
+      <google-codelab-step label="Introduction of JavaScript" duration="0">
+        <p class="image-container"><img style="width: 220.00px" src="img\\2361138a5be4408b.png"></p>
+<p><strong>Last Updated:</strong> 2021-07-26</p>
+<h2 is-upgraded><strong>JavaScript คืออะไร</strong></h2>
+<p>JavaScript หรือบางคนเรียกสั้นๆว่า JS ได้ถูกพัฒนาเพื่อให้ทำงานบนเว็บบราเซอร์ เรียกว่า JavaScript engine บนบราวเซอร์ FireFox เรียกว่า SpiderMonkey และบนบราวเซอร์ Chrome เรียกว่า v8 เราสามารถเรียกใช้งาน JS ผ่านเว็บบราวเซอร์ หรือสามารถใช้งานผ่าน Node.JS ที่ทาง google ได้ทำการนำ Google V8 engine ออกมาจากบราวเซอร์ ทำให้จาวาสคริปต์สามารถทไงานได้ทั้งบนเว็บไซต์ เว็บบริการ เว็บแม่ข่าย หรือแม้กระทั้งบนมือถือ</p>
+<h2 is-upgraded><strong>เรากำลังจะทำอะไร</strong></h2>
+<p>ในตัวอย่างนี้เราจะได้เรียนรู้การใช้ JS บนเว็บบราวเซอร์ การประกาศตัวแปรต่างๆ พื้นฐานการใช้งาน JS</p>
+<h2 is-upgraded><strong>เราจะได้เรียนรู้อะไร</strong></h2>
+<ul>
+<li>วิธีการสร้างตัวแปร</li>
+<li>วิธีการสร้างวัตถุ</li>
+<li>วิธีการสร้างฟังชั่น</li>
+</ul>
+<h2 is-upgraded><strong>เตรียมตัวก่อนการทดลอง</strong></h2>
+<ul>
+<li>เว็บบราวเซอร์ ในการทดลองใช้ตัวอย่างจาก Google Chrome สามารถใช้เว็บบราวเซอร์ตัวอื่น ๆ ได้ตามความถนัด ขอให้เป็นรุ่นล่าสุด </li>
+<li>ตวามรู้พื้นฐานของ HTML, CSS, JavaScript และ  <a href="https://developer.chrome.com/devtools" target="_blank">Chrome DevTools</a>.</li>
+<li>Setting Editor</li>
+<li>Visual Studio Code Editor</li>
+<li>Live Server Extension ส่วนเสริมบน Visual Studio Code Editor</li>
+<li>Nodejs.org (Optional)</li>
+</ul>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Getting start" duration="5">
+        <h2 is-upgraded><strong>ทดสอบการทำงานบนบราวเซอร์</strong></h2>
+<p>เปิด Google Chrome DevTools โดยการกดปุ่ม F12 หลังจากนั้นทำการพิมพ์คำสั่งด้านล่างที่หน้าต่าง Console panel.</p>
+<pre><code>console.log(&#34;Hello World&#34;);</code></pre>
+<p>กดปุ่ม Enter เพื่อดูผลลัพท์การทำงาน</p>
+<p class="image-container"><img style="width: 555.00px" src="img\\55992c78dc23e403.png"></p>
+<p>เราสามารถใช้งาน Expression บนหน้าต่างคอลโซลได้ โดยการพิมพ์การคำนวนแล้วกด enter เพื่อดูผลการทำงาน</p>
+<pre><code>2 + 2</code></pre>
+<p>ตัวอย่างอื่น ๆ เช่นการเรียกใช้งานกล่องแจ้งเตือน โดยใช้คำสั่ง `alert` ตามตัวอย่างข้างล่าง</p>
+<pre><code>alert(‘Hello JS&#39;)</code></pre>
+<aside class="special"><p><strong>Tip: </strong>จะเห็นได้ว่า เราไม่จำเป็นต้องปิดคำสั่งโดยใช้เครื่องหมายเครื่องหมายอัฒภาค หรือเครื่องหมาย semicolon (;) ในการทำงานของสคริปต์ และเราสามารถใช่เครื่องหมายฝนทอง (single quoted) และเครื่องหมายฟันหนู (double quoted) ได้ในการใช้งานการแสดงผลอักขระ</p>
+</aside>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="การใส่จาวาสคริปต์ลงในหน้าเว็บ" duration="5">
+        <h2 is-upgraded>การใส่แบบ <strong>Inline script</strong></h2>
+<p>สร้างไฟล์ <code>index.html</code> และใส่โค้ด html5 อย่างง่าย</p>
+<pre><code>&lt;!DOCTYPE html&gt;
+&lt;html lang=&#34;en&#34;&gt;
+&lt;head&gt;
+    &lt;meta charset=&#34;UTF-8&#34;&gt;
+    &lt;meta name=&#34;viewport&#34; content=&#34;width=device-width, initial-scale=1.0&#34;&gt;
+    &lt;title&gt;JavaScript Lab&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;h1&gt;Hello World&lt;/h1&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+<p>บราวเซอร์อ่านไฟล์จากบนลงล่าง ถ้าเราทำการเพิ่มคำสั่งสคริปต์ลงในส่วนบนของหน้าเว็บ บราวเซอร์จะทำการอ่านชุดคำสั่งก่อนการอ่านข้อมูลหน้าเว็บซึ่งเป็นส่วนการแสดงผล ส่วนติดต่อผู้ใช้ ทำให้เว็บไซด์จะปรากฎต่อผู้ใช้งานได้ช้า เนื่องจากบราวเซอร์จะทำการอ่านสคริปต์ก่อน ดังนั้นเรานิยมนำคำสั่งสคริปต์ไว้ล่าสุด ในสวนของแท็ก <code><body></code></p>
+<p>ทำการเพิ่มสคริปต์โดยใช้แท็ก <code><script> </script></code></p>
+<p><code>index.html</code></p>
+<pre><code>&lt;!DOCTYPE html&gt;
+&lt;html lang=&#34;en&#34;&gt;
+&lt;head&gt;
+    &lt;meta charset=&#34;UTF-8&#34;&gt;
+    &lt;meta name=&#34;viewport&#34; content=&#34;width=device-width, initial-scale=1.0&#34;&gt;
+    &lt;title&gt;JavaScript Lab&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;h1&gt;Hello World&lt;/h1&gt;
+    &lt;script&gt;
+     //this is a comment
+     console.log(‘Hello world&#39;);
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+<p>ทำการเปิด Liver server และดูผลลัพท์การทำงานผ่าน ChromeDev tools console</p>
+<h2 is-upgraded>การใส่แบบแยกไฟล์ </h2>
+<p>New we separate html that should contain about content of webpage and javascript that contain a script command. </p>
+<p>HTML ควรเป็นไฟล์ที่เก็บข้อมูลส่วนของการแสดงผลของหน้าเว็บเป็นหลัก ดังนั้นเราควรแยกคำสั่ง JS ออกจากไฟล์ HTML เพื่อง่ายต่อการจัดการและการพัฒนา</p>
+<p>สร้างไฟล์ใหม่ ชื่อ <code>index.js</code> ไว้ในโฟลเดอร์เดียวกันกับไฟล์ <code>index.html</code> โดยในไฟลของ JS ให้ใช้คำสั่งดังนี้</p>
+<p><code>index.js</code></p>
+<pre><code>console.log(‘Hello world&#39;);</code></pre>
+<p>ที่ไฟล์ <code>index.html</code> ให้ทำการแห้ไขส่วนของการเรียกใช้งาน โดยแก้ไขคำสั่ง <code><script></code>เป็น <code><script src="index.js"></code> เราจะได้ไฟล์ <code>index.html</code> ดังนี้</p>
+<p><code>index.html</code></p>
+<pre><code>&lt;!DOCTYPE html&gt;
+&lt;html lang=&#34;en&#34;&gt;
+&lt;head&gt;
+    &lt;meta charset=&#34;UTF-8&#34;&gt;
+    &lt;meta name=&#34;viewport&#34; content=&#34;width=device-width, initial-scale=1.0&#34;&gt;
+    &lt;title&gt;JavaScript Lab&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;h1&gt;Hello World&lt;/h1&gt;
+    &lt;script src=&#34;index.js&#34;&gt;&lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+<p>เราได้ทำการแก้ไขคุณสมบัติของแท็ก <code><script></code> โดยการเชื่อมไปยังไฟล์ JS ที่ชื่อ <code>index.js</code> เราจะเห็นได้ว่าไฟล์ <code>index.js</code> ไม่จำเป็นที่จะต้องครอบด้วยแท็ก <code><script></script></code> ในการเขียนคำสั่ง JS</p>
+<p>ทดสอบและดูผลการทำงาน</p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="ตัวแปร" duration="15">
+        <h2 is-upgraded><strong>การสร้างตัวแปร Variable</strong></h2>
+<p>ที่ไฟล์ <code>index.js</code> ทำการสร้างตัวแปรชื่อ <code>name</code> โดยใช้คำสั่ง <code>let แล้วตามตัวชื่อตัวแปร</code></p>
+<p><code>index.js</code></p>
+<pre><code>let name;
+console.log(name);</code></pre>
+<p>ทดสอบการทำงาน แสดงผลการทำงานผ่าน log ผลลัพท์ที่ได้เราจะได้ค่า <code>undefined</code> นั่นคือค่าปริยายของตัวแปรใน JS </p>
+<p>ต่อไปทำการใส่ค่าลงไปในตัวแปรที่ได้สร้างขึ้น ใช้เครื่องหมาย <code>=</code> ในการกำหนดค่าให้กับตัวแปร</p>
+<p><code>index.js</code></p>
+<pre><code>let name = ‘JavaScript&#39;;
+console.log(name);</code></pre>
+<p>ผลการทำงานจะเป็นการแสดงค่า <code>‘JavaScript'</code> ออกทางหน้าต่าง <code>Console</code></p>
+<p>สำหรับตัวแปรอื่น ๆ ใช้กฎพื้นฐานในการตั้งชื่อตัวแปร เช่นเดียวกับการตั้งชื่อตัวแปรในภาษาคอมพิวเตอร์ภาษาอื่นๆ</p>
+<ul>
+<li>ไม่สามารถสร้างตัวแปรเป็นชื่อเดียวกับคำสงวน (reserved keyword) ในภาษานั้น ๆ</li>
+<li>ต้องมีความหมายต่อค่า และการใช้งาน</li>
+<li>ไม่สามารถขึ้นต้นด้วยตัวเลขได้</li>
+<li>ไม่สามารถเว้นช่องว่าง (space) [ ] หรือมีเครื่องมายยัติภังค์ (hyphen) [-]</li>
+<li>การสร้างชื่อตัวแปรเป็นลักษณะ case-sensitive (firstName, FirstName, Firstname)</li>
+</ul>
+<h2 is-upgraded>ค่าคงที่ <strong>Constants</strong></h2>
+<p>Create variable name interestRate at index.js</p>
+<p>ที่ไฟล์ <code>index.js</code> ทำการสร้างตัวแปรที่ชื่อ <code>interestRate</code> และทำการกำหนดค่าให้กับตัวแปร</p>
+<p>หลังจากนั้นทำการกำหนดค่าตัวแปร <code>interestRate</code> ใหม่ โดยเปลี่ยนค่าให้เป็น 1</p>
+<p><code>index.js</code></p>
+<pre><code>let interestRate = 0.3;
+interestRate = 1;
+console.log(interestRate);</code></pre>
+<p>ทดสอบการทำงานบนบราวเซอร์ เราจะพบว่าค่าของตัวแปร <code>interestRate</code> ได้มีการเปลี่ยนแปลงจากเดิมเป็นค่าใหม่ ในบางกรณีเราไม่ต้องการให้ค่าของตัวแปรที่เราสร้างขึ้นมามีการเปลี่ยนแปลงไปจากเดิม เราสามารถกำหนดให้ตัวแปรนั้นเป็นค่าคงที่ โดยทำการสร้างตัวแปรแบบ constants โดยการใช้คีย์เวริส์ <code>const </code></p>
+<p>เปลี่ยคำสั่งก่อนหน้า จาก <code>let</code> เป็น <code>const </code></p>
+<p><code>index.js</code></p>
+<pre><code>const interestRate = 0.3;
+interestRate = 1;
+console.log(interestRate);</code></pre>
+<p>ทดสอบการทำงานที่บราวเซอร์ เราจะเห็นการแจ้งเตือนความผิดพลาด  <code>Uncaught TypeError: Assignment to constant variable.</code> นั้นคือเราไม่สามารถเปลี่ยนแปลงค่าตัวแปรที่เป็นชนิด <code>const</code> ได้หลักจากการประกาศ</p>
+<h2 is-upgraded><strong>ชนิดของตัวแปร Primitives type </strong></h2>
+<p>มีค่าอะไรบ้างที่เราสามารถใส่ลงไปให้กับตัวแปรของเราได้ ชนิดของตัวแปรหลัก ๆ ใน JS ประกอบไปด้วย</p>
+<ul>
+<li>String</li>
+<li>Number Boolean</li>
+<li>Undefined</li>
+<li>Null</li>
+</ul>
+<p>ตัวอย่างชนิดของค่าที่สามารถเก็บลงตัวแปรได้ใน JS</p>
+<p><code>index.js</code></p>
+<pre><code>let name = &#34;Tanapattara&#34; ; // String Literal
+let class = 2020; //Number Literal
+let isRegisted = false; // Boolean Literal
+let firstName = undefined;
+let lastName = null; // we used this to clear a value of variable</code></pre>
+<p>ตัวแปรใน JS แตกต่างจากภาษาโปรแกรมอื่นๆ ที่สามารถเปลี่ยนแปลงชนิดของตัวแปรได้ เราเรียกว่า Dynamic type ในภาษาโปรแกรมอื่นเราต้องกำหนดชนิดของตัวแปร ในขั้นตอนของการประกาศตัวแปรและไม่สามารถเปลี่ยนได้ แต่ใน JS สามารถเปลี่ยนได้ตลอดเวลา ในขณะทำงาน (Runtime) เราเรียกว่า dynamically-typed.</p>
+<p>ที่ตัวแปรเดิมที่ได้มีการประกาศไว้</p>
+<p><code>index.js</code></p>
+<pre><code>let name = &#34;Tanapattara&#34; ; // String Literal
+let class = 2020; //Number Literal
+let isRegisted = false; // Boolean Literal
+let firstName = undefined;
+let lastName = null; // we used this to clear a value of variable</code></pre>
+<p>ทดสองเปลี่ยนชนิดข้อมูลโดยการกำหนดค่าใหม่ให้กับตัวแปรโดยตรง</p>
+<p><code>index.js</code></p>
+<pre><code>name = 2020;</code></pre>
+<p>ทำการแสดงผลบนบราวเซอร์ โดยใช้คำสั่ง <code>typeof name</code> เราจะเห็นผลลัพท์ชนิดของตัวแปรได้เปลี่ยนเป็น number จากที่เราได้ใส่ค่าชนิด String ไว้ตั้งแต่ตอนสร้างครั้งแรก.</p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Var vs Let vs Const" duration="5">
+        <p>การสร้างตัวแปรเราสามารถใช้คีย์เวิร์ด var, let หรือ const ได้ แล้วทั้งสามต่างกันอย่างไรในการสร้างตัวแปร</p>
+<p>มาทดสองสร้างตัวแปรขึ้นมาโดยใช้คีย์เวิร์ดทั้งสามดังคำสั่งด้านล่าง</p>
+<pre><code>if(true){
+    var varVariable = true;
+}
+
+console.log(varVariable);
+
+if(true){
+    let letVariable = true;
+    const constVariable = true;
+}
+
+console.log(letVariable);
+console.log(constVariable);</code></pre>
+<p>ทดสอบการแสดงผลบนบราวเซอร์เราจะเห็นได้ว่า <code>varVariable</code> เป็นเพียงตัวแปรเดียวที่แสดงผลในคำสั่ง log หากเรามองดี ๆ ตัวแปรที่สร้างจากคำสั่ง <code>var</code> ได้ทำการประกาศไว้ในวงเล็บของ if แต่สามารถแสดงผลนอกคำสั่ง if ได้นั่นก็เพราะ var เป็น function scrope สามารถเข้าถึงได้ทุกที่ ในขณะที่ สามารถเข้าถึงได้เฉพาะในบล๊อคของที่มันถูกสร้างขึ้นเท่านั้น</p>
+<p>ทดลองเปลี่ยนการประกาศตัวแปรให้อยู่ในของเขตเดียวกัน</p>
+<pre><code>var varVariable = true;
+var varVariable = false;
+
+console.log(varVariable);
+
+let letVariable = true;
+let letVariable = false;
+
+const constVariable = true;
+const constVariable = false;
+
+console.log(letVariable);
+console.log(constVariable);</code></pre>
+<p>ทดสอบการทำงานบนบราวเซอร์ เราจะเป็นได้ว่า มีข้อผิดพลาดแสดงว่า เราไม่สามารถประกาศตัวแปรซ้ำกันชื่อเดียวกันในคำสั่ง let และคำสั่ง const ในทางตรงกันข้าว เราสามารถประกาศตัวแปรที่มีชื่อเดียวกันโดยใช้ตัวแปร var ได้โดยไม่มีข้อผิดพลาด ในกรณีนี้ var สามารถอาจจะทำให้เกิดข้อผิดพลาดในการสร้างหรือประกาศตัวแปรใหม่ได้ในกรณีที่ใช้ชื่อเดียวกัน</p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="ฟังก์ชั่น Function" duration="15">
+        <p>ฟังก์ชั่นคือหลักพื้นฐานอขงการสร้าง blocks ใน JS มาลองสร้างฟังก์ชั่นสักอัน</p>
+<p><code>index.js</code></p>
+<pre><code>function greet(){
+   //logic of this function
+   console.log(&#39;Hello world&#39;);
+}</code></pre>
+<aside class="special"><p><strong>Note: </strong>เราไม่จำเป็นต้องใส่ semicolons ปิดท้ายในคำสั่งฟังก์ชั่น</p>
+</aside>
+<p>เมื่อสร้างแล้ว เราสามารถเรียกใช้ฟังก์ชั่นโดยการระบุชื่อฟังก์ชั่นได้เลย</p>
+<p><code>index.js</code></p>
+<pre><code>function greet(){
+   //logic of this function
+   console.log(&#39;Hello world&#39;);
+}
+
+// call a function
+greet();</code></pre>
+<p>ฟังก์ชั่นนั้น เราสามารถใส่ข้อมูลให้กับฟังชั่นได้ โดยการกำหนดพารามิตเตอร์ให้กับฟังชั่น โดยใส่เป็นชื่อตัวแปรได้เลย ทดสอบโดยกำหนดให้รับข้อมูลเป็นข้อความแล้วมาแสดงผลออกทาง console โดยเราจะได้ฟังก์ชั่นดังนี้</p>
+<p><code>index.js</code></p>
+<pre><code>function greet(name){
+   //logic of this function
+   console.log(&#39;Hello &#39; + name);
+}
+
+// call a function
+greet(&#39;John&#39;);</code></pre>
+<p>เราส่งค่า <code>John เป็น</code>อาร์กูเม็นท์ <strong>argument </strong>ผ่านฟังก์ชั่น <code>greet</code> โดยฟังก์ชั่นจะนำค่าที่ได้รับมาใส่ในตัวแปร <code>name ในรูปแบบของพารามิเตอร์</code> <strong>parameter</strong></p>
+<p>เราสามารถเพิ่มพารามิเตอร์เข้าไปให้กับฟังก์ชั่นเท่าไหร่ก็ได้ โดยการเพิ่มตัวแปรเข้าไปในวงเล็บของฟังก์ชั่น หากเราเรียกใช้ฟังก์ชั่น เราต้องส่งค่าผ่านอาร์กูเม็นท์ที่เท่ากันกับฟังชั่นต้องการ ดังตัวอย่ามีการเพิ่มพารามิเตอร์ให้กับฟังก์ชั่น <code>greet</code> คือ <code>lastname</code> ดังนั้นหากเราต้องการเรียกใช้ฟังก์ชั่น เราก็ต้องส่งการ์กูเม็นท์มาให้ตรงกับที่ต้องการ</p>
+<p><code>index.js</code></p>
+<pre><code>function greet(name, lastname){
+   //logic of this function
+   console.log(&#39;Hello &#39; + name + &#39; &#39; + lastname);
+}
+
+// call a function
+greet(&#39;John&#39;, &#39;Doe&#39;);</code></pre>
+<aside class="warning"><p><strong>Caution:</strong> ตัวแปรที่เป็นพารามิเตอร์สามารถใช้ได้เพียงในฟังก์ชั่นที่ถูกสร้างขึ้นเท่านั้น ไม่สามารถเรียกใช้นอกฟังก์ชั่นได้ นั่นก็คือตัวแปร <code>name</code> และ <code>lastname</code> ไม่สามารถเรียกใช้งานได้นอกฟังชั่น <code>greet</code></p>
+</aside>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="วัตถุ Object" duration="5">
+        <p>อย่างที่ทราบกัน วัตถุ (Object) คือแนวความคิดในโลกความจริงในการนำหลักการสร้างวัตถุรวมกันกับตัวแปร ฟังชั่น และโครงสร้าง</p>
+<p>ตัวอย่างเช่น การจะแทนบุคคลในโลคความเป็นจริงเข้าไปในภาษาโปรแกรม โดยแทนวัตถุนั้นเป็นบุคคล โดยมีคุณสมบัติ (properties) ของวัตถุเช่น ชื่อ อายุ ส่วนสูง น้ำหนัก และมีการกระทำระหว่างวัตถุด้วยกันเช่น เดิน วิ่ง เปิดประตู เราสามารถสร้างวัตถุของบุคคลใน JS ได้ดังนี้</p>
+<p><code>index.js</code></p>
+<pre><code>let person = {
+    name: &#39;Tanapattara&#39;,
+    age: 29
+ };</code></pre>
+<p>ทดลองแสดงค่าวัตถุ <code>person</code> ผ่านคำสั่ง <code>console.log(person)</code></p>
+<p class="image-container"><img style="width: 554.00px" src="img\\f0910ca800c7bcef.png"></p>
+<p>หากเราต้องการเปลี่ยนค่าในวัตถุ เราสามารถใช้จุด dot notation หรือกล่อง bracket notation เพื่อทำการอ้างถึงแอททริบิวต์ของวัตถุได้โดยตรง ตัวอย่างเช่น การแก้ไขชื่อของวัตถุ <code>person</code></p>
+<p><code>index.js</code></p>
+<pre><code>let person = {
+    name: &#39;Tanapattara&#39;,
+    Age: 29
+ };
+
+// Dot Notation
+person.name = &#39;John&#39;;
+// Bracket Notation
+Person[&#39;name&#39;] = &#39;John Doe&#39;;
+
+console.log(person.name);</code></pre>
+<p>หากเราต้องการสร้างวัตถุ เพื่อนำไปใช้สร้างวัตถุอื่นๆ เช่นเดียวกับการสร้างคลาสในภาษาอื่นๆ เราสามารถใช้ฟังชั่นในการสร้างโดยมีคำสั่งดังนี้</p>
+<pre><code>function Person(name, age, sex) {
+  this.name = name;
+  this.age = age;
+  this.sex = sex;
+}</code></pre>
+<p>เราจะสร้างวัตถุจากฟังชั่น <code>Person</code> และใส่ข้อมูลพื้นฐานให้กับวัตถุ โดยใช้คำสั่ง </p>
+<pre><code>var rand = new Person(&#39;Rand McKinnon&#39;, 33, &#39;M&#39;);
+var ken = new Person(&#39;Ken Jones&#39;, 39, &#39;M&#39;);</code></pre>
+<p>เราจะได้วัตถุ <code>Person</code> สองตัวโดยมีคุณสมบัติของวัตถุที่เหมือนกันตามที่เราได้ออกแบบไว้ในฟังชั่น <code>Person</code></p>
+<h2 is-upgraded><strong>สร้างวัตถุซ้อนวัตถุ</strong></h2>
+<p>เมื่อเราได้วัตถุ <code>Person</code> แล้วเราสามารถใส่วัตถุลงไปใส่วัตถุได้โดยการส่งวัตถุไปในขั้นตอนการสร้าง ตัวอย่างเช่น สร้างวัตถุ <code>Car</code> โดยให้มีแอททริบิวต์เจ้าของรถยนต์ด้วย โดยแอททริบิวต์เจ้าของรถยนต์นั้น เป็นวัตถุ <code>Person</code></p>
+<pre><code>function Car(make, model, year, owner) {
+  this.make = make;
+  this.model = model;
+  this.year = year;
+  this.owner = owner;
+}</code></pre>
+<p>ทำการสร้างวัตถุ <code>Car</code> โดยใช้คำสั่งและส่งพารามิตเตอร์ไปกับฟังชั่นตามคำสั่งข้างล่าง</p>
+<pre><code>var car1 = new Car(&#39;Eagle&#39;, &#39;Talon TSi&#39;, 1993, rand);
+var car2 = new Car(&#39;Nissan&#39;, &#39;300ZX&#39;, 1992, ken);</code></pre>
+<p>ทำการเรียกข้อมูลที่ที่อยู่ภายใน โดยใช้เครื่องหมายจุด เพื่อเรียกข้อมูล ตัวอย่างเช่น</p>
+<pre><code>car2.owner.name</code></pre>
+<p>การเขียนโปรแกรม JS โดยใช้หลักการ OOP จะอยู่ในอีกการทดลองหนึ่งซึ่งละมีคุณสมบัติของ OOP ครบถ้วนกว่า</p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="อาร์เรย์ Array" duration="15">
+        <p>อาร์เรย์เป็นการเก็บข้อมูลหลาย ๆ ตัวไว้ในตัวแปรเดียว ใน JS สามารถเก็บข้อมูลในรูปแบบอาร์เรย์ได้ทั้งในรูปแบบชนิดเดียวกัน และต่างชนิดได้</p>
+<p>ทดลองสร้างตัวแปรที่เก็บข้อมูลสื</p>
+<p><code>index.js</code></p>
+<pre><code>let colors = [&#39;red&#39;, &#39;blue&#39;, &#39;green&#39;];
+console.log(colors);</code></pre>
+<p>การแสดงผลเราจะเห็นข้อมูลทั้งหมดของตัวแปร <code>colors</code> ที่เก็บข้อมูลไว้ โดนเรียงลำดับข้อมูลเริ่มจาก 0 เราสามารถเข้าถึงแต่ละค่าในอาร์เรย์ได้โดยใส่ตัวชี้ index ให้กับตัวแปร เช่น <code>colors[0]</code></p>
+<p class="image-container"><img style="width: 547.00px" src="img\\e38b37904ee1e0db.png"></p>
+<p>อย่างที่บอกไป JS เป็น dynamic language นั่นหมายถึงชนิดของตัวแปรสามารถเปลี่ยนแปลงได้ขณะทำงาน (runtime)</p>
+<p>ทดลองเพิ่มข้อมูลอาร์เรย์ในตำแหน่งที่ 3 เราจะใช้คำสั่งตัวแปรตามด้วยตำแหน่ง และกำหนดค่าให้กับตำแหน่งนั่นได้ทันที</p>
+<p><code>index.js</code></p>
+<pre><code>let colors = [&#39;red&#39;, &#39;blue&#39;, &#39;green&#39;];
+Colors[3] = &#39;pink&#39;;
+console.log(colors);</code></pre>
+<p>ผลลัพท์ที่ได้ <code>colors จะมีข้อมูลเพิ่มมาในตำแหน่งที่ 3</code></p>
+<p><code>ทดลองใส่ข้อมูลอื่นที่เป็นชนิดของตัวแปรแตกต่างกัน โดยกำหนดค่าลงไปที่ตำแหน่งที่ 4</code></p>
+<p><code>index.js</code></p>
+<pre><code>let colors = [&#39;red&#39;, &#39;blue&#39;, &#39;green&#39;];
+Colors[3] = &#39;pink&#39;;
+Colors[4] = 1;
+console.log(colors);</code></pre>
+<p>อาร์เรย์เป็นตัวแปรชนิดวัตถุ ทำให้มีคุณสมบัติที่ JS เตรียมไว้ให้และได้รับการสืบทอดมาตามคุณสมบัติของ OOP ให้เราได้ใช้งาน เช่นคำสั่ง <code>colors.length</code>.</p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Workshop" duration="30">
+        <p>ทดลองสร้างฟังชั่นโดนใข้ JS โดยกำหนดให้สร้างฟังก์ชั่นแฟกทอเรียล และทดสอบการทำงาน</p>
+<p><code>index.js</code></p>
+<pre><code>function factorial(number){
+    //logic of this function
+    return number;
+}
+ 
+let factorialNumber = 5;
+ // call a function
+console.log(factorial(factorialNumber));</code></pre>
+<p>ให้เพิ่มเติมฟังก์ชั่นให้สมบูรณ์และทดสองการทำงาน</p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Congratulations" duration="0">
+        <p>ท่านได้เรียนรู้พื้นฐานการใช้งาน JS ผ่านทางเว็บบราวเซอร์ การประกาศตัวแปร การสร้างฟังก์ชั่น การสร้างวัตถุ และการเรียกใช้งานขั้นพื้นฐานเกี่ยวกับ JS</p>
+<p>ต่อไปจะเป็นการนำ JS ไปใช้ร่วมกับ HTML ในการเข้าถึง DOM เพื่อทำงานบนเว็บเพจ</p>
+<h2 is-upgraded>ต่อไป</h2>
+<ul>
+<li>JavaScript with DOM</li>
+<li>JavaScript with API</li>
+</ul>
+<h2 is-upgraded><strong>อ้างอิง</strong></h2>
+<ul>
+<li><a href="https://developer.mozilla.org/th/docs/Web/JavaScript" target="_blank">Developer.mozilla.org</a></li>
+<li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Working_with_Objects" target="_blank">Working with objects - JavaScript | MDN (mozilla.org)</a></li>
+<li><a href="https://www.w3schools.com/jsref/default.asp" target="_blank">W3schools.com</a></li>
+<li><a href="https://codewithmosh.com/" target="_blank">Mosh Hamedani, JavaScript</a></li>
+</ul>
+
+
+      </google-codelab-step>
+    
+  </google-codelab>
+
+  <script src="https://storage.googleapis.com/codelab-elements/native-shim.js"></script>
+  <script src="https://storage.googleapis.com/codelab-elements/custom-elements.min.js"></script>
+  <script src="https://storage.googleapis.com/codelab-elements/prettify.js"></script>
+  <script src="https://storage.googleapis.com/codelab-elements/codelab-elements.js"></script>
+  <script src="//support.google.com/inapp/api.js"></script>
+
+</body>
+</html>

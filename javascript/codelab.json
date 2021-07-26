@@ -1,0 +1,26 @@
+{
+  "environment": "web",
+  "format": "html",
+  "prefix": "https://storage.googleapis.com",
+  "mainga": "UA-49880327-14",
+  "updated": "2021-07-26T17:33:24Z",
+  "id": "javascript",
+  "duration": 95,
+  "title": "Javascript",
+  "authors": "Tanapattara Wongkhamchan",
+  "summary": "พื้นฐาน Javascript การประกาศตัวแปร แต่ละประเภท อาร์เรย์ วัตถุ ฟังชั่น",
+  "source": "1VSOzMhBTmSv6Weg7KwjiBYJzlwIdY_0ucng2EVsHkXs",
+  "theme": "web",
+  "status": [
+    "published"
+  ],
+  "category": [
+    "web"
+  ],
+  "tags": [
+    "javascript",
+    "web"
+  ],
+  "ga": "G-DSKNQHDNJK",
+  "url": "javascript"
+}
