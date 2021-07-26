@@ -3,8 +3,8 @@
   "format": "html",
   "prefix": "https://storage.googleapis.com",
   "mainga": "UA-49880327-14",
-  "updated": "2021-07-26T15:09:19Z",
-  "id": "Javascript-with-dom",
+  "updated": "2021-07-26T16:29:51Z",
+  "id": "javascriptwithdom",
   "duration": 105,
   "title": "Javascript and HTML DOM",
   "authors": "Tanapattara Wongkhamchan",
@@ -20,5 +20,5 @@
   "tags": [
     "frontend"
   ],
-  "url": "Javascript-with-dom"
+  "url": "javascriptwithdom"
 }

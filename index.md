@@ -1,5 +1,4 @@
 # Web Application Codelab
 
 - [JavaScript](/codelab/web/javascript/)
-- [JavaScript with DOM](/codelab/web/javascript_with_dom/)
-- [JavaScript with DOM](/codelab/web/javascript-with-dom/)
+- [JavaScript with DOM](/codelab/web/javascriptwithdom/)
