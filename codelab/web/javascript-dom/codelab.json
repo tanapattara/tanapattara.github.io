@@ -3,13 +3,13 @@
   "format": "html",
   "prefix": "https://storage.googleapis.com",
   "mainga": "UA-49880327-14",
-  "updated": "2021-07-26T17:33:16Z",
-  "id": "javascript-with-dom",
-  "duration": 105,
-  "title": "Javascript and HTML DOM",
+  "updated": "2021-07-26T18:09:16Z",
+  "id": "javascript-dom",
+  "duration": 95,
+  "title": "Javascript and DOM",
   "authors": "Tanapattara Wongkhamchan",
   "summary": "การใช้ JavaScript เพื่อเข้าถึง HTML DOM",
-  "source": "11qFwc_mrY5vg9bUwHL5GIo1bgzc6YWwfY2YdkwgdqG0",
+  "source": "1WWsoRm1_XH2t6Be8ZCHfJH2DOk4GdF1WoxhVD9DReQ0",
   "theme": "web",
   "status": [
     "published"
@@ -22,5 +22,5 @@
     "web"
   ],
   "ga": "G-DSKNQHDNJK",
-  "url": "javascript-with-dom"
+  "url": "javascript-dom"
 }
