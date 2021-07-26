@@ -1,0 +1,317 @@
+
+<!doctype html>
+
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+  <meta name="theme-color" content="#4F7DC9">
+  <meta charset="UTF-8">
+  <title>Javascript and HTML DOM</title>
+  <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Source+Code+Pro:400|Roboto:400,300,400italic,500,700|Roboto+Mono">
+  <link rel="stylesheet" href="//fonts.googleapis.com/icon?family=Material+Icons">
+  <link rel="stylesheet" href="https://storage.googleapis.com/codelab-elements/codelab-elements.css">
+  <style>
+    .success {
+      color: #1e8e3e;
+    }
+    .error {
+      color: red;
+    }
+  </style>
+</head>
+<body>
+  <google-codelab-analytics gaid="UA-49880327-14"></google-codelab-analytics>
+  <google-codelab codelab-gaid=""
+                  id="javascriptwithdom"
+                  title="Javascript and HTML DOM"
+                  environment="web"
+                  feedback-link="">
+    
+      <google-codelab-step label="JavaScript and HTML DOM" duration="0">
+        <p class="image-container"><img style="width: 220.00px" src="img\\2361138a5be4408b.png"></p>
+<p><strong>Last Updated:</strong> 2021-07-26</p>
+<h2 is-upgraded><strong>What is DOM คืออะไร</strong></h2>
+<p>When a web browser loads the content of a web page, it contains a HTML element. On the other hand the browser creates a document object model (DOM) of the page.</p>
+<p>เมื่อบราวเซอร์มีการโหลดเนื้อหาของหน้าเว็บ ที่ประกอบไปด้วย HTML element ในขณะเดียวกันเว็บบราวเซอร์จะทำการสร้าง Document Object Model (DOM) ของหน้าเว็บไซต์ขึ้นมา</p>
+<p>โตรงสร้างของ DOM เราสามารถสร้างในรูปแบบคล้ายต้นไม้ได้ดังภาพ </p>
+<p class="image-container"><img style="width: 486.00px" src="img\\16edf3bd655fb658.png"></p>
+<p><em>ภาพจาก w3school.com</em></p>
+<p>โมเดลเหล่านี้ JS จะสามารถเข้าถึงแต่ละอิลิเม้นต์ได้โดยการสร้าง HTML เสมือน</p>
+<ul>
+<li>JavaScript สามารถเปลี่ยนอิลิเม้นท์ หรือแอททริบิวท์ HTML ทั้งหมดได้ในหน้าเว็บเพจ</li>
+<li>JavaScript สามารถเปลี่ยน CSS สไตล์ได้ในหน้าเว็บเพจ</li>
+<li>JavaScript สามารถลบหรือเพิ่มแอททริบิวท์ และ อิลิเม้นท์ </li>
+<li>JavaScript สามารถเข้าถึงและสร้าง HTML event ในหน้าเพ</li>
+</ul>
+<h2 is-upgraded>เรากำลังจะทำอะไร</h2>
+<p>สร้างเว็บแอพพลิเคชั่น TODO โดยใช้ JavaScript ด้วย HTML DOM</p>
+<h2 is-upgraded><strong>เราจะได้เรียนรู้อะไร</strong></h2>
+<ul>
+<li>การเข้าถึงอิลิเม้นท์ HTML DOM</li>
+<li>เปลี่ยนแปลงข้อมูลของอิลิเม้น HTML DOM</li>
+<li>ใช้งาน HTML event ในแต่ละอิลิเม้นท์</li>
+</ul>
+<h2 is-upgraded><strong>เตรียมตัวก่อนการทดลองGoogle Chrome browser</strong></h2>
+<ul>
+<li>เว็บบราวเซอร์ ในการทดลองใช้ตัวอย่างจาก Google Chrome สามารถใช้เว็บบราวเซอร์ตัวอื่น ๆ ได้ตามความถนัด ขอให้เป็นรุ่นล่าสุด</li>
+<li>ตวามรู้พื้นฐานของ HTML, CSS, JavaScript และ <a href="https://developer.chrome.com/devtools" target="_blank">Chrome DevTools</a>.</li>
+<li>Setting Editor</li>
+<li>Visual Studio Code Editor</li>
+<li>Live Server Extension ส่วนเสริมบน Visual Studio Code Editor</li>
+</ul>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="การระบุอิลิเม้น" duration="15">
+        <p>ทดสอบการเรียกใช้อิลิเม้นของ JS โดยการสร้างเว็บ html อย่างง่าย พร้อมคำสั่ง</p>
+<p><code>index.html</code></p>
+<pre><code>&lt;!DOCTYPE html&gt;
+&lt;html lang=&#34;en&#34;&gt;
+&lt;head&gt;
+    &lt;meta charset=&#34;UTF-8&#34;&gt;
+    &lt;meta name=&#34;viewport&#34; content=&#34;width=device-width, initial-scale=1.0&#34;&gt;
+    &lt;title&gt;JavaScript Lab&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;h1&gt;Hello World&lt;/h1&gt;
+    &lt;p id=&#34;para1&#34;&gt;This is your paragraph.&lt;/p&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+<p>ต่อไปใส่สคริปต์ลงไปในไฟล์ <code>index.html</code> โดยการแทรกแท็ก <code><script></code> ต่อจากอิลิเม้น <code><p></code></p>
+<pre><code>    &lt;script&gt;
+        document.getElementById(&#34;para1&#34;).innerHTML = &#34;This paragraph come from JS&#34;;
+    &lt;/script&gt;</code></pre>
+<p>ทดสอบการทำงาน เราจะเห็นได้ว่า ข้อความได้ถูกเปลี่ยนไป จากเดิมที่เราเขียนไว้ในอิลิเม้นท์ <code><p></code> ว่า <code>This is your paragraph</code> ได้เปลี่ยนเป็น <code>This paragraph come from JS</code> เพราะว่า JS ได้ทำการค้นหาอิลิเม้นที่มีไอดีว่า <code>para1</code> แล้วทำการเปลี่ยนข้อความภายใน <code>(innerHTML)</code> เป็นตามค่าที่เราได้กำหนดในคำสั่ง JS</p>
+<p>การค้นหาและการเข้าถึงอิลิเม้นใน DOM ยังมีคำสั่งอื่น ๆ ได้ ดูจากตัวอย่างด้านล่าง ให้ทำการเพิ่มอิลิเม้นท์สำหรับทดสอบเข้าไป </p>
+<p><code>index.html</code></p>
+<pre><code>&lt;!DOCTYPE html&gt;
+&lt;html lang=&#34;en&#34;&gt;
+&lt;head&gt;
+    &lt;meta charset=&#34;UTF-8&#34;&gt;
+    &lt;meta name=&#34;viewport&#34; content=&#34;width=device-width, initial-scale=1.0&#34;&gt;
+    &lt;title&gt;JavaScript Lab&lt;/title&gt;
+    &lt;style&gt;
+        .classroom {
+           color: red;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;h1&gt;Hello World&lt;/h1&gt;
+    &lt;p id=&#34;para1&#34;&gt;This is your paragraph.&lt;/p&gt;
+    &lt;small class=&#34;classroom&#34;&gt;&lt;/small&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+<p>เพิ่มคำสั่งลงใน JS เพื่อทำการเข้าถึงอิลิเม้นท์ใน DOM ดังนี้</p>
+<pre><code>    &lt;script&gt;
+        document.getElementById(&#34;para1&#34;).innerHTML = &#34;This paragraph come from JS&#34;;
+        document.getElementByTagName(&#34;h1&#34;).innerHTML = &#34;DOM Testing&#34;;
+        document.getElementByClassName(&#34;classroom&#34;).innerHTML = &#34;Web Application&#34;;
+    &lt;/script&gt;</code></pre>
+<p>นอกจากการเปลี่ยนแปลงข้อความข้างใน HTML แล้วเรายังสามารถทำอย่างอื่นกับกับอิลิเม้นท์ได้เช่นการเพิ่มแอททริบิวท์ หรือการใส่สไตล์</p>
+<pre><code>    &lt;script&gt;
+        document.getElementById(&#34;para1&#34;).innerHTML = &#34;This paragraph come from JS&#34;;
+        document.getElementById(&#34;para1&#34;).setAttribute(&#34;class&#34;, &#34;classroom&#34;);
+        document.getElementByTagName(&#34;h1&#34;).innerHTML = &#34;DOM Testing&#34;;
+        document.getElementByTagName(&#34;h1&#34;).style.backgroundColor = &#34;red&#34;;
+        document.getElementByClassName(&#34;classroom&#34;).innerHTML = &#34;Web Application&#34;;
+    &lt;/script&gt;</code></pre>
+<p>และสามารถสร้าง ลบ อิลิเม้นท์ของเรา DOM ได้ด้วย JS โดยใช้คำสั่งต่อไปนี้</p>
+<table>
+<tr><td colspan="1" rowspan="1"><p><strong>Method</strong></p>
+</td><td colspan="1" rowspan="1"><p><strong>Description</strong></p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>document.createElement(<em>element</em>)</p>
+</td><td colspan="1" rowspan="1"><p>Create an HTML element</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>document.removeChild(<em>element</em>)</p>
+</td><td colspan="1" rowspan="1"><p>Remove an HTML element</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>document.appendChild(<em>element</em>)</p>
+</td><td colspan="1" rowspan="1"><p>Add an HTML element</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>document.replaceChild(<em>new, old</em>)</p>
+</td><td colspan="1" rowspan="1"><p>Replace an HTML element</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>document.write(<em>text</em>)</p>
+</td><td colspan="1" rowspan="1"><p>Write into the HTML output stream</p>
+</td></tr>
+</table>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="เหตุการณ์ Events" duration="20">
+        <p>JS สามารถเรียกใช้เหตุการณ์ที่เกิดขึ้นจากผู้ใช้งานกระทำใด ๆ กับอิลิเม้นท์ได้ เช่นการกด การเปลี่ยนแปลงข้อมูลภายในอิลิเม้นท์</p>
+<h2 is-upgraded><strong>onClick</strong></h2>
+<p>เราสามารถระบุแอททริบิวท์ลงไปในแต่ละอิลิเม้นท์ได้เลยว่าจะให้เกิดอะไรขึ้นกับอิลิเม้นท์นั้น ตัวอย่างเช่น เรามี <code><h1></code> เราสามารถใส่แอททริบิวท์ <code>onclick</code> ลงไปในอิลิเม้นท์เพื่อทำการเปลี่ยนข้อความหลังจากกดได้ เช่น</p>
+<pre><code>    &lt;h1 onclick=&#34;this.innerHTML = ‘Its me JavaScript&#39;&#34;&gt;Hello World&lt;/h1&gt;</code></pre>
+<p>เราสามารถใช้ JS ให้เรียกใช้งานฟังชั่นได้ โดยฟังชั่นดังกล่าวจะถูกเรียกใช้งานเมื่อมีการทำงานผ่านเหตุการณ์ที่เรากำหนดไว้ ในกรณีนี้คือการกดที่อิลิเม้นท์ <code><h1></code></p>
+<pre><code>    &lt;h1 onclick=&#34;changeText(this)&#34;&gt;Hello World&lt;/h1&gt;
+    &lt;script&gt;
+      function changeText(id){
+        id.innerHTML = &#34;It&#39;s me JavaScript&#34;;
+      }
+    &lt;/script&gt;</code></pre>
+<p>จากคำสั่งข้างบน มีการใช้แอททริบิวท์ <code>onclick</code> ให้มีการเรียกใช้ฟังชั่น <code>changeText(this)</code> การเรียกใช้ดังกล่าวมีการส่งอากูเม้นท์ไปกับฟังชั่นด้วย จะเห็นได้จาก <code>(this)</code></p>
+<p>เมื่อมาที่ฟังชั่น <code>changeText(id)</code> มีการรับข้อมูลเข้าเป็นตัวแปรที่ชื่อ <code>id</code> ในฟังชั่นก็เรียกใช้คำสั่งเปลี่ยนแปลงข้อความภายในเป็น <code>"It's me JavaScript"</code></p>
+<p>แน่นอนว่าเราสามารถใช้อีเว้นนี้บนอิลิเม้นท์อื่นได้ อย่างเช่น ปุ่มกด</p>
+<h2 is-upgraded><strong>onChange</strong></h2>
+<p>อีกเหตุการณ์ที่มีการใช้งานบ่อยก็คือ onChange ต่อไปทดลองสร้าง <code><input></code> เพื่อใช้ในการทดสอบเหตุการณ์ onChange</p>
+<pre><code>    &lt;input id=&#34;input1&#34; type=&#34;number&#34; onchange=&#34;calculate()&#34;&gt;
+    &lt;input id=&#34;input2&#34; type=&#34;number&#34; onchange=&#34;calculate()&#34;&gt;
+    &lt;input id=&#34;input3&#34; type=&#34;number&#34; disabled&gt;</code></pre>
+<p>เราจะเห็นว่า เราสร้าง <code><input></code> ขึ้นมาสามตัวด้วยกัน ในรูปแบบของตัวเลข ดูได้จาก <code>type="number"</code> กล่องรับข้อมูลหรือ <code><input></code> มีแอททริบิวท์ที่ชื่อ เรียกใช้ฟังชั่น <code>calculate()</code> ส่วนกล่องรับข้อมูลที่สามไม่ได้กำหนดแอททริบิวท์เหตุการณ์ใดๆ แต่มีการใส่แอททริบิวท์ <code>disabled</code> เพื่อไม่ให้สามารถแก้ไขได้</p>
+<p>ต่อไปสร้างฟังชั่น <code>calculate()</code> เพื่อใส่สคริปต์สำหรับรับค่าและคำนวน</p>
+<p><code>index.html</code></p>
+<pre><code>&lt;script&gt;
+        function calculate(){
+
+        }
+&lt;/script&gt;</code></pre>
+<p>ทำการดึงข้อมูลจาก DOM แต่ละตัว โดยใช้ <code>getElementById</code> และระบุ ID ที่ต้องการ เก็บใส่ตัวแปรและนำไปคำนวนและแสดงผล</p>
+<pre><code>&lt;script&gt;
+        function calculate(){
+            var input1 = document.getElementById(&#34;input1&#34;).value;
+            var input2 = document.getElementById(&#34;input2&#34;).value;
+            var input3 = document.getElementById(&#34;input3&#34;);
+            // display result to third input box
+            input3.value = input1 + input2;
+        }
+&lt;/script&gt;</code></pre>
+<p>เราจะได้หน้าเว็บดังรูปด้านล่าง</p>
+<p class="image-container"><img style="width: 550.00px" src="img\\52366f7e2c1f01e9.png"></p>
+<p>เมื่อมีการเปลี่ยนแปลงค่าใน <code><input></code> จะมีการเรียกใช้ฟังชั่นในการคำนวนและแสดงผลออกมาในช่อง <code><input></code> สุดท้าย แต่การคำนวนยังไม่ถูกต้อง เนื่องจาก ค่าที่ได้จากการอ่าน เป็นค่าอักขระ ทำให้การรวมกันของค่าทั้งสองเป็นการต่อจำนวนอัขระ ดังนั้น เราต้องทำการเปลี่ยนให้เป็นตัวเลขโดยใช้คำสั่ง</p>
+<pre><code>input3.value = parseInt(input1) + parseInt(input2);</code></pre>
+<p>เราจะได้การคำนวนที่ถูกต้อง</p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="ดักจับเหตุการณ์ Event listener" duration="10">
+        <p>We can attach events to elements using Javascript by <code>addEventListener</code> command. Try to add some event to the button.</p>
+<p>เราสามารถใส่เหตุการณ์เข้าไปยังอิลิเม้นท์ต่าง ๆ โดยใช้ JS ได้โดยใช้คำสั่ง <code>addEventListener</code> ทดสอบการใส่เหตุการณ์ลงในอิลิเม้น <code><button></code></p>
+<pre><code>&lt;p id=&#34;date&#34;&gt;&lt;/p&gt;
+&lt;button id=&#34;myBtn&#34;&gt;&lt;/button&gt;</code></pre>
+<p>ทำการใส่เหตุการณ์ให้กับอิลิเม้นท์ที่มีไอดีว่า <code>myBtn</code> และทำการเพิ่มข้อความลงใน <code><p></code></p>
+<pre><code>&lt;script&gt;
+   document.getElementById(&#34;myBtn&#34;).addEventListener(&#34;click&#34;, displayDate);
+
+   function displayDate() {
+      document.getElementById(&#34;date&#34;).innerHTML = Date();
+   }
+&lt;/script&gt;</code></pre>
+<p>นอกจากนี้เรายังสามารถดักจับเหตุการณ์มากกว่า 1 เหตุการณ์ลงไปในอิลิเม้นท์ได้ เช่น</p>
+<pre><code>element.addEventListener(&#34;mouseover&#34;, myFunction);
+element.addEventListener(&#34;click&#34;, mySecondFunction);
+element.addEventListener(&#34;mouseout&#34;, myThirdFunction);</code></pre>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="HTML DOM element" duration="30">
+        <h2 is-upgraded>การเพิ่มอิลิเม้นท์</h2>
+<p>ต่อไปเราจะทำการสร้างอิลิเม้นท์ใหม่ และเพิ่มเข้าไปใน HTML หน้าเว็บของเราโดยใช้ JS</p>
+<p>สร้างอิลิเม้นท์ <code><ul></code> สำหรับแสดงข้อมูลรายการและกำหนดไอดีตามด้านล่าง</p>
+<pre><code>&lt;ul id=&#34;myClass&#34;&gt;
+   &lt;li id=&#34;list1&#34;&gt;OOP&lt;/li&gt;
+   &lt;li id=&#34;list2&#34;&gt;Web Application&lt;/li&gt;
+   &lt;li id=&#34;list3&#34;&gt;Mobile Application&lt;/li&gt;
+&lt;/ul&gt;</code></pre>
+<p>ทดลองเพิ่มอิลิเม้นท์ <code><li></code> เข้าไปใน <code><ul></code> โดยใช้คำสั่ง</p>
+<pre><code>&lt;script&gt;
+   let para = document.createElement(&#34;li&#34;);
+   let node = document.createTextNode(&#34;Computer Project&#34;);
+   para.appendChild(node);
+
+   let element = document.getElementById(&#34;myClass&#34;);
+   element.appendChild(para);
+&lt;/script&gt;</code></pre>
+<p>จากคำสั่งข้างบน เราต้องการใส่อิลิเม้นท์ใหม่ <code><li></code> เข้าไปดังนั้นเราได้ทำการสร้างอิลิเม้นใหม่ขึ้นมาก่อนโดยอยู่ในรูปตัวแปร์ <code>para</code> จากคำสั่ง <code>createElement</code></p>
+<p>จากนั้นเราสร้างข้อความภายในขึ้นมาใหม่โดยใช้คำสั่ง <code>createTextNode</code> เก็บไว้ในตัวแปร <code>node</code>  แล้วทำการเพิ่มข้อความที่เราสร้างขึ้นเข้าไปในอิลิเม้นท์ใหม่โดยใช้คำสั่ง <code>appendChild</code></p>
+<p>ท้ายสุดทำการค้นหาอิลิเม้นท์จากไอดี <code><ul id="myClass"></code> เพื่อทำการเพิ่มอิลิเม้นท์ที่สร้างใหม่เข้าไปต่อท้าย</p>
+<h2 is-upgraded>การลบอิลิเม้นท์</h2>
+<p>การลบอิลิเม้นท์นั้นเราทำได้โดยใช้คำสั่ง <code>remove()</code>. เราสามารถลบอิลิเม้นท์ที่เราระบุได้จากไอดีได้โดยตรงโดยใช้คำสั่ง</p>
+<pre><code>&lt;script&gt;
+   let elmnt = document.getElementById(&#34;list2&#34;);
+   elmnt.remove();
+&lt;/script&gt;</code></pre>
+<p>หรือกำหนดอิลิเม้นท์แล้วเลือกลบจากอิลิเม้นท์ parent โดยใช้คำสั่ง <code>removeChild()</code></p>
+<pre><code>&lt;script&gt;
+   let parent = document.getElementById(&#34;myClass&#34;);
+   let child = document.getElementById(&#34;list2&#34;);
+   parent.removeChild(child);
+&lt;/script&gt;</code></pre>
+<h2 is-upgraded>การแทนที่อิลิเม้นท์</h2>
+<p>ในการแทนที่อิลิเม้นนั้น เราทำได้โดยการใช้คำสั่ง <code>replaceChild()</code></p>
+<pre><code>&lt;script&gt;
+   let textnode = document.createTextNode(&#34;Research in Computer Science&#34;);
+   let item = document.getElementById(&#34;list3&#34;);
+   item.replaceChild(textnode, item);
+&lt;/script&gt;</code></pre>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Workshop" duration="30">
+        <p>ต่อไปลองสร้างแอพพลิเคชั่นโดยใช้ JavaScript และ HTML DOM สร้างแอพพลิเคชั่น TODO สำหรับจดบันทึกสิ่งที่จะทำ</p>
+<p>ออกแบบแอพพลิเคชั่น โดยแบ่งหน้าจอออกเป็นซ้ายขวา ด้านซ้ายเป็นกล่องข้อความสำหรับใส่สิ่งที่จะทำ และมีปุ่มสำหรับกดเพื่อเพิ่มเข้าไปยังรายการทางด้านขวา</p>
+<p class="image-container"><img style="width: 624.00px" src="img\\fe409290052e9bb3.png"></p>
+<p>ทางด้านซ้ายมือ สร้างกล่องสำหรับใส่ข้อมูล โดยใช้ Bootstrap CSS ช่วยในการแสดงผลดังนี้</p>
+<pre><code>&lt;div class=&#34;input-group mb-3&#34;&gt;
+   &lt;input type=&#34;text&#34; class=&#34;form-control&#34; id=&#34;input-todo&#34; placeholder=&#34;&#34; aria-label=&#34;Recipient&#39;s username&#34; aria-describedby=&#34;button-addon2&#34;&gt;
+   &lt;div class=&#34;input-group-append&#34;&gt;
+      &lt;button class=&#34;btn btn-outline-primary&#34; type=&#34;button&#34; id=&#34;button-add&#34;&gt;+&lt;/button&gt;
+   &lt;/div&gt;
+&lt;/div&gt;</code></pre>
+<p>ทางด้านขวา เพิ่มอิลิเม้น <code><ul></code> สำหรับแสดงผลรายการที่จะทำ</p>
+<pre><code>&lt;ul class=&#34;list-group&#34; id=&#34;todo-list&#34;&gt;&lt;/ul&gt;</code></pre>
+<p>เพิ่มคำสั่งสคริปต์ โดย</p>
+<ul>
+<li>ใส่เหตุการณ์ให้กับปุ่มเมื่อกดให้ทำการเรียกใช้งานฟังชั่น</li>
+<li>เมื่อเรียกใช้ฟังชั่นให้ทำการอ่านค่าที่ได้จากกล่องข้อความ</li>
+<li>แล้วนำค่าที่ได้ไปเพิ่มอิลิเม่นท์ ให้กับลิสต์ทางด้านขวา</li>
+</ul>
+<pre><code>// create li element
+let node = document.createElement(&#34;li&#34;);
+// add userinput to textnode
+Let textnode = document.createTextNode(/*Input value*/);
+// add textnode at li element
+node.appendChild(textnode);
+// append to list element
+document.getElementById(&#34;todo-list&#34;).appendChild(node);</code></pre>
+<p>ทดสอบการทำงานบนเว็บไซด์</p>
+<h2 is-upgraded><strong>TODO</strong></h2>
+<p>ให้ทำการเพิ่มเหตุการณ์ที่รายการด้านขวามือ สำหรับบอกว่ารายการนี้เสร็จแล้ว โดยให้ลบอิลิเม้นท์ที่กดออกจากรายการที่ต้องทำทางด้านขวามือ</p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Congratulations" duration="0">
+        <p>เรียบร้อย ในบทเรียนนี้เราได้สร้างแอพพลิเคชั่นจาก JavaScript อย่างง่าย โดยการเข้าไปแก้ไข DOM ในแต่ละอิลิเม้นท์ของ HTML สร้างเป็นแอพพลิเคชั่น TODO </p>
+<p>จะสังเกตุได้ว่าหากเราทำการรีเฟรทหน้า หรือเปิดขึ้นมาใหม่ รายการที่เราเพิ่มไว้จะหายไป เนื่องจากเราทำการแก้ไข DOM บนหน้าเว็บ แต่ไม่ได้มีการเปลี่ยนแปลงไฟล์ source code หรือมีการเก็บข้อมูลเอาไว้ ดังนั้นจึงไม่มีการบันทึกการเปลียนแปลงในแอพพลิเคชั่นของเรา</p>
+<h2 is-upgraded><strong>What&#39;s next?</strong></h2>
+<ul>
+<li>JavaScript with API</li>
+</ul>
+<h2 is-upgraded><strong>Reference docs</strong></h2>
+<ul>
+<li><a href="https://developer.mozilla.org/th/docs/Web/JavaScript" target="_blank">developer.mozilla.org</a></li>
+<li><a href="https://www.w3schools.com/jsref/default.asp" target="_blank">W3schools.com</a></li>
+<li><a href="https://codewithmosh.com/" target="_blank">Mosh Hamedani, JavaScript</a></li>
+</ul>
+
+
+      </google-codelab-step>
+    
+  </google-codelab>
+
+  <script src="https://storage.googleapis.com/codelab-elements/native-shim.js"></script>
+  <script src="https://storage.googleapis.com/codelab-elements/custom-elements.min.js"></script>
+  <script src="https://storage.googleapis.com/codelab-elements/prettify.js"></script>
+  <script src="https://storage.googleapis.com/codelab-elements/codelab-elements.js"></script>
+  <script src="//support.google.com/inapp/api.js"></script>
+
+</body>
+</html>
