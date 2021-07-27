@@ -3,7 +3,7 @@
   "format": "html",
   "prefix": "https://storage.googleapis.com",
   "mainga": "UA-49880327-14",
-  "updated": "2021-07-26T18:09:16Z",
+  "updated": "2021-07-27T09:30:59Z",
   "id": "javascript-dom",
   "duration": 95,
   "title": "Javascript and DOM",
@@ -21,6 +21,7 @@
     "javascript",
     "web"
   ],
+  "feedback": "https://github.com/tanapattara/todojs/issues",
   "ga": "G-DSKNQHDNJK",
   "url": "javascript-dom"
 }

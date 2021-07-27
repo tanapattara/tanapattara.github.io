@@ -8,4 +8,9 @@
 
 ## Codelab
 
-- [Class and Object](/codelab/oop/oop-class-and-object/)
+- [JavaScript](/codelab/web/javascript/)
+- [JavaScript with DOM](/codelab/web/javascript-dom/)
+
+## Students
+
+- [Class of 2021](/web2021.md)

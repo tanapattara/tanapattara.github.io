@@ -25,7 +25,7 @@
                   id="javascript-dom"
                   title="Javascript and DOM"
                   environment="web"
-                  feedback-link="">
+                  feedback-link="https://github.com/tanapattara/todojs/issues">
     
       <google-codelab-step label="JavaScript and HTML DOM" duration="0">
         <p class="image-container"><img style="width: 220.00px" src="img\\2361138a5be4408b.png"></p>
@@ -122,20 +122,20 @@
       <google-codelab-step label="เหตุการณ์" duration="10">
         <p>JS สามารถเรียกใช้เหตุการณ์ที่เกิดขึ้นจากผู้ใช้งานกระทำใด ๆ กับอิลิเม้นท์ได้ เช่นการกด การเปลี่ยนแปลงข้อมูลภายในอิลิเม้นท์</p>
 <h2 is-upgraded><strong>onClick</strong></h2>
-<p>เราสามารถระบุแอททริบิวท์ลงไปในแต่ละอิลิเม้นท์ได้เลยว่าจะให้เกิดอะไรขึ้นกับอิลิเม้นท์นั้น ตัวอย่างเช่น เรามี <code><h1></code> เราสามารถใส่แอททริบิวท์ <code>onclick</code> ลงไปในอิลิเม้นท์เพื่อทำการเปลี่ยนข้อความหลังจากกดได้ เช่น</p>
+<p>เราสามารถระบุแอททริบิวท์ลงไปในแต่ละอิลิเม้นท์ได้เลยว่าจะให้เกิดอะไรขึ้นกับอิลิเม้นท์นั้น ตัวอย่างเช่น เรามี <code>h1</code> เราสามารถใส่แอททริบิวท์ <code>onclick</code> ลงไปในอิลิเม้นท์เพื่อทำการเปลี่ยนข้อความหลังจากกดได้ เช่น</p>
 <pre><code>    &lt;h1 onclick=&#34;this.innerHTML = ‘Its me JavaScript&#39;&#34;&gt;Hello World&lt;/h1&gt;</code></pre>
-<p>เราสามารถใช้ JS ให้เรียกใช้งานฟังชั่นได้ โดยฟังชั่นดังกล่าวจะถูกเรียกใช้งานเมื่อมีการทำงานผ่านเหตุการณ์ที่เรากำหนดไว้ ในกรณีนี้คือการกดที่อิลิเม้นท์ <code><h1></code></p>
+<p>เราสามารถใช้ JS ให้เรียกใช้งานฟังชั่นได้ โดยฟังชั่นดังกล่าวจะถูกเรียกใช้งานเมื่อมีการทำงานผ่านเหตุการณ์ที่เรากำหนดไว้ ในกรณีนี้คือการกดที่อิลิเม้นท์ <code>h1</code></p>
 <pre><code>    &lt;h1 onclick=&#34;changeText(this)&#34;&gt;Hello World&lt;/h1&gt;
     &lt;script&gt;
       function changeText(id){
         id.innerHTML = &#34;It&#39;s me JavaScript&#34;;
       }
     &lt;/script&gt;</code></pre>
-<p>จากคำสั่งข้างบน มีการใช้แอททริบิวท์ <code>onclick</code> ให้มีการเรียกใช้ฟังชั่น <code>changeText(this)</code> การเรียกใช้ดังกล่าวมีการส่งอากูเม้นท์ไปกับฟังชั่นด้วย จะเห็นได้จาก <code>(this)</code></p>
-<p>เมื่อมาที่ฟังชั่น <code>changeText(id)</code> มีการรับข้อมูลเข้าเป็นตัวแปรที่ชื่อ <code>id</code> ในฟังชั่นก็เรียกใช้คำสั่งเปลี่ยนแปลงข้อความภายในเป็น <code>"It's me JavaScript"</code></p>
+<p>จากคำสั่งข้างบน มีการใช้แอททริบิวท์ onclick ให้มีการเรียกใช้ฟังชั่น <code>changeText(this)</code> การเรียกใช้ดังกล่าวมีการส่งอากูเม้นท์ไปกับฟังชั่นด้วย จะเห็นได้จาก <code>(this)</code></p>
+<p>เมื่อมาที่ฟังชั่น <code>changeText(id)</code> มีการรับข้อมูลเข้าเป็นตัวแปรที่ชื่อ <code>id</code> ในฟังชั่นก็เรียกใช้คำสั่งเปลี่ยนแปลงข้อความภายในเป็น &#34;It&#39;s me JavaScript&#34;</p>
 <p>แน่นอนว่าเราสามารถใช้อีเว้นนี้บนอิลิเม้นท์อื่นได้ อย่างเช่น ปุ่มกด</p>
 <h2 is-upgraded><strong>onChange</strong></h2>
-<p>อีกเหตุการณ์ที่มีการใช้งานบ่อยก็คือ onChange ต่อไปทดลองสร้าง <code><input></code> เพื่อใช้ในการทดสอบเหตุการณ์ onChange</p>
+<p>อีกเหตุการณ์ที่มีการใช้งานบ่อยก็คือ onChange ต่อไปทดลองสร้าง <code>input</code> เพื่อใช้ในการทดสอบเหตุการณ์ onChange</p>
 <pre><code>    &lt;input id=&#34;input1&#34; type=&#34;number&#34; onchange=&#34;calculate()&#34;&gt;
     &lt;input id=&#34;input2&#34; type=&#34;number&#34; onchange=&#34;calculate()&#34;&gt;
     &lt;input id=&#34;input3&#34; type=&#34;number&#34; disabled&gt;</code></pre>

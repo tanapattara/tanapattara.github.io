@@ -103,7 +103,6 @@
 &lt;/html&gt;</code></pre>
 <p>ทำการเปิด Liver server และดูผลลัพท์การทำงานผ่าน ChromeDev tools console</p>
 <h2 is-upgraded>การใส่แบบแยกไฟล์ </h2>
-<p>New we separate html that should contain about content of webpage and javascript that contain a script command. </p>
 <p>HTML ควรเป็นไฟล์ที่เก็บข้อมูลส่วนของการแสดงผลของหน้าเว็บเป็นหลัก ดังนั้นเราควรแยกคำสั่ง JS ออกจากไฟล์ HTML เพื่อง่ายต่อการจัดการและการพัฒนา</p>
 <p>สร้างไฟล์ใหม่ ชื่อ <code>index.js</code> ไว้ในโฟลเดอร์เดียวกันกับไฟล์ <code>index.html</code> โดยในไฟลของ JS ให้ใช้คำสั่งดังนี้</p>
 <p><code>index.js</code></p>
@@ -232,7 +231,6 @@ console.log(constVariable);</code></pre>
     
       <google-codelab-step label="ฟังก์ชั่น Function" duration="15">
         <p>ฟังก์ชั่นคือหลักพื้นฐานอขงการสร้าง blocks ใน JS มาลองสร้างฟังก์ชั่นสักอัน</p>
-<p><code>index.js</code></p>
 <pre><code>function greet(){
    //logic of this function
    console.log(&#39;Hello world&#39;);
@@ -240,7 +238,6 @@ console.log(constVariable);</code></pre>
 <aside class="special"><p><strong>Note: </strong>เราไม่จำเป็นต้องใส่ semicolons ปิดท้ายในคำสั่งฟังก์ชั่น</p>
 </aside>
 <p>เมื่อสร้างแล้ว เราสามารถเรียกใช้ฟังก์ชั่นโดยการระบุชื่อฟังก์ชั่นได้เลย</p>
-<p><code>index.js</code></p>
 <pre><code>function greet(){
    //logic of this function
    console.log(&#39;Hello world&#39;);
@@ -249,7 +246,6 @@ console.log(constVariable);</code></pre>
 // call a function
 greet();</code></pre>
 <p>ฟังก์ชั่นนั้น เราสามารถใส่ข้อมูลให้กับฟังชั่นได้ โดยการกำหนดพารามิตเตอร์ให้กับฟังชั่น โดยใส่เป็นชื่อตัวแปรได้เลย ทดสอบโดยกำหนดให้รับข้อมูลเป็นข้อความแล้วมาแสดงผลออกทาง console โดยเราจะได้ฟังก์ชั่นดังนี้</p>
-<p><code>index.js</code></p>
 <pre><code>function greet(name){
    //logic of this function
    console.log(&#39;Hello &#39; + name);
@@ -259,7 +255,6 @@ greet();</code></pre>
 greet(&#39;John&#39;);</code></pre>
 <p>เราส่งค่า <code>John เป็น</code>อาร์กูเม็นท์ <strong>argument </strong>ผ่านฟังก์ชั่น <code>greet</code> โดยฟังก์ชั่นจะนำค่าที่ได้รับมาใส่ในตัวแปร <code>name ในรูปแบบของพารามิเตอร์</code> <strong>parameter</strong></p>
 <p>เราสามารถเพิ่มพารามิเตอร์เข้าไปให้กับฟังก์ชั่นเท่าไหร่ก็ได้ โดยการเพิ่มตัวแปรเข้าไปในวงเล็บของฟังก์ชั่น หากเราเรียกใช้ฟังก์ชั่น เราต้องส่งค่าผ่านอาร์กูเม็นท์ที่เท่ากันกับฟังชั่นต้องการ ดังตัวอย่ามีการเพิ่มพารามิเตอร์ให้กับฟังก์ชั่น <code>greet</code> คือ <code>lastname</code> ดังนั้นหากเราต้องการเรียกใช้ฟังก์ชั่น เราก็ต้องส่งการ์กูเม็นท์มาให้ตรงกับที่ต้องการ</p>
-<p><code>index.js</code></p>
 <pre><code>function greet(name, lastname){
    //logic of this function
    console.log(&#39;Hello &#39; + name + &#39; &#39; + lastname);
@@ -269,6 +264,14 @@ greet(&#39;John&#39;);</code></pre>
 greet(&#39;John&#39;, &#39;Doe&#39;);</code></pre>
 <aside class="warning"><p><strong>Caution:</strong> ตัวแปรที่เป็นพารามิเตอร์สามารถใช้ได้เพียงในฟังก์ชั่นที่ถูกสร้างขึ้นเท่านั้น ไม่สามารถเรียกใช้นอกฟังก์ชั่นได้ นั่นก็คือตัวแปร <code>name</code> และ <code>lastname</code> ไม่สามารถเรียกใช้งานได้นอกฟังชั่น <code>greet</code></p>
 </aside>
+<h2 is-upgraded><strong>การส่งค่ากลับ</strong></h2>
+<p>เราสามารกำหนดให้ฟังชั่นที่เราสร้างขึ้น สามารถส่งค่ากลับไปโดยใช้คำสั่ง return ในฟังชั่น ตัวอย่างเช่นการส่งค่าอุณหภูมิองศาเซลเซียส ไปแปลงเป็นองศาฟาเรนไฮน</p>
+<pre><code>function celsius2fahrenheit(celsius){
+   Return celsius * (9 / 5) + 32;   
+}
+
+// call a function
+let f = celsius2fahrenheit(100);</code></pre>
 
 
       </google-codelab-step>
@@ -340,12 +343,22 @@ Colors[3] = &#39;pink&#39;;
 console.log(colors);</code></pre>
 <p>ผลลัพท์ที่ได้ <code>colors จะมีข้อมูลเพิ่มมาในตำแหน่งที่ 3</code></p>
 <p><code>ทดลองใส่ข้อมูลอื่นที่เป็นชนิดของตัวแปรแตกต่างกัน โดยกำหนดค่าลงไปที่ตำแหน่งที่ 4</code></p>
-<p><code>index.js</code></p>
 <pre><code>let colors = [&#39;red&#39;, &#39;blue&#39;, &#39;green&#39;];
 Colors[3] = &#39;pink&#39;;
 Colors[4] = 1;
 console.log(colors);</code></pre>
 <p>อาร์เรย์เป็นตัวแปรชนิดวัตถุ ทำให้มีคุณสมบัติที่ JS เตรียมไว้ให้และได้รับการสืบทอดมาตามคุณสมบัติของ OOP ให้เราได้ใช้งาน เช่นคำสั่ง <code>colors.length</code>.</p>
+<h2 is-upgraded><strong>แสดงผลข้อมูลโดยการทำซ้ำ</strong></h2>
+<p>เนื่องจากเราสามารถเข้าถึงข้อมูลของอาร์เรย์โยใช้ตัวชี้อ้างอิงตำแหน่ง ดังนั้นเราสามารถใช้คำสั่งทำซ้ำในการดึงข้อมูลทุกตัวออกมาได้ เช่น</p>
+<pre><code>let color = [&#34;red&#34;, &#34;blue&#34;, &#34;green&#34;];      
+for (let i = 0; i &lt; color.length; i++) {
+   console.log(color[i]);
+}</code></pre>
+<p>หรือการใช้ FOR OF ในการเข้าถึงอาร์เรย์ทุกตัวโดยไม่อ้างอิงตำแหน่ง</p>
+<pre><code>for (let c of color) {
+  console.log(c);
+}
+</code></pre>
 
 
       </google-codelab-step>
