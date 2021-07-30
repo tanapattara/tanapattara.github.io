@@ -10,7 +10,10 @@
 
 - [JavaScript](/codelab/web/javascript/)
 - [JavaScript with DOM](/codelab/web/javascript-dom/)
+- [React component](/codelab/web/react-component/)
+- [React composing](/codelab/web/react-composing-component/)
+- [React Shopingcart](/codelab/web/react-shoppingcart/)
 
-## Students
+## Students Showcase
 
 - [Class of 2021](/web2021.md)

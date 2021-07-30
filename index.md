@@ -1,6 +1,3 @@
-# Web Application
+# Class
 
-## Codelab
-
-- [JavaScript](/codelab/web/javascript/)
-- [JavaScript with DOM](/codelab/web/javascript-dom/)
+- [Web Application](/webapp)

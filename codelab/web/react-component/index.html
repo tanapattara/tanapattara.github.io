@@ -1,0 +1,554 @@
+
+<!doctype html>
+
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+  <meta name="theme-color" content="#4F7DC9">
+  <meta charset="UTF-8">
+  <title>React JS React Component</title>
+  <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Source+Code+Pro:400|Roboto:400,300,400italic,500,700|Roboto+Mono">
+  <link rel="stylesheet" href="//fonts.googleapis.com/icon?family=Material+Icons">
+  <link rel="stylesheet" href="https://storage.googleapis.com/codelab-elements/codelab-elements.css">
+  <style>
+    .success {
+      color: #1e8e3e;
+    }
+    .error {
+      color: red;
+    }
+  </style>
+</head>
+<body>
+  <google-codelab-analytics gaid="UA-49880327-14"></google-codelab-analytics>
+  <google-codelab codelab-gaid="G-DSKNQHDNJK"
+                  id="react-component"
+                  title="React JS React Component"
+                  environment="web"
+                  feedback-link="">
+    
+      <google-codelab-step label="เกี่ยวกับบทเรียน" duration="0">
+        <p class="image-container"><img style="width: 391.00px" src="img\\3bc001a2e8425ef7.png"></p>
+<p><strong>ปรับปรุงล่าสุด:</strong> 2020-06-12</p>
+<p>React ถูกพัฒนาขึ้นโดย Facebook ในปี 2011 และเป็น JS Framework ที่นิยมอย่างรวดเร็ว ด้วยความสามารถในการแยกส่วนประกอบของเว็บออกเป็นคอมโพเนนต์ (Component) หรือแบ่งส่วนต่างๆของส่วนติดต่อผู้ใช้ออกเป็นส่วนย่อย และแต่ละส่วนของคอมโพเนนต์ยังสามารถแยกย่อยลงไปได้อีก การเปลี่ยนแปลงข้อมูลและอินเตอร์เฟสผ่าน Visual DOM </p>
+<p class="image-container"><img style="width: 624.00px" src="img\\152778689ccbac89.png"></p>
+<p>เราสามารแยกพัฒนาแต่ละคอมโพเนนต์ แล้วนำมาประกอบกันเป็นส่วนติดต่อผู้ใช้ที่ซับซ้อนได้</p>
+<p>แต่ละคอมโพเนนต์ เป็น javascript class ที่ประกอบไปด้วย state และ render</p>
+<ul>
+<li>State คือ ข้อมูลที่คอมโพเนนต์ใช้ในการทำงาน</li>
+<li>Render คือส่วนที่บอกว่าหน้าตาของคอมโพเนนต์หน้าตาเป็นอย่างไร ส่วนส่งออกคือ React Element</li>
+</ul>
+<p>React Element หรือ Virtual DOM เป็น JS Element ที่ทำหน้าที่แสดงผลการทำงานในรูปแบบของ DOM เมื่อมีการเปลี่ยนแปลง state ของคอมโพเนนต์ เราจะได้ React Element ตัวใหม่ React จะทำการเปรียบเทียบกับคอมโพเนนต์เดิม ทำให้ทราบว่ามีการเปลี่ยนแปลงและทำการเปลี่ยนแปลง Real DOM เพื่อทำการปรับปรุงส่วนติดต่อผู้ใช้ในบราวเซอร์</p>
+<p>บทเรียนนี้เป็นการสร้าง React คอมโพเนนท์ (Component) อย่างง่าย ประกอบไปด้วยรูปภาพ ข้อความ และปุ่มกด รวมกับการใช้งาน CSS Frameworks ตกแต่งคอมโพเนนท์ให้ดูสวยงาม</p>
+<p>React เป็นการรวมกันของคอมโพเนนต์ย่อยๆ รวมกันเป็นหน้าเว็บ โดยแต่ละคอมโพเนนท์จะมีหน่วยความจำและฟังชั่นของตัวเอง การทดลองนี้ เราจะทดลองสร้างคอมโพเนนต์อย่างง่าย </p>
+<p class="image-container"><img style="width: 624.00px" src="img\\65eac476b16c8998.png"></p>
+<h2 is-upgraded><strong>สิ่งที่จะได้จากบทเรียน</strong></h2>
+<ul>
+<li>การสร้าง React Component</li>
+<li>การเรียกใช้และปรับปรุง Attribute ของแต่ Element</li>
+<li>การเข้าถึง State ของ Component</li>
+</ul>
+<h2 is-upgraded><strong>ความรู้พื้นฐานก่อนการทำเลป</strong></h2>
+<ul>
+<li>HTML</li>
+<li>CSS</li>
+<li>JavaScript</li>
+<li><a href="https://developer.chrome.com/devtools" target="_blank">Chrome DevTools</a>.</li>
+</ul>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="การติดตั้ง React" duration="10">
+        <ol type="1" start="1">
+<li>ติดตั้ง Nodejs เวอร์ชั่นล่าสุดจากเว็บไซต์ <a href="http://www.nodejs.org" target="_blank"><paper-button class="colored" raised>nodejs.org</paper-button></a></li>
+<li>ติดตั้ง react โดยใช้คำสั่ง <code>npm i -g create-react-app</code>  จาก <code>command line</code></li>
+<li>ติดตั้ง <a href="https://code.visualstudio.com/download" target="_blank"><paper-button class="colored" raised>Visual Studio Code Editor</paper-button></a></li>
+<li>ติดตั้ง Visual Studio Code Extension - Simple React Snippets</li>
+<li>ติดตั้ง Visual Studio Code Extension - Prettier - Code Formatter (ตัวเลือกเพิ่มเติม)</li>
+</ol>
+<aside class="special"><p><strong>Note:</strong> เราสามารถตั้งค่าให้ Visual Studio Code ทำการปรับปรุงโค้ด (Format) ให้อยู่ในรูปแบบอัตโนมัติหลังจากการบันทึกโดยไปที่เมนู Settings เลือก Editor: Format On Save</p>
+</aside>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="เริ่มสร้างโปรเจคและนำเข้า bootstrap" duration="10">
+        <h2 is-upgraded><strong>สร้างโปรเจคใหม่</strong></h2>
+<p>การสร้างโปรเจค react จะใช้คำสั่งจาก command line ประกอยด้วบสองส่วน ส่วนแรกคำสั่งสร้าง และตามด้วยชื่อโปรเจค ในตัวอย่าง เป็นการสร้างโปรเจคที่ชื่อว่า <code>react-app</code></p>
+<pre><code>create-react-app counter-app</code></pre>
+<p>React จะสร้างโฟลเดอร์ โปรเจค ณ ตำแหน่ง ปัจจุบันที่เราอยู่ในคำสั่ง command line</p>
+<aside class="special"><p><strong>Note: </strong>เลือกตำแหน่งที่ต้องการสร้างโปรเจค เช่น <code>C:\Sources</code> แล้วทำการเปิด <code>PowerShell</code> โดยการกด <code>Shift + Right Click</code> และเลือก <code>Open PowerShell window here</code></p>
+</aside>
+<aside class="warning"><p><strong>Error: </strong> หากไม่สามารถสร้างโปรเจคด้วยคำสั่ง create-react-app  ได้ และเกิดข้อผิดพลาด <code>..\create-react-app.ps1 cannot be loaded because running scripts is disabled on this system.</code></p>
+<p>ให้ทำการเปิด <code>PowerShell</code> แบบ <code>Administrator (Run as Administrator)</code> และใส่คำสั่ง <code>set-executionpolicy remotesigned</code> ตามด้วย <code>Y</code> เพื่อเป็นการแก้ปัญหาการสร้างโปรเจคไม่ได้ด้วยคำสั่ง <code>create-react-app</code></p>
+<p class="image-container"><img style="width: 460.00px" src="img\\4a31de9823b88588.png"></p>
+</aside>
+<p>ในหน้า command line จะมีคำสั่งที่ให้มาในการจัดการโปรเจคของเรา </p>
+<ul>
+<li>npm start  สำหรับเปิดการทำงานของเซิรฟเวอร์จำลอง</li>
+<li>npm run build การทำให้แอพของเป็นไฟล์สำหรับนำไปใช้งานบนโปรดักส์ชั่นเซิรฟเวอร์</li>
+<li>npm test การเปิดการทดสอบการเทส</li>
+<li>npm run eject การติดตังไปยังเซิรฟ์เวอร์</li>
+</ul>
+<p>หลังจากสร้างโปรเจคแล้ว เราต้องเข้าไปยังโปรเจคของเราก่อนโดยใช้คำสั่ง <code>cd react-app</code> จะเป็นการเข้ามายังโปรเจคที่ได้สร้างขึ้น เราสามารถเปิดโฟลเดอร์ปัจจุบันโดย Visual studio Code จาก command line โดยใช้คำสั่ง</p>
+<pre><code>cd counter-app
+code .</code></pre>
+<p>ทดสอบการทำงาน</p>
+<p>ภายในโฟลเดอร์โปรเจค เราสามารถสั่งให้โปรแกรมทำงานด้วยคำสั่ง</p>
+<pre><code>npm start</code></pre>
+<p>รอสักครู่จะมีลิงค์ปรากฏขึ้นที่ Terminal เปิดลิงค์เพื่อแสดงการทำงานของโปรเจค react</p>
+<aside class="special"><p><strong>Note:</strong> เราสามารถหยุดการทำงานของเซิรฟ์เวอร์โดยการกด <code>crtl + c</code> ที่ <code>command line</code></p>
+</aside>
+<h2 is-upgraded><strong>นำ Bootstrap เข้าสู่โปรเจค</strong></h2>
+<p>ที่ Visual Studio Code เปิด Terminal และลง bootstrap โดยใช้คำสั่ง</p>
+<pre><code>npm i bootstrap</code></pre>
+<p>ทำการเพิ่ม bootstrap เข้าไปยังแแอพของเรา โดยเปิด <code>index.js</code> และเพิ่มคำสั่ง</p>
+<p><code>index.js</code></p>
+<pre><code>...
+import &#34;bootstrap/dist/css/bootstrap.css&#34;;
+...</code></pre>
+<aside class="special"><p><strong>Note: </strong>เราสามารถเปิดไฟล์ใน Visual Studio Code อย่างรวดเร็วโดยการกดปุ่มลัด <code>ctrl + p</code> จะปรากฎช่องขึ้นมา ให้พิมพ์ชื่อไฟล์ที่เราต้องการ เช่น <code>index.js</code> แล้วกด <code>enter</code> จะทำให้เราเปิดไฟล์ได้โดยที่ไม่ต้องไปเปิดหาที่แทบด้านซ้ายมือ</p>
+</aside>
+<p>ทดสอบการทำงานด้วยคำสั่ง <code>npm start</code> จะพบว่าตัวหนังสือของเว็บได้เปลี่ยนไปเนื่องจากเราได้นำ boostrap มาใส่ลงไปในแอพพลิเคชั่นของเราแล้ว</p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="ภายในโปรเจค React" duration="10">
+        <p>เข้ามาดูภายในโปรเจค จะประกอบไปด้วยโฟลเดอร์หลัก อยู่ 3 โฟลเดอร์</p>
+<ul>
+<li>node_modules สำหรับเก็บ third-party library รวมถึง react ด้วย</li>
+<li>public สำหรับเก็บ public asset ไฟล์ต่างๆ เช่น ไอคอน รวมถึง index.html</li>
+<li>src สำหรับเก็บ react component เริ่มแรก จะมีแค่ app.js component </li>
+</ul>
+<p>ที่โฟลเดอร์ public จะมีไฟล์ <code>index.html</code> อยู่ ประกอบไปด้วย HTML และ metadata ของเว็บไซด์ ภายในแท็ก body จะมี <code><div></code> อยู่ตัวหนึ่งมีไอดีคือ root</p>
+<p>โฟลเดอร์ src ไฟล์ <code>index.js</code> ประกอบไปด้วยคำสั่ง import เพื่อนำเข้าคลาส และคอมโพแนนต์จะใช้งานของ react</p>
+<p>คำสั่ง <code>ReactDOM.render()</code> เป็นทำสั่งสร้างคอมโพแนนต์ โดยในคำสั่งเป็นการสร้างคอมโพแนนต์ที่ชื่อว่า <code><App /></code> โดยนำคอมโพแนนต์ที่สร้างไปใส่ที่อิลิเม้นท์ไอดีว่า <code>root</code></p>
+<p><code>index.js</code></p>
+<pre><code>import React from &#39;react&#39;;
+import ReactDOM from &#39;react-dom&#39;;
+import &#39;./index.css&#39;;
+import App from &#39;./App&#39;;
+import * as serviceWorker from &#39;./serviceWorker&#39;;
+
+ReactDOM.render(
+  &lt;React.StrictMode&gt;
+    &lt;App /&gt;
+  &lt;/React.StrictMode&gt;,
+  document.getElementById(&#39;root&#39;)
+);
+
+serviceWorker.unregister();</code></pre>
+<p>มาดูที่คอมโพแนนต์ <code><App /></code> รายละเอียดภายในคอมโพแนนต์ที่ไฟล์ App.js </p>
+<p><code>App.js</code></p>
+<pre><code>import React from &#39;react&#39;;
+import logo from &#39;./logo.svg&#39;;
+import &#39;./App.css&#39;;
+
+function App() {
+  return (
+    &lt;div className=&#34;App&#34;&gt;
+      &lt;header className=&#34;App-header&#34;&gt;
+        &lt;img src={logo} className=&#34;App-logo&#34; alt=&#34;logo&#34; /&gt;
+        &lt;p&gt;
+          Edit &lt;code&gt;src/App.js&lt;/code&gt; and save to reload.
+        &lt;/p&gt;
+        &lt;a
+          className=&#34;App-link&#34;
+          href=&#34;https://reactjs.org&#34;
+          target=&#34;_blank&#34;
+          rel=&#34;noopener noreferrer&#34;
+        &gt;
+          Learn React
+        &lt;/a&gt;
+      &lt;/header&gt;
+    &lt;/div&gt;
+  );
+}
+
+export default App;</code></pre>
+<p>เริ่มจาก import เป็นการนำเข้า component อื่นเข้ามาใช้ในคอมโพเนนต์</p>
+<p>ที่คอมโพแนนต์นี้ได้นำเข้าไฟล์ app.css เข้ามาใช้จากคำสั่ง <code>import './App.css';</code></p>
+<p>ตามด้วย สร้างฟังชั่น App() ภายใน ได้สร่งข้อมูลคล้ายๆ html กลับไป รูปแบบภาษานี้เราเรียกว่า JSX หรือ JavaScript Xml รูปแบบการเขียนคล้าย html แต่มีบางส่วนที่ไม่เหมือนกัน เช่น JSX ใช้ className แทน class attribute ใน html เป็นตัน</p>
+<p>JSX ที่เห็นนี้ จะรวมเป็น App คอมโพเนนต์ และจะถูก Babel นำไปแปลงเป็น HTML ที่ browser เข้าใจได้ และแสดงผลที่หน้าแรกที่เราเห็นจากการทดสอบการทำงาน</p>
+<p>ทดลองเปลี่ยนข้อความภายใน JSX ให้เป็น</p>
+<pre><code>    &lt;div className=&#34;App&#34;&gt;
+      &lt;header className=&#34;App-header&#34;&gt;
+        &lt;img src={logo} className=&#34;App-logo&#34; alt=&#34;logo&#34; /&gt;
+        &lt;p&gt;
+          Hello React JS
+        &lt;/p&gt;
+      &lt;/header&gt;
+    &lt;/div&gt;</code></pre>
+<aside class="special"><p><strong>Note:</strong> หากเราทำการแก้ไข code ระหว่างที่มีการทำงานของเซิรฟเวอร์ ด้วยคำสั่ง npm start เมื่อเราแแก้ไขและมีการบันทึก (Save) หน้าเว็บจะทำการเปลี่ยนแปลงให้อัตโนมัติโดยไม่ต้องสั่ง F5 หรือปิดเปิดเซิรฟ์เวอร์ใหม่ เราเรียกการทำงานนี้ว่า <code>Hot Reload</code></p>
+</aside>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="สร้างคอมโพเนนต์" duration="5">
+        <h2 is-upgraded><strong>สร้างคอมโพเนนต์ใหม่</strong></h2>
+<p>ไปที่โโฟลเดอร์ src ทำการสร้างโฟลเดอร์ใหม่ให้อยู่ภายใต้โฟลเดอร์ src ชื่อว่า components เราจะใช้โฟลเดอร์นี้ทำการเก็บคอมโพเนนต์ที่เราสร้างขึ้นไว้ภายใน</p>
+<p>สร้างไฟล์ใหม่ ชื่อว่า counter.jsx</p>
+<p><code>counter.jsx</code></p>
+<pre><code>import React, { Component } from &#39;react&#39;;
+
+class Counter extends Component {
+
+    render() { 
+        return &lt;h1&gt;Hello World&lt;/h1&gt;;
+    }
+}
+ 
+export default Counter;</code></pre>
+<p>เราได้ทำการสร้างคอมโพเนนต์คลาสที่ชื่อว่า Counter โดยคอมโพเนนต์นี้ทำหน้าที่แสดงผล Hello world โดยใช้แท็ก H1 ต่อไปเราจะนำคอมโพเนนต์นี้ไปใส่ลงใสแอพของเรา</p>
+<h2 is-upgraded><strong>นำเข้าและแสดงคอมโพเนนต์</strong></h2>
+<p>ที่ไฟล <code>index.js</code> ทำการเพิ่ม คำสั่ง import และ เปลี่ยนอากิวเมนท์ตามตัวอย่าง</p>
+<p><code>index.js</code></p>
+<pre><code>//...
+import Counter from &#34;./components/counter&#34;;
+
+ReactDOM.render(&lt;Counter /&gt;, document.getElementById(&#34;root&#34;));</code></pre>
+<p>เพิ่มคำสั่ง import ต่อท้ายคำสั่ง import อื่นๆ กำหนดชื่อคอมโพเนนต์ และที่อยู่ของไฟล์ ตามที่เราได้สร้างไว้ในโฟลเดอร์ components และไฟล์ counter ตามลำดับ</p>
+<p>แล้วทำการเปลี่ยนอากิวเมนท์ render ให้เป็นแท็ก <code><Counter /></code></p>
+<p>React จะทำการเปลี่ยนแท็ก <code><Counter /></code> ให้เป็นคอมโพเนนท์ที่เราอ้างอิงถึงในตอน <code>import</code> นั่นคือไฟล์ <code>counter.jsx</code> ที่อยู่ในโฟลเดอร์ <code>components</code></p>
+<p>ทดสอบการทำงาน ตอนนี้ หน้าหลักได้เปลี่ยนเป็น Hello world คอมโพเนนต์เค้าเตอร์ที่เราได้สร้างขึ้นแล้ว</p>
+<p class="image-container"><img style="width: 624.00px" src="img\\a11a024f927fd944.png"></p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="การเรนเดอร์คอมโพเนนท์ของ React" duration="10">
+        <p>ที่ไฟล์ <code>counter.jsx</code> ทดลองเพิ่มแท็กอื่นๆลงไป ดังตัวอย่าง</p>
+<p><code>counter.jsx</code></p>
+<pre><code>import React, { Component } from &#39;react&#39;;
+
+class Counter extends Component {
+
+    render() { 
+       return &lt;h1&gt;hello world&lt;/h1&gt;&lt;button&gt;Add&lt;/button&gt;;
+    }
+}
+ 
+export default Counter;</code></pre>
+<p>สังเกตุว่าตอนนี้เรามี element อยู่สองอันนั่นคือ <code>h1</code> กับ <code>button</code></p>
+<p>React จะแจ้งข้อผิดพลาดให้เราทราบด้านหลังสุด เนื่องจากว่า jsx ต้องมี parent element หรืออิลิเมนท์ตัวบนสุดตัวเดียว ทางแก้คือ เราจะทำให้อิลิเมนท์ทั้งสองอยู่ภายใต้อิลิเมนท์เดียวโดยการใส่ <code><div></code> ครอบทับดังตัวอย่าง</p>
+<p><code>counter.jsx</code></p>
+<pre><code>import React, { Component } from &#39;react&#39;;
+
+class Counter extends Component {
+  render() {
+    return (
+      &lt;div&gt;
+        &lt;h1&gt;hello world&lt;/h1&gt;
+        &lt;button&gt;Increment&lt;/button&gt;
+      &lt;/div&gt;
+    );
+  }
+}
+
+export default Counter;</code></pre>
+<p>ทดสอบการทำงาน จะเห็นว่า มีปุ่ม <code>Increment</code>เพิ่มมาแล้ว ลองดูที่ dev tools จะเห็นว่า ทั้งสองอยู่ภายใต้ <code><div></code></p>
+<p class="image-container"><img style="width: 413.00px" src="img\\3626cbe8cb3ce6f0.png"></p>
+<p>หากเราไม่ต้องการให้คอมโพเนนต์ของเราอยู่ภายใต้ div ที่ไม่ได้ทำอะไรเลย (เช่น ไม่มีคลาส หรือไอดีใดๆ) เราสามารถใช้ <code><React.Fragment></code> แทนทีการใช้ <code><div></code> เปล่าๆได้ ตัวอย่างเช่น</p>
+<p><code>counter.jsx</code></p>
+<pre><code>import React, { Component } from &#39;react&#39;;
+
+class Counter extends Component {
+  render() {
+    return (
+      &lt;React.Fragment&gt;
+        &lt;h1&gt;hello world&lt;/h1&gt;
+        &lt;button&gt;Increment&lt;/button&gt;
+      &lt;/React.Fragment&gt;
+    );
+  }
+}
+
+export default Counter;</code></pre>
+<p>ทดสอบการทำงาน ตรวจสอบที่ dev tool จะเห็นว่าไม่มี &lt;div&gt; ครอบทับแท็กทั้งสองแล้ว เราสามารถเลือกใช้ได้ตามสถานะการณ์</p>
+<p class="image-container"><img style="width: 396.00px" src="img\\594cbeed27e0648a.png"></p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="State" duration="10">
+        <p>ที่ <code>counter.jsx</code> ทำการเพิ่ม <code>state</code> ซึ่งมีหน้าที่เก็บข้อมูลของแต่ละคอมโพเนนต์เอาไว้ โดยสร้างตัวแปรตัวแรกให้ชื่อว่า <code>count</code> และกำหนดค่าเท่ากับ 0</p>
+<p>ที่อิลิเมนท์ <code>h1</code> เปลี่ยนเป็น <code>span</code> พร้อมกับเรียกใช้ตัวแปร count ที่สร้างขึ้นภายใน { } (เครื่องหมาย Braces หรือ curly bracket) โดยใช้คำสั่ง <code>this.state.count ทำให้เราสามารถแสดงผลอิลิเมนท์แบบไดนามิกส์ได้</code></p>
+<p><code>counter.jsx</code></p>
+<pre><code>...
+class Counter extends Component {
+  state = { count: 0 };
+
+  render() {
+    return (
+      &lt;div&gt;
+        &lt;span&gt;{this.state.count}&lt;/span&gt;
+        &lt;button&gt;Increment&lt;/button&gt;
+      &lt;/div&gt;
+    );
+  }
+}
+...</code></pre>
+<p>จะเห็นว่า ข้อความ hello world ได้ถูกเปลี่ยนเป็น 0 เนื่องจากค่าตัวแปร count มีค่าเท่ากับ 0 ตามที่เราได้ประกาศไว้ใน state ทดลองเปลี่ยนค่า count เพื่อดูการเปลี่ยนแปลงของหน้าเว็บ</p>
+<p>ภายใน { } เราสามารถคำนวนตัวเลข หรือตัวแปรได้ เช่น</p>
+<pre><code>{2 + 2}</code></pre>
+<h2 is-upgraded><strong>สร้างเมธอดย่อย</strong></h2>
+<p>ต่อไปเราจะเพิ่มเงื่อนไขการแสดงผลให้กับคอมโพเนนท์ หากว่าตัวแปรเท่ากับ 0 ให้แสดงข้อความว่า Zero หากไม่ใช่ให้แสดงตัวเลขปรกติ ให้เราเพิ่มเมธอดให้กับคอมโพเนนต์ ตั้งชื่อเมธอดว่า <code>formatCount()</code> และเรียกใช้เมธอดเพื่อแสดงผลผ่านเครื่องหมาย {  } ด้วยคำสั่ง <code>{this.formatCount()}</code></p>
+<p><code>counter.jsx</code></p>
+<pre><code>class Counter extends Component {
+  state = { count: 0 };
+
+  render() {
+    return (
+      &lt;div&gt;
+        &lt;span&gt;{this.formatCount()}&lt;/span&gt;
+        &lt;button&gt;Increment&lt;/button&gt;
+      &lt;/div&gt;
+    );
+  }
+
+  formatCount() {
+    return this.state.count === 0 ? &#34;Zero&#34; : this.state.count;
+  }
+}</code></pre>
+<p>จะเห็นได้ว่าเราเรียกใช้ state เป็นวัตถุ เราสามารถสร้างวัตถุให้กับ state.count ได้ โดยใช้คำสั่งสร้างวัตถุ แทน state.count โดยทำการปรับปรุงเมธอด formatCount() ดังนี้</p>
+<p><code>counter.jsx</code></p>
+<pre><code>  formatCount() {
+    const { count } = this.state;
+    return count === 0 ? &#34;Zero&#34; : count;
+  }</code></pre>
+<p>JSX ทำให้เราสามารถส่งออกอิลิเมนท์ไปได้เหมือนกับตัวแปรตัวแปรหนึง ทดลองเปลี่ยนผลลัพท์ Zero เป็นคำสั่ง</p>
+<p><code>counter.jsx</code></p>
+<pre><code>  formatCount() {
+    const { count } = this.state;
+    return count === 0 ? &lt;h4&gt;Zero&lt;/h4&gt; : count;
+  }</code></pre>
+<p>เราจะได้อิลิเมนท์ h4 มาแสดงผลแทนข้อความธรรมดา</p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="การกำหนด Attribute ให้กับอิลิเมนท์" duration="10">
+        <h2 is-upgraded><strong>เพิ่มแอททริบิวท์ให้กับอิลิเมนท์</strong></h2>
+<p>เพิ่มตัวแปร <code>imageUrl</code> ใน state และเพิ่มอิลิเมนท์สำหรับแสดงรูปภาพด้วยแท็ก <code><img></code></p>
+<p><code>counter.jsx</code></p>
+<pre><code>class Counter extends Component {
+  state = {
+    count: 0,
+    imageUrl: &#34;https://picsum.photos/100&#34;,
+  };
+
+  render() {
+    return (
+      &lt;div&gt;
+        &lt;img src={this.state.imageUrl} alt=&#34;picsum&#34; /&gt;
+        &lt;span&gt;{this.formatCount()}&lt;/span&gt;
+        &lt;button&gt;Increment&lt;/button&gt;
+      &lt;/div&gt;
+    );
+  }
+
+  formatCount() {
+    const { count } = this.state;
+    return count === 0 ? &#34;Zero&#34; : count;
+  }
+}</code></pre>
+<p>กำหนดตำแหน่งรูปภาพจาก picsum.photos เป็นเเว็บที่คอยให้บริการรูปภาพ โดยจะส่งรูปกลับมาแบบสุ่ม ใน url เรากำหนดพารามิเตอร์ไปเป็น 100 ตามลิงค์ จะทำให้เราได้รับรูปภาพขนาด 100 x 100 กลับมาแสดง</p>
+<h2 is-upgraded><strong>เพิ่มคลาสทริบิวท์ให้กับอิลิเมนท์</strong></h2>
+<p>เพิ่มคลาสให้กับอิลิเมนท์ของเรา โดยแทรก className ลงไปในแอททริบิวท์ในแต่ละอิลิเมนท์ โดยนำเอาคลาสที่มีใน bootstrap มาใช้ในการแสดงผล หรือเราจะใช้คลาสที่เราสร้างขึ้นเองใน css ในการทำเว็บจริงก็ได้ ตัวอย่างใช้คลาสจาก bootstrap ที่ได้ติดตั้งและนำเข้าไว้ตั้งแต่ตอนแรกของบทเรียน</p>
+<p><code>counter.jsx</code></p>
+<pre><code>class Counter extends Component {
+  state = {
+    count: 0,
+    imageUrl: &#34;https://picsum.photos/50&#34;,
+  };
+
+  render() {
+    return (
+      &lt;div&gt;
+        &lt;img className=&#34;img-thumbnail&#34; src={this.state.imageUrl} alt=&#34;picsum&#34; /&gt;
+        &lt;span className=&#34;badge badge-primary m-2&#34;&gt;{this.formatCount()}&lt;/span&gt;
+        &lt;button className=&#34;btn btn-secondary btn-sm&#34;&gt;Increment&lt;/button&gt;
+      &lt;/div&gt;
+    );
+  }
+
+  formatCount() {
+    const { count } = this.state;
+    return count === 0 ? &#34;Zero&#34; : count;
+  }
+}</code></pre>
+<aside class="special"><p><strong>Note: </strong>เราไม่สามารถใช่คำสั่ง class เฉยๆได้เนื่องจากเป็นคำสงวนใน JS</p>
+</aside>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Dynamic class rendering" duration="10">
+        <p>เราจะทำการเปลี่ยนคลาสของแต่ละอิลิเมนท์ให้เป็นไปตามเงื่อนไขที่เรากำหนด ตอนนี้เรามีเบลดสีฟ้า badge-primary แสดงอยู่ ต่อไปเราจะกำหนดเงื่อนไช หาก count เป็น 0 จะให้แสดงสีเหลือง แต่ถ้าไม่ใช่ก็จะแสดงสีฟ้าตามปรกติ</p>
+<p>สร้างตัวแปรขึ้นมาเพื่อเก็บค่า css class ตรวจสอบเงื่อนไข และนำไปแสดงผล</p>
+<p><code>counter.jsx</code></p>
+<pre><code>...
+  render() {
+    let classes = &#34;badge m-2 &#34;;
+    classes += this.state.count === 0 ? &#34;badge-warning&#34; : &#34;badge-primary&#34;;
+    return (
+      &lt;div&gt;
+        &lt;img className=&#34;img-thumbnail&#34; src={this.state.imageUrl} alt=&#34;picsum&#34; /&gt;
+        &lt;span className={classes}&gt;{this.formatCount()}&lt;/span&gt;
+        &lt;button className=&#34;btn btn-secondary btn-sm&#34;&gt;Increment&lt;/button&gt;
+      &lt;/div&gt;
+    );
+  }
+...
+}</code></pre>
+<aside class="special"><p><strong>Note: </strong>เนื่องจากเรามีการเปลี่ยนแปลงค่าให้กับตัวแปร classes ทำให้เราไม่สามารถใช้การประกาศตัวแปรแบบ <code>const</code> ได้ ให้ใช้ <code>let</code> แทน</p>
+</aside>
+<p>เปลี่ยนคำสั่งที่เราสร้างมาให้เป็นเมธอดเพื่อง่ายต่อการเรียกใช้</p>
+<p><code>counter.jsx</code></p>
+<pre><code>...
+render() {
+    let classes = this.getBadgeClasses();
+    return (
+      &lt;div&gt;
+        &lt;img className=&#34;img-thumbnail&#34; src={this.state.imageUrl} alt=&#34;picsum&#34; /&gt;
+        &lt;span className={classes}&gt;{this.formatCount()}&lt;/span&gt;
+        &lt;button className=&#34;btn btn-secondary btn-sm&#34;&gt;Increment&lt;/button&gt;
+      &lt;/div&gt;
+    );
+  }
+
+  getBadgeClasses() {
+    let classes = &#34;badge m-2 &#34;;
+    classes += this.state.count === 0 ? &#34;badge-warning&#34; : &#34;badge-primary&#34;;
+    return classes;
+  }
+...
+}</code></pre>
+<aside class="special"><p><strong>Hit: </strong>เราสามารถสร้างฟังชันแยกง่ายๆโดยการทำแทบดำคลุมบรรทัดที่เพิ่มขึ้นมาใหม่ คลิ๊กขวา แล้วเลือก Refactor และเลือก Extract to method in class ‘Counter&#39; แล้วทำการตั้งชื่อเมธอด</p>
+</aside>
+<p>ลบตัวแปร classes ออก และเรียกใช้เมธอดโดยตรง</p>
+<p><code>counter.jsx</code></p>
+<pre><code>...
+  render() {
+    return (
+      &lt;div&gt;
+        &lt;img className=&#34;img-thumbnail&#34; src={this.state.imageUrl} alt=&#34;picsum&#34; /&gt;
+        &lt;span className={this.getBadgeClasses()}&gt;{this.formatCount()}&lt;/span&gt;
+        &lt;button className=&#34;btn btn-secondary btn-sm&#34;&gt;Increment&lt;/button&gt;
+      &lt;/div&gt;
+    );
+  }
+
+  getBadgeClasses() {
+    let classes = &#34;badge m-2 &#34;;
+    classes += this.state.count === 0 ? &#34;badge-warning&#34; : &#34;badge-primary&#34;;
+    return classes;
+  }
+...
+}</code></pre>
+<p>ทดสอบการทำงาน ract จะทำการเปลี่ยนสีเบลดให้แตกต่างกันตามค่า <code>count</code></p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="สร้างและตรวจจับเหตุการณ์" duration="10">
+        <p>เพิ่มแอททริบิวท์ onClick ให้กับปุ่มและเรียกใช้เมธอดชื่อว่า handleIncrement ภายในเมธอดแสดงผลออกทาง console.log ดังตัวอย่าง</p>
+<p><code>counter.jsx</code></p>
+<pre><code>...
+handleIncrement() {
+  console.log(&#34;Increment button clicked&#34;);
+}
+render() {
+  return (
+    &lt;div&gt;
+      &lt;img className=&#34;img-thumbnail&#34; src={this.state.imageUrl} alt=&#34;picsum&#34; /&gt;
+      &lt;span className={this.getBadgeClasses()}&gt;{this.formatCount()}&lt;/span&gt;
+      &lt;button
+        onClick={this.handleIncrement}
+        className=&#34;btn btn-secondary btn-sm&#34;
+      &gt;
+        Increment
+      &lt;/button&gt;
+    &lt;/div&gt;
+  );
+}
+...</code></pre>
+<p>ตรวจสอบการทำงาน จะพบข้อความและจำนวนครั้งแสดงใน console </p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="การเข้าถึงและเปลี่ยนค่าใน state" duration="20">
+        <h2 is-upgraded>การ<strong>เข้าถึง state</strong></h2>
+<p>หลังจากที่ได้เมธอดจากการกดปุ่มแล้ว ต่อไปจะเข้าไปเปลี่ยนตัวแปร count ที่อยู่ใน state ของคอนโทรลเลอร์นี้ ทดสอบเรียกใช้ <code>this.state.count</code> หรือ <code>this</code> จาก <code>console.log</code> ตามคำสั่ง</p>
+<p><code>counter.jsx</code></p>
+<pre><code>...
+  handleIncrement() {
+    console.log(&#34;Increment button clicked&#34;, this);
+  }
+...</code></pre>
+<p>เราจะเห็นการแสดงผลผ่าน console ว่า <code>this</code> เป็น undefined</p>
+<pre><code>Increment button clicked undefined</code></pre>
+<p>นั่นเป็นเพราะเมธอด <code>Increment</code> ไม่รู้จัก <code>this</code> ทำให้เราไม่สามารถใช้คำสั่ง this.state.count เพื่อเข้าถึงตัวแปร <code>count</code> ได้</p>
+<p>เราสามารถส่งค่า <code>this</code> มายังเมธอดโดยการประกาศเมธอดโดยใช้ลูกศร ตามตัวอย่าง</p>
+<p><code>counter.jsx</code></p>
+<pre><code>...
+  handleIncrement = () =&gt; {
+    console.log(&#34;Increment button clicked&#34;, this);
+  }
+...</code></pre>
+<p>ทดสอบการทำงาน กดปุ่มและดูผลลัพท์ ค่า <code>this</code> ไม่เป็น undefined แล้ว</p>
+<p class="image-container"><img style="width: 442.00px" src="img\\492d66ead9acd27c.png"></p>
+<h2 is-upgraded><strong>Update State</strong></h2>
+<p>เมื่อเข้าถึง this.state ได้แล้ว เรามาเปลี่ยนแปลงค่าโดยใช้คำสั่ง</p>
+<p><code>counter.jsx</code></p>
+<pre><code>...
+ handleIncrement = () =&gt; {
+    this.state.count++;
+    console.log(&#34;Increment button clicked&#34;, this.state.count);
+  };
+...</code></pre>
+<p>ทดสอบการแสดงผล</p>
+<p class="image-container"><img style="width: 442.00px" src="img\\6bec43a37f4e6c56.png"></p>
+<p>จะเห็นว่าเมื่อกดแล้วไม่มีการเปลี่ยนแปลงใดๆ แต่หากดูใน console แล้ว count จะมีการเปลี่ยนแปลงค่าทุกครั้งที่มีการกด ในทางเทคนิคแล้ว ตัวแปรมีการเปลี่ยนแปลงค่า แต่การเปลี่ยนแปลงแบบนี้ React ไม่ทราบถึงการเปลี่ยนแปลงของคอมโพเนนต์ ทำให้ react ไม่ได้เปลี่ยนแปลง view ตาม เราแก้ไขได้จากฟังชั่นที่สืบทอด (Inherit) มาจาก Component แม่ เรียกใช้เมธอด <code>this.setState()</code> โดยเป็นการบอก React ว่า state ได้มีการเปลี่ยนแปลงไปแล้วให้ทำการอัพเดต view ด้วย</p>
+<p><code>counter.jsx</code></p>
+<pre><code>...
+  handleIncrement = () =&gt; {
+    this.setState({ count: this.state.count + 1 });
+  };
+...</code></pre>
+<p>ทดสอบการทำงาน จะพบว่าเมื่อกดปุ่ม Increment จะมีการเพิ่มจำนวนขึ้นไปทีละ 1</p>
+<aside class="special"><p><strong>Note: </strong>หากเปิด dev tool ใน Elements tab ที่คอมโพเนนต์ที่เราสร้างขึ้น เมื่อมีการกดปุ่มเพื่อเพิ่มค่า และมีการเปลียนแปลง state ตามคำสั่ง <code>this.setState()</code> React จะทราบว่ามีการเปลี่ยนแปลงเกิดขึ้นที่คอมโพเนนต์ใดคอมโพเนนต์หนึ่ง และตรวจสอบว่ามีอะไรเปลี่ยนแปลงค่าไปบ้าง ในที่นี้ มีการเปลี่ยนแปลงค่า count และนำมาแสดงผลที่ <code><span></code> ทำให้ React เปลี่ยนแปลงเฉพาะส่วนของ <code><span></code> ไม่ได้เปลี่ยนแปลงส่วนอื่นๆ</p>
+</aside>
+<aside class="special"><p><strong>TODO: </strong>ลองเพิ่มปุ่ม decrease เข้าไปเพื่อลดค่า count สิ !</p>
+</aside>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="เรียบร้อย !" duration="0">
+        <p>ขอแสดงความยินดีด้วย คุณได้สร้างเว็บแอพพลิเคชั่นโดยใช้ React JS สำเร็จแล้ว</p>
+<p>เราได้ลองสร้าง React component ขึ้นมาและลองแสดงข้อมูลของคอมโพเนนต์ และการปรับปรุงค่าพร้อมทั้งแสดงผลตามเหตุการณ์ที่ได้เกิดขึ้น นั่นคือการกดปุ่มเพิ่ม เพื่อเพิ่มค่าใน state ที่เก็บข้อมูลในคอมโพเนนต์ ทั้งยังเปลี่ยนแปลงคลาสของอิลิเมนท์ ให้เป็นไปตามเงื่อนไขที่กำหนดไว้</p>
+<p class="image-container"><img style="width: 624.00px" src="img\\65eac476b16c8998.png"></p>
+<h2 is-upgraded><strong>ข้อมูลเพิ่มเติม</strong></h2>
+<ul>
+<li><a href="https://reactjs.org/" target="_blank">Reactjs.org</a></li>
+<li><a href="https://getbootstrap.com/docs/4.4/getting-started/introduction/" target="_blank">Bootstrap</a></li>
+</ul>
+
+
+      </google-codelab-step>
+    
+  </google-codelab>
+
+  <script src="https://storage.googleapis.com/codelab-elements/native-shim.js"></script>
+  <script src="https://storage.googleapis.com/codelab-elements/custom-elements.min.js"></script>
+  <script src="https://storage.googleapis.com/codelab-elements/prettify.js"></script>
+  <script src="https://storage.googleapis.com/codelab-elements/codelab-elements.js"></script>
+  <script src="//support.google.com/inapp/api.js"></script>
+
+</body>
+</html>

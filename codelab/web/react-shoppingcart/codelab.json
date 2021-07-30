@@ -1,0 +1,27 @@
+{
+  "environment": "web",
+  "format": "html",
+  "prefix": "https://storage.googleapis.com",
+  "mainga": "UA-49880327-14",
+  "updated": "2021-07-30T13:25:28Z",
+  "id": "react-shoppingcart",
+  "duration": 40,
+  "title": "React JS React Shoppingcart Application",
+  "authors": "Tanapattara Wongkhamchan",
+  "summary": "สร้างตระกร้าสินค้าด้วย react js เรียนรู้และใช้งานคอมโพเนนต์",
+  "source": "19oG0AIICxiPCZXKEZkbwQ8Kly9hQzpc2SHBPSeStrcs",
+  "theme": "web",
+  "status": [
+    "published"
+  ],
+  "category": [
+    "web"
+  ],
+  "tags": [
+    "react",
+    "web"
+  ],
+  "feedback": "https://github.com/tanapattara/web-programming-lab/issues",
+  "ga": "G-DSKNQHDNJK",
+  "url": "react-shoppingcart"
+}

@@ -1,0 +1,27 @@
+{
+  "environment": "web",
+  "format": "html",
+  "prefix": "https://storage.googleapis.com",
+  "mainga": "UA-49880327-14",
+  "updated": "2021-07-30T13:24:33Z",
+  "id": "react-composing-component",
+  "duration": 70,
+  "title": "React JS React Composing Component",
+  "authors": "Tanapattara Wongkhamchan",
+  "summary": "เรียนรู้คอมโพเนนต์ การส่งข้อมูลระหว่างคอมโพเนนต์ การใช้งาน prop และ state",
+  "source": "1mNO4j3kOO9Z_8xlY9syOnvN1XmK76_uTO5nj1GwifEU",
+  "theme": "web",
+  "status": [
+    "published"
+  ],
+  "category": [
+    "web"
+  ],
+  "tags": [
+    "react",
+    "web"
+  ],
+  "feedback": "https://github.com/tanapattara/web-programming-lab/issues",
+  "ga": "G-DSKNQHDNJK",
+  "url": "react-composing-component"
+}

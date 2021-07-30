@@ -1,0 +1,382 @@
+
+<!doctype html>
+
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+  <meta name="theme-color" content="#4F7DC9">
+  <meta charset="UTF-8">
+  <title>React JS React Composing Component</title>
+  <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Source+Code+Pro:400|Roboto:400,300,400italic,500,700|Roboto+Mono">
+  <link rel="stylesheet" href="//fonts.googleapis.com/icon?family=Material+Icons">
+  <link rel="stylesheet" href="https://storage.googleapis.com/codelab-elements/codelab-elements.css">
+  <style>
+    .success {
+      color: #1e8e3e;
+    }
+    .error {
+      color: red;
+    }
+  </style>
+</head>
+<body>
+  <google-codelab-analytics gaid="UA-49880327-14"></google-codelab-analytics>
+  <google-codelab codelab-gaid="G-DSKNQHDNJK"
+                  id="react-composing-component"
+                  title="React JS React Composing Component"
+                  environment="web"
+                  feedback-link="https://github.com/tanapattara/web-programming-lab/issues">
+    
+      <google-codelab-step label="เกี่ยวกับบทเรียน" duration="0">
+        <p class="image-container"><img style="width: 391.00px" src="img\\3bc001a2e8425ef7.png"></p>
+<p><strong>ปรับปรุงล่าสุด:</strong> 2020-06-12</p>
+<p>บทเรียนนี้เป็นการสร้าง รวม และส่งต่อข้อมูลของ React คอมโพเนนท์ (Component) อย่างง่าย ประกอบไปด้วยการสร้างคอมโพเนนท์ย่อจากข้อมูลวัตถุอาร์เรย์ ด้วยการทำซ้ำ ส่งข้อมูลวัตถุอาร์เรย์ไปยังคอมโพเนนท์ย่อย รวมถึงการอัพเตทข้อมูลคอมโพเนนต์ จากการเรียกใช้งานฟังชั่นข้ามคอมโพเนนท์ โดยใช้คอมโพเนนต์จากการทดลองก่อนหน้า มาประกอบเป็นคอมโพเนนท์ที่ซับซ้อน ดังรูป</p>
+<p class="image-container"><img style="width: 206.00px" src="img\\897fe55fdf0aea51.png"></p>
+<h2 is-upgraded><strong>การติดตั้ง React</strong></h2>
+<ol type="1" start="1">
+<li>ติดตั้ง Nodejs เวอร์ชั่นล่าสุดจากเว็บไซต์ <a href="http://www.nodejs.org" target="_blank"><paper-button class="colored" raised>nodejs.org</paper-button></a></li>
+<li>ติดตั้ง react โดยใช้คำสั่ง <code>npm i -g create-react-app</code>  จาก <code>command line</code></li>
+<li>ติดตั้ง <a href="https://code.visualstudio.com/download" target="_blank"><paper-button class="colored" raised>Visual Studio Code Editor</paper-button></a></li>
+<li>ติดตั้ง Visual Studio Code Extension - Simple React Snippets</li>
+<li>ติดตั้ง Visual Studio Code Extension - Prettier - Code Formatter (ตัวเลือกเพิ่มเติม)</li>
+</ol>
+<aside class="special"><p><strong>Note:</strong> เราสามารถตั้งค่าให้ Visual Studio Code ทำการปรับปรุงโค้ด (Format) ให้อยู่ในรูปแบบอัตโนมัติหลังจากการบันทึกโดยไปที่เมนู Settings เลือก Editor: Format On Save</p>
+</aside>
+<h2 is-upgraded><strong>สิ่งที่จะได้จากบทเรียน</strong></h2>
+<ul>
+<li>การสร้างและรวมคอมโพเนนท์</li>
+<li>การส่งข้อมูลและฟังชั่นระหว่างคอมโพเนนท์</li>
+</ul>
+<h2 is-upgraded><strong>ความรู้พื้นฐานก่อนการทำเลป</strong></h2>
+<ul>
+<li>HTML</li>
+<li>CSS</li>
+<li>JavaScript</li>
+<li>React JS</li>
+<li><a href="https://developer.chrome.com/devtools" target="_blank">Chrome DevTools</a>.</li>
+</ul>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="สร้างโปรเจคและนำเข้า bootstrap" duration="5">
+        <h2 is-upgraded><strong>สร้างโปรเจคใหม่</strong></h2>
+<p>สร้างโปรเจคใหม่ ตั้งชื่อว่า counter-app ไว้ในโฟลเดอร์ที่ต้องการ</p>
+<pre><code>create-react-app counterlist-app</code></pre>
+<p>เปิดโปรเจค โดยใช้คำสั่ง <code>cd counter-app</code> และ <code>code .</code> ตามลำดับ</p>
+<pre><code>cd counterlist-app
+code .</code></pre>
+<h2 is-upgraded><strong>นำ ฺBootstrap เข้าสู่โปรเจค</strong></h2>
+<p>ที่ Visual Studio Code เปิด Terminal และลง bootstrap โดยใช้คำสั่ง</p>
+<pre><code>npm i bootstrap</code></pre>
+<p>ทำการเพิ่ม bootstrap เข้าไปยังแแอพของเรา โดยเปิด <code>index.js</code> และเพิ่มคำสั่ง</p>
+<p><code>index.js</code></p>
+<pre><code>...
+import &#34;bootstrap/dist/css/bootstrap.css&#34;;
+...</code></pre>
+<aside class="special"><p><strong>Note: </strong>เราสามารถเปิดไฟล์ใน Visual Studio Code อย่างรวดเร็วโดยการกดปุ่มลัด <code>ctrl + p</code> จะปรากฎช่องขึ้นมา ให้พิมพ์ชื่อไฟล์ที่เราต้องการ เช่น <code>index.js</code> แล้วกด <code>enter</code> จะทำให้เราเปิดไฟล์ได้โดยที่ไม่ต้องไปเปิดหาที่แทบด้านซ้ายมือ</p>
+</aside>
+<p>ทดสอบการทำงานด้วยคำสั่ง <code>npm start</code> จะพบว่าตัวหนังสือของเว็บได้เปลี่ยนไปเนื่องจากเราได้นำ boostrap มาใส่ลงไปในแอพพลิเคชั่นของเราแล้ว</p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="เตรียมคอมโพเนนต์" duration="5">
+        <h2 is-upgraded><strong>สร้างคอมโพเนนต์</strong></h2>
+<p>จากการทดลองครั้งก่อน <a href="https://reactjs.org/docs/react-component.html" target="_blank"><paper-button class="colored" raised>React Component</paper-button></a> เราได้ทำการสร้างคอมโพเนนต์ <code>counter</code> และสร้างฟังชั่นสำหรับการเพิ่มตัวนับ (counter) ที่ถูกเก็บไว้ใน state ของคอมโพเนนต์ โดนเี่สร้างไฟล์ใหม่ ชื่อว่า <code>counter.jsx</code> ในโฟลเดอร์ <code>src/components</code></p>
+<p><code>counter.jsx</code></p>
+<pre><code>import React, { Component } from &#34;react&#34;;
+
+class Counter extends Component {
+  state = {
+    count: 0,
+  };
+
+  handleIncrement = () =&gt; {
+    this.setState({ count: this.state.count + 1 });
+  };
+  render() {
+    return (
+      &lt;div&gt;
+        &lt;span className={this.getBadgeClasses()}&gt;{this.formatCount()}&lt;/span&gt;
+        &lt;button
+          onClick={this.handleIncrement}
+          className=&#34;btn btn-secondary btn-sm&#34;
+        &gt;
+          Increment
+        &lt;/button&gt;
+      &lt;/div&gt;
+    );
+  }
+
+  getBadgeClasses() {
+    let classes = &#34;badge m-2 &#34;;
+    classes += this.state.count === 0 ? &#34;badge-warning&#34; : &#34;badge-primary&#34;;
+    return classes;
+  }
+
+  formatCount() {
+    const { count } = this.state;
+    return count === 0 ? &#34;Zero&#34; : count;
+  }
+}
+
+export default Counter;</code></pre>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="สร้างคอมโพเนนต์สำหรับรวมคอมโพเนนต์ย่อย" duration="5">
+        <p>สร้างไฟล์ใหม่ เรียกว่า <code>counterlist.jsx</code> ไว้ในโฟลเดอร์ <code>src/components</code> ภายในเรียกใช้งาน คอมโพเนนต์ <code>counter</code> ที่เราสร้างไว้ก่อนหน้า โดยทำการ <code>import</code> และเรียกใช้งานเหมือนในหน้า <code>index.js</code></p>
+<p><code>counterlist.jsx</code></p>
+<pre><code>import React, { Component } from &#34;react&#34;;
+import Counter from &#34;./counter&#34;;
+
+class Counterlist extends Component {
+  state = {};
+  render() {
+    return (
+      &lt;div&gt;
+        &lt;Counter /&gt;
+        &lt;Counter /&gt;
+        &lt;Counter /&gt;
+      &lt;/div&gt;
+    );
+  }
+}
+
+export default Counterlist;</code></pre>
+<aside class="special"><p><strong>Note:</strong> หากเราติดตั้ง VS Code Extension ที่ชื่อ <a href="https://marketplace.visualstudio.com/items?itemName=burkeholland.simple-react-snippets" target="_blank">Simple React Snippets</a> เราสามารถใช้คำสั่งลัดโดยการพิมพ์</p>
+<ul>
+<li>imrc ตามดัวย tab เป็นคำสั่งลัดในการ import react คอมโพเนนต์</li>
+<li>พิมพ์ cc ตามตัว tab และพิมพ์ชื่อคลาส เป็นคำสั่งลัดในการสร้างคอมโพเนนต์ class </li>
+</ul>
+<p class="image-container"><img style="width: 610.00px" src="img\\e0157b429da51c61.gif"></p>
+</aside>
+<h2 is-upgraded><strong>เปลี่ยนการเรียกใช้คอมโพเนนต์</strong></h2>
+<p>ที่ไฟล <code>index.js</code> เปลี่ยนคำสั่งเรียกใช้คอมโพเนนต์จากเดิม จากการเรียนกใช้ counter เป็นการเรียกใช้คอมโพเนนต์ใหม่ counterlist</p>
+<p><code>index.js</code></p>
+<pre><code>//...
+import Counterlist from &#34;./components/counterlist&#34;;
+
+ReactDOM.render(&lt;Counterlist /&gt;, document.getElementById(&#34;root&#34;));</code></pre>
+<h2 is-upgraded><strong>ทดสอบการทำงาน</strong></h2>
+<p>เราจะเห็นว่า counterlist ที่มีคอมโพเนนต์ counter ย่ออยู่ภายใน แสดงคอมโพเนนต์ออกมาสามคอมโพเนนต์ตามที่เราได้มีการเรียกใช้ใน counterlist คอมโพเนนต์ ทดสอบการทำงานของปุ่มกด จะเห็นว่า แต่ละคอมโพเนนต์มีการทำงานแยกกัน นั่นคือ กดปุ่มที่คอมโพเนนต์ใด ก็จะทำการเพิ่มจำนวนนับที่คอมโพเนนต์นั้น</p>
+<p class="image-container"><img style="width: 190.00px" src="img\\390795545d3cebe3.png"></p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="เปลี่ยนมาสร้างคอมโพเนนต์โดยการวนซ้ำ" duration="10">
+        <p>หลังจากที่เรานำ counter ไปใส่ใน counterlist โดยเรนเดอร์คอมโพเนนต์ 3 ตัว ต่อไปลองใช้การวนซ้ำของวัตถุในการสร้าง แทนการเขียนคอโพเน้นลงไปโดยตรง (hard-code)</p>
+<p>สร้างอาร์เรย์ใน state</p>
+<pre><code>  state = {
+    counterlist: [
+      { id: 1, value: 0 },
+      { id: 2, value: 1 },
+      { id: 3, value: 2 },
+    ],
+  };</code></pre>
+<p>วนซ้ำเพื่อสร้างคอมโพเนนต์</p>
+<pre><code>render() {
+    return (
+      &lt;div&gt;
+        {this.state.counterlist.map((counter) =&gt; (
+          &lt;Counter key={counter.id} /&gt;
+        ))}
+      &lt;/div&gt;
+    );
+  }</code></pre>
+<p>คำสั่ง map จะเป็นการวนซ้ำข้อมูล counterlist โดยในแต่ละคอบจะแทนข้อมูลแต่ละตัวด้วยตัวแปร counter</p>
+<p>การวนซ้ำของ react component นั้น ทุกๆคอมโพเนนต์ที่สร้างขึ้น ต้องการ key ทำให้เราต้องใส่ค่า counter.id ลงไปเป็นค่า key</p>
+<aside class="warning"><p><strong>Caution:</strong> ทดสอบการสร้างคอมโพเนนต์โดยลบ key ออกจากคำสั่ง ให้เหลือเฉพาะ <code><Counter/></code> และลองทดสอบการทำงาน จะพบการแจ้งเดือนว่า ในลิสต์จะต้องมี key เพื่อให้สามารถอ้างถึงคอมโพเนนต์แต่ละตัวได้</p>
+<p class="image-container"><img style="width: 466.00px" src="img\\ebca4e65f3d1dbbb.png"></p>
+</aside>
+<h2 is-upgraded><strong>แสดงผลการทำงาน</strong></h2>
+<p>จะเห็นได้ว่า เราสามารถสร้างคอมโพเนนต์โดยการทำซ้ำจากข้อมูลของอาร์เรย์ได้ แต่หากสังเกตุจะพบว่าข้อมูล value ที่เราสร้างไว้ใน array เริ่มต้นที่ 0, 1, 2 ตามลำดับ เมื่อทดสอบการทำงาน ค่าที่พบจะเริ่มจาก 0 แต่คอมโพเนนต์ยังคงทำงานปรกติ เนื่องจากว่าขณะนี้คอมโพเนนต์ counter ยังใช้ข้อมูลจาก state ของตัวเองอยู่นั่นคือเริ่มจาก 0</p>
+<p class="image-container"><img style="width: 190.00px" src="img\\390795545d3cebe3.png"></p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="การส่งข้อมูลไปยังคอมโพเนนต์!" duration="10">
+        <p>หลังจากที่เราสร้างคอมโพเนนต์ย่อยโดยสร้างจากการทำซ้ำ และใส่คีย์ให้แต่ละคอมโพเนนต์เรียบร้อยแล้ว แต่เรายังไม่ได้ส่งข้อมูล value ไปยังคอมโพเนนต์ย่อย สังเกตุได้จากการทดลองครั้งที่แล้วที่ทุกครั้งค่าจะเริ่มจาก 0 ไม่ได้เริ่มจาก value ตามที่เรากำหนดไว้</p>
+<p>เพิ่ม property ให้กับคอมโพเนนต์ Counter ที่ไฟล์ <code>counterlist.jsx</code></p>
+<p><code>counterlist.jsx</code></p>
+<pre><code>render() {
+    return (
+      &lt;div&gt;
+        {this.state.counterlist.map((counter) =&gt; (
+          &lt;Counter key={counter.id} value={counter.value} /&gt;
+        ))}
+      &lt;/div&gt;
+    );
+  }</code></pre>
+<p>ตอนนี้คอมโพเนนต์ Counter จะมี property เพิ่มขึ้นมา จากการที่เราเขียนเพิ่มลงไปที่ counterlist.jsx ทำให้คอมโพเนนต์ Counter จะสามารถเรียกใช้งานหรืออ่านข้อมูลที่ถูกใส่มาได้ โดยใช้คำสั่ง <code>this.props</code></p>
+<p>กลับไปที่ <code>counter.jsx</code> เพิ่มคำสั่ง <code>this.props</code> เพื่อเรียกใช้ property ที่ถูกส่งมาโดยทำการตั้งค่า count ที่อยู่ภายใน state ด้วยคำสั่ง</p>
+<p><code>counter.jsx</code></p>
+<pre><code>  state = {
+    count: this.props.value,
+  };</code></pre>
+<p>ทดสอบการทำงาน ตอนนี้คอมโพเนนต์ counter ที่เป็นคอมโพเนนต์ย่อย ได้รับข้อมูลจาก counterlist เป็นที่เรียบร้อยแล้ว</p>
+<p class="image-container"><img style="width: 215.00px" src="img\\d5384caf13897158.png"></p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Prop VS State" duration="5">
+        <p>อย่างที่เราทราบในการทดลองก่อนหน้า State จะเป็นส่วนของการเก็บข้อมูลในแต่ละคอมโพเนนท์ ซึ่งแต่ละคอมโพเนนต์จะมี state เก็บข้อมูลไม่สามารถเข้าถึงได้จากคอมโพแนนท์ภายนอก</p>
+<p>Prop จะเป็นค่าที่เราได้รับจากคอมโพเนนท์ภายนอก เพื่อเรียกใช้ภายในคอมโพเนนท์ เราสามารถรับค่าจากภายนอกผ่าน Property ทั้งค่าเดี่ยว หรือวัตถุ รวมถึงรับฟังชั่นจากคอมโพเนนท์นอกได้อีกด้วย</p>
+<p>ถึงตอนนี้ เราส่งค่า value จาก counterlist มายัง counter  ผ่าน Prop  และเก็บไว้ใน state ของคอมโพเนนท์  counter</p>
+<p>การทำงานถึงตอนนี้ถูกต้อง เริ่มจากรับค่ามาจาก Prop  แล้วแสดงผล  หากมีการเปลี่ยนแปลงค่า  ก็ทำการเพิ่มค่าใน State  ปรกติ</p>
+<p>แต่ค่าที่  State ที่อยู่ใน counterlist ไม่ได้มีการเปลี่ยนแปลงไปด้วย ที่เราเห็นตัวเลขเปลี่ยนแปลงนั้นเป็นตัวเลขที่มาจาก state ของ counter ต่างหาก เราจะทดลองในหัวข้อถัดไป</p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="เพิ่มปุ่ม Reset" duration="10">
+        <p>เราจะทำการเพิ่มปุ่มสำหรับล้างข้อมูลใน counterlist ทั้งหมด ให้กลับไปเป็น zero โดยไปเพิ่มปุ่มที่คอมโพเนนต์ counterlist</p>
+<p><code>counterlist.jsx</code></p>
+<pre><code>&lt;button className=&#34;btn-warning btn-sm m-2&#34;&gt;Reset&lt;/button&gt;</code></pre>
+<p>จะได้ส่วนติดต่อใหม่มีลักษณะดังรูป</p>
+<p class="image-container"><img style="width: 204.00px" src="img\\1651918bc39168f7.png"></p>
+<p>สร้างคำสั่งสำหรับล้างข้อมูลใน state เรียกใช้ผ่าน onclick event</p>
+<p><code>counterlist.jsx</code></p>
+<pre><code>&lt;button className=&#34;btn-warning btn-sm m-2&#34; onClick={this.handleReset}&gt;
+          Reset
+        &lt;/button&gt;</code></pre>
+<p>สร้างฟังชั่น handleReset สำหรับเซ็ตค่า counterlist.value ทุกตัวให้กลายเป็น 0 โดยใช้คำสั่ง map ในการเรียกข้อมูลทั้งหมดจากอาร์เรย์ออกมา และกำหนดค่าให้กลายเป็น 0</p>
+<pre><code>handleReset = () =&gt; {
+    const _counterlist = this.state.counterlist.map((c) =&gt; {
+      c.value = 0;
+      return c;
+    });
+    this.setState({ _counterlist });
+  };</code></pre>
+<p>บันทึกและทดสอบการทำงาน จะพบว่าเมื่อกดปุ่ม reset แล้วไม่เกิดการเปลี่ยนแปลงขึ้น ทดสอบโดยใช้ chrome extension ที่ชื่อ <a href="https://chrome.google.com/webstore/detail/react-developer-tools/fmkadmapgofadopljbjfkapdkoienihi?hl=en" target="_blank">React Developer Tools</a> ลงแล้ว กด F12 จะปรากฏแทบ React เราสามารถดูข้อมูลของแต่ละคอมโพเนนท์ได้</p>
+<p>ตรวจสอบที่คอมโพเนนท์ counter ตัวแรก ได้มีการเพิ่มข้อมูล state เข้าไปเป็น 5 แล้ว หลังจากนั้นกดปุ่ม Reset แต่ค่าไม่เปลี่ยนแปลง แต่หากสังเกตุที่ข้อมูลทางด้านขวามือ จะเห็นว่า cointer:id 1, value: 0 นั่นคือมีการเปลี่ยนแปลงค่า value เป็น 0 แล้ว แต่ไม่มีการอัพเดตตัวเลขที่คอมโพเนนท์ counter</p>
+<p class="image-container"><img style="width: 624.00px" src="img\\2ad2dfc4e6bd0a97.png"></p>
+<p>เมื่อกลับไปดูที่คอมโพเนนท์ counter เราจะพบว่า เราแสดงตัวเลขจาก state ของคอมโพเนนท์ แต่ในตอนเริ่มแรก เราได้มีการใส่ค่าจาก prop ที่รับมาลงไปใน state จากคำสั่ง</p>
+<p><code>counter.jsx</code></p>
+<pre><code>  state = {
+    count: this.props.value,
+  };</code></pre>
+<p>ทั้งหมดนี้เนื่องจากเราเห็นการเปลี่ยนแปลงค่า ที่เกิดขึ้นใน state ของ counter เมื่อเราสั่งเปลี่ยนแปลงค่า state ใน counterlist เราที่ได้ส่งค่าไปที่ counter โดยใส่ข้อมูลไว้ที่ state คำสั่ง state นี้จะถูกเรียกเพียงครั้งแรกครั้งเดียว ในตอนสร้างคอมโพเนนท์ ทำให้เราไม่สามารใส่ค่าใหม่จากการ reset ค่าของเราใหม่ได้</p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="ปรับปรุงการรับส่งข้อมูล" duration="10">
+        <p>จากการที่เราส่งข้อมูล id และ value ไปยังคอมโพเนนท์ย่อยและเก็บไว้ที่ state ของแต่ละคอมโพเนนต์ เราจะส่งข้อมูลไปทั้งหมดเป็นวัตถุ counter ทั้งวัตถุแทน และแสดงผลผ่านการเรียกใช้ property ทีเดียวไม่ต้องเก็บลง state</p>
+<h2 is-upgraded>การ<strong>ส่งข้อมูล</strong></h2>
+<p>ที่ counterlist เปลี่ยน property ใหม่จากการส่งข้อมูลแบบเดิมทีละตัว <code>value={counter.value}</code> ให้ส่งข้อมูลวัตถุ counter ไปทั้งก้อน <code>counter={counter}</code></p>
+<p><code>counterlist.jsx</code></p>
+<pre><code>&lt;div&gt;
+   &lt;button className=&#34;btn-warning btn-sm m-2&#34; onClick={this.handleReset}&gt;
+          Reset
+   &lt;/button&gt;
+   {this.state.counterlist.map((counter) =&gt; (
+     &lt;Counter
+       key={counter.id}
+       //sent a single value
+       //value={counter.value}
+       //sent all obj
+       counter={counter}
+     /&gt;
+   ))}
+&lt;/div&gt;</code></pre>
+<h2 is-upgraded><strong>การรับข้อมูล</strong></h2>
+<p>หลังจากเราเปลี่ยน property ของ counter แล้ว การรับข้อมูลจะเปลี่ยนไป จากการรับแยกตาม property แต่เป็นการเรียกใช้ property ของก้อนข้อมูลวัตถุ ใหม่</p>
+<p>ลบ state ของคอมโพเนนท์ counter ออก เพราะเราจะใช้ข้อมูลที่เราได้รับจาก counterlist ผ่าน property อัพเดตส่วนการแสดงผลของฟังชั่น ให้เรียกผ่าน this.props แทน</p>
+<p><code>counter.jsx</code></p>
+<pre><code>  getBadgeClasses() {
+    let classes = &#34;badge m-2 &#34;;
+    classes +=
+      this.props.counter.value === 0 ? &#34;badge-warning&#34; : &#34;badge-primary&#34;;
+    return classes;
+  }
+
+  formatCount() {
+    const { value } = this.props.counter;
+    return value === 0 ? &#34;Zero&#34; : value;
+  }</code></pre>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="ปรับปรุงฟังชั่น  Increment" duration="10">
+        <p>เนื่องจากเราใช้ข้อมูล counterlist ที่เก็บไว้ใน state ของคอมโพเนนท์ counterlist ดังนั้น การที่ปุ่มเพิ่มค่า  ที่อยู่ในคอมโพเนนท์อื่น จะมาทำการเปลี่ยนแปลงค่านอกคอมโพเนนท์ counterlist ย่อมไม่สามารถทำได้ ข้อมูลของคอมโพเนนท์ใด ย่อควรให้คอมโพเนนท์นั้นเป็นคนจัดการ ดังนั้น เราจะทำการเพิ่มค่าให้กับตัวแปรที่คอมโพเนนท์ counterlist</p>
+<p>สร้างฟังชั่นเพิ่มค่า ให้กับ counterlist</p>
+<p><code>counterlist.jsx</code></p>
+<pre><code>handleIncrement = (counter) =&gt; {
+    console.log(counter);
+};</code></pre>
+<p>หลังจากนั้นทำการส่งฟังชั่น handleIncrement ไปที่คอมโพเนนท์ counter ผ่าน property</p>
+<p><code>counterlist.jsx</code></p>
+<pre><code>{this.state.counterlist.map((counter) =&gt; (
+          &lt;Counter
+            key={counter.id}
+            counter={counter}
+            onIncrement={this.handleIncrement}
+          /&gt;
+        ))}</code></pre>
+<p>เปลี่ยนการทำงานของปุ่ม Increment ที่คอมโพเนนท์ counter ให้เรียกใช้ฟังชั่นจาก property แทน</p>
+<p><code>counter.jsx</code></p>
+<pre><code>&lt;button className=&#34;btn btn-secondary btn-sm&#34;
+        onClick={() =&gt; this.props.onIncrement(this.props.counter)}&gt;
+   Increment
+&lt;/button&gt;</code></pre>
+<p>ทดสอบการทำงาน</p>
+<p class="image-container"><img style="width: 624.00px" src="img\\5a8a4b6a8601a0d3.png"></p>
+<p>จากการทดสอบผ่าน console.log เมื่อกดปุ่ม increment ที่คอมโพเนนท์แรก ที่ console จะแสดงข้อมูลคอมโพเนนท์ได้ถูกต้องตามที่เรากด นั่นก็คือ id: 1 และ value:0 เนื่องจากว่า ที่ฟังชั่น onClick ที่คอมโพเนนท์ counter เราเรียกใช้ onIncrement จาก property และส่งวัตถุ counter กลับมาทั้งก้อน จากคำสั่ง <code>this.props.onIncrement(this.props.counter)</code></p>
+<h2 is-upgraded><strong>ปรับปรุง onIncrement()</strong></h2>
+<p>ที่ฟังชั่น onIncrement เรารับค่า counter มาโดยเราทดสอบแสดง console.log(counter); แล้วให้ข้อมูลที่ถูกต้อง ต่อไปเราจะทำการอัพเดตค่าให้กับ counterlist ของเราโดยใช้คำสั่ง</p>
+<p>หลังจากนั้นทำการส่งฟังชั่น handleIncrement ไปที่คอมโพเนนท์ counter ผ่าน property</p>
+<p><code>counterlist.jsx</code></p>
+<pre><code>  handleIncrement = (counter) =&gt; {
+    // clone state.counter
+    const counterlist = [...this.state.counterlist];
+    // get array index by compair between counterlist and counter
+    const index = counterlist.indexOf(counter);
+    // clone data from counter to selected index
+    counterlist[index] = { ...counter };
+    // update value by 1
+    counterlist[index].value++;
+    // setState
+    this.setState({ counterlist });
+  };
+</code></pre>
+<p>ทดสอบการทำงาน</p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="เรียบร้อย !" duration="0">
+        <p>ขอแสดงความยินดีด้วย คุณได้สร้างเว็บแอพพลิเคชั่นโดยใช้ React JS สำเร็จแล้ว</p>
+<p>การทดลองเราได้รวมคอมโพเนนท์ย่อย และเรียกใช้เป็นคอมโพเนนท์เดียวกัน ผ่านคอมโพเนนท์ counterlist เราได้สร้างคอมโพเนนท์จากข้อมูลอาร์เรย์  ทำซ้ำตามจำนวนข้อมูล และส่งค่าไปยังคอมโพเนนท์ย่อย รวมถึงฟังชั่นเพื่อให้มีการอัพเดตข้อมูลระหว่างคอมโพเนนท์ด้วยกัน อีกทั้งยังใช้เครื่องมือในการตรวจสอบค่าภายในแต่ละคอมโพเนนท์  โดยใช้เครื่องมือ React Development Tools</p>
+<p class="image-container"><img style="width: 206.00px" src="img\\897fe55fdf0aea51.png"></p>
+<h2 is-upgraded><strong>กลับไปดูการทดลองก่อนหน้า</strong></h2>
+<ul>
+<li>เกี่ยวกับ React JS และการติดตั้ง</li>
+<li>การสร้าง React Component </li>
+</ul>
+<h2 is-upgraded><strong>ต่อไป</strong></h2>
+<h2 is-upgraded><strong>อ้างอิง</strong></h2>
+<ul>
+<li><a href="https://reactjs.org/" target="_blank">Reactjs.org</a></li>
+<li><a href="https://getbootstrap.com/docs/4.4/getting-started/introduction/" target="_blank">Bootstrap</a></li>
+</ul>
+
+
+      </google-codelab-step>
+    
+  </google-codelab>
+
+  <script src="https://storage.googleapis.com/codelab-elements/native-shim.js"></script>
+  <script src="https://storage.googleapis.com/codelab-elements/custom-elements.min.js"></script>
+  <script src="https://storage.googleapis.com/codelab-elements/prettify.js"></script>
+  <script src="https://storage.googleapis.com/codelab-elements/codelab-elements.js"></script>
+  <script src="//support.google.com/inapp/api.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,26 @@
+{
+  "environment": "web",
+  "format": "html",
+  "prefix": "https://storage.googleapis.com",
+  "mainga": "UA-49880327-14",
+  "updated": "2021-07-30T13:17:43Z",
+  "id": "react-component",
+  "duration": 105,
+  "title": "React JS React Component",
+  "authors": "Tanapattara Wongkhamchan",
+  "summary": "การติดตั้ง React, การสร้าง Component, การเรียกใช้งาน State, การสร้างและตรวจจับเหตุการณ์",
+  "source": "1P2mW8C11K5bT8Y5ApWeWXU5Hh9iEyn6eeqAkA0-qLPE",
+  "theme": "web",
+  "status": [
+    "published"
+  ],
+  "category": [
+    "web"
+  ],
+  "tags": [
+    "react",
+    "web"
+  ],
+  "ga": "G-DSKNQHDNJK",
+  "url": "react-component"
+}
