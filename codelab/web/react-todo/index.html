@@ -1,0 +1,676 @@
+
+<!doctype html>
+
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+  <meta name="theme-color" content="#4F7DC9">
+  <meta charset="UTF-8">
+  <title>React JS TODO Application</title>
+  <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Source+Code+Pro:400|Roboto:400,300,400italic,500,700|Roboto+Mono">
+  <link rel="stylesheet" href="//fonts.googleapis.com/icon?family=Material+Icons">
+  <link rel="stylesheet" href="https://storage.googleapis.com/codelab-elements/codelab-elements.css">
+  <style>
+    .success {
+      color: #1e8e3e;
+    }
+    .error {
+      color: red;
+    }
+  </style>
+</head>
+<body>
+  <google-codelab-analytics gaid="UA-49880327-14"></google-codelab-analytics>
+  <google-codelab codelab-gaid="G-DSKNQHDNJK"
+                  id="react-todo"
+                  title="React JS TODO Application"
+                  environment="web"
+                  feedback-link="https://github.com/tanapattara/react-shopping-cart/issues">
+    
+      <google-codelab-step label="เกี่ยวกับบทเรียน" duration="0">
+        <p class="image-container"><img style="width: 391.00px" src="img\\3bc001a2e8425ef7.png"></p>
+<p><strong>ปรับปรุงล่าสุด:</strong> 2021-06-12</p>
+<p>การทดลองนี้จะเป็นการสร้างแอพพลิเคชั่น Todo สำหรับบันทึกรายการที่ต้องทำลงในแอพ โดยกรอกรายละเอียดลงไปในกล่องรับข้อความเมื่อมีการกด add จะแสดงรายการด้านล่าง และยังสามารถกดปุ่ม ลบ และแก้ไขรายการได้อีกด้วย</p>
+<p>ด้วยความสามารถของ React ที่แยกการทำงานของหน้าจอออกเป็นคอมโพแนนท์ย่อย เราจะมาดูรายละเอียดการส่งข้อมูล และฟังก์ชั่นให้กับคอมโพแนนท์อื่น รวมถึงภาพรวมของโปรแกรม และการตกแต่งด้วย css</p>
+<p class="image-container"><img style="width: 624.00px" src="img\\55be503123ff3de7.png"></p>
+<h2 is-upgraded><strong>การติดตั้ง React</strong></h2>
+<ol type="1" start="1">
+<li>ติดตั้ง Nodejs เวอร์ชั่นล่าสุดจากเว็บไซต์ <a href="http://www.nodejs.org" target="_blank"><paper-button class="colored" raised>nodejs.org</paper-button></a></li>
+<li>ติดตั้ง react โดยใช้คำสั่ง <code>npm i -g create-react-app</code>  จาก <code>command line</code></li>
+<li>ติดตั้ง <a href="https://code.visualstudio.com/download" target="_blank"><paper-button class="colored" raised>Visual Studio Code Editor</paper-button></a></li>
+<li>ติดตั้ง Visual Studio Code Extension - ES7 React/Redux/GraphQL/React-Native snippets</li>
+<li>ติดตั้ง Visual Studio Code Extension - Prettier - Code Formatter (ตัวเลือกเพิ่มเติม)</li>
+</ol>
+<aside class="special"><p><strong>Note:</strong> เราสามารถตั้งค่าให้ Visual Studio Code ทำการปรับปรุงโค้ด (Format) ให้อยู่ในรูปแบบอัตโนมัติหลังจากการบันทึกโดยไปที่เมนู Settings เลือก Editor: Format On Save</p>
+</aside>
+<h2 is-upgraded><strong>สิ่งที่จะได้จากบทเรียน</strong></h2>
+<ul>
+<li>สร้างเว็บแอพพลิเคชั่น Todo อย่างง่ายโดยใช้ react</li>
+</ul>
+<h2 is-upgraded><strong>ความรู้พื้นฐานก่อนการทำเลป</strong></h2>
+<ul>
+<li>HTML</li>
+<li>CSS</li>
+<li>JavaScript</li>
+<li>React JS</li>
+<li><a href="https://developer.chrome.com/devtools" target="_blank">Chrome DevTools</a>.</li>
+</ul>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="สร้างเตรียมโปรเจค" duration="5">
+        <h2 is-upgraded><strong>สร้างโปรเจคใหม่</strong></h2>
+<p>สร้างโปรเจคใหม่ ตั้งชื่อว่า counter-app ไว้ในโฟลเดอร์ที่ต้องการ</p>
+<pre><code>Npx create-react-app react-todo-app</code></pre>
+<p>เปิดโปรเจค โดยใช้คำสั่ง <code>cd react-todo-app</code> และ <code>code .</code> ตามลำดับ</p>
+<pre><code>cd react-todo-app
+code .</code></pre>
+<p>แก้ไขไฟล์ที่ react เตรียมมาให้ โดยลบไฟล์ที่อยู่ในโฟลเดอร์ src ให้เหลือแค่ <code>App.cs, App.js, index.js</code></p>
+<p>ปรับแก้ไขข้อผิดพลาดจากการที่เราลบไฟล์ออกไป โดยไฟล์ที่เหลืออยู่ให้ดูการเรียกไฟล์ที่อ้างอิง หรือ <code>import</code> โดยต้องระวังไม่ให้ไปเรียกไฟล์ที่เราได้ลบออกไปแล้ว</p>
+<p><code>App.js</code></p>
+<pre><code>import &#34;./App.css&#34;;
+
+function App() {
+  return (
+    &lt;div className=&#34;App&#34;&gt;
+      &lt;div className=&#34;App&#34;&gt;
+        &lt;h1&gt;Todo app&lt;/h1&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  );
+}
+
+export default App;</code></pre>
+<p><code>index.js</code></p>
+<pre><code>cd react-todo-app
+code .</code></pre>
+<p>ทดสอบการทำงาน เราจะได้หน้าจอเปล่าแสดงชื่อโปรแกรมดังนี้</p>
+<p class="image-container"><img style="width: 614.00px" src="img\\f85ccd0f6669a72.png"></p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="เตรียมคอมโพแนนท์" duration="5">
+        <h2 is-upgraded><strong>สร้างคอมโพแนนท์</strong></h2>
+<p>ที่โฟลเดอร์ src สร้างโฟลเดอร์สำหรับเก็บคอมโพแนนท์ชื่อ components และสร้างไฟล์สำหรับคอมโพแนนท์ย่อยได้แก่</p>
+<ol type="1" start="1">
+<li><code>Todo.js</code></li>
+<li><code>TodoForm.js</code></li>
+<li><code>TodoList.js</code></li>
+</ol>
+<h2 is-upgraded><strong>สร้างฟอร์มสำหรับรับข้อมูลจากผู้ใช้</strong></h2>
+<p>สร้างฟอร์มสำหรับให้ผู้ใช้งานกรอกข้อมูลเข้าไปยังโปรแกรม เราใช้ input และ button ปุ่มสำหรับรับข้อมูล ที่ไฟล์ <code>TodoForm.js</code> เราจะได้คอมโพแนนท์ตามคำสั่งด้านล่าง</p>
+<p><code>TodoForm.js</code></p>
+<pre><code>import React, { useState } from &#34;react&#34;;
+
+function TodoForm() {
+  const [input, setInput] = useState(&#34;&#34;);
+  return (
+    &lt;form className=&#34;todo-form&#34;&gt;
+      &lt;input
+        type=&#34;text&#34;
+        placeholder=&#34;Add a todo&#34;
+        value={input}
+        name=&#34;text&#34;
+        className=&#34;todo-input&#34;
+      /&gt;
+      &lt;button className=&#34;todo-button&#34;&gt;Add todo&lt;/button&gt;
+    &lt;/form&gt;
+  );
+}
+
+export default TodoForm;</code></pre>
+<aside class="special"><p><strong>Track:</strong> หากเราติดตั้งส่วนขยายที่ชื่อ ES7 React/Redux/GraphQL/React-Native snippets เราสามารถพิมพ์ rfce คำสั่งลัดในการสร้าง react function</p>
+<p class="image-container"><img style="width: 610.00px" src="img\\6cf5227743495ece.png"></p>
+</aside>
+<p>ทดสอบการแสดงผล</p>
+<p>เราสร้างคอมโพแนนท์แล้ว ให้ลองใส่คอมโพแนนท์ที่เราสร้างขึ้นลงไปที่ <code>App.js</code> โดยทำการเรียกใช้คอมโพแนนท์ผ่านการ <code>import</code> และระบุตำแหน่งของไฟล์ในโฟลเดอร์ให้ถูกต้อง</p>
+<p><code>App.js</code></p>
+<pre><code>import &#34;./App.css&#34;;
+import TodoForm from &#34;./components/TodoForm&#34;;
+
+function App() {
+  return (
+    &lt;div className=&#34;App&#34;&gt;
+      &lt;div className=&#34;App&#34;&gt;
+        &lt;TodoForm /&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  );
+}
+
+export default App;</code></pre>
+<p class="image-container"><img style="width: 614.00px" src="img\\f9d502ee66da4b69.png"></p>
+<p>เมื่อทดสอบการกดปุ่ม เราจะเห็นได้ว่า หน้าจอได้มีการรีเฟรต ให้ทำการแก้ไขโดยสร้างฟังชั่นขึ้นมาตรวจจับเหตุการเมื่อมีการกดปุ่ม <code>submit</code></p>
+<p><code>TodoForm.js</code></p>
+<pre><code>...
+  const handleSubmit = (e) =&gt; {
+    e.preventDefault();
+  };
+...</code></pre>
+<p><code>TodoForm.js</code></p>
+<pre><code>...
+     &lt;form className=&#34;todo-form&#34; onSubmit={handleSubmit}&gt;
+...</code></pre>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="สร้างลิสต์" duration="10">
+        <p>ที่ไฟล์ TodoList.js ให้เราทำการใส่ <code>TodoForm</code> คอมโพแนนท์ที่เราได้เตรียมไว้เข้าไป โดยทำการสร้างคอมโพเนนท์ใหม่ดังนี้</p>
+<p><code>TodoList.js</code></p>
+<pre><code>import React, { useState } from &#34;react&#34;;
+import TodoForm from &#34;./TodoForm&#34;;
+
+function TodoList() {
+
+  return (
+    &lt;div&gt;
+      &lt;h1&gt;What is the plan for today ?&lt;/h1&gt;
+      &lt;TodoForm /&gt;
+    &lt;/div&gt;
+  );
+}
+
+export default TodoList;
+</code></pre>
+<p>ในคอมโพแนนท์</p>
+<p>เปลี่ยนหน้า <code>App.js</code> ให้แสดงผลคอมโพเนต์ <code>TodoList</code> แทนที่คอมโพแนนท์เดิม</p>
+<p><code>App.js</code></p>
+<pre><code>import &#34;./App.css&#34;;
+import TodoList from &#34;./components/TodoList&#34;;
+
+function App() {
+  return (
+    &lt;div className=&#34;App&#34;&gt;
+      &lt;div className=&#34;App&#34;&gt;
+        &lt;TodoList /&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  );
+}
+
+export default App;</code></pre>
+<p>ในตอนนี้เราจะมีคอมโพแนนท์อยู่สองตัว ที่หน้าหลักจะเป็น <code>TodoList</code> คอมโพแนนท์ ภายในมี <code>TodoForm</code> คอมโพแนนท์สำหรับรับข้อมูลจากผู้ใช้งาน</p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="สร้างฟังก์ชั่นและส่งพร็อพเพอร์ตี้" duration="20">
+        <p>ตอนนี้เรามีคอมโพแนนท์สามอัน แยกเป็น 1) คอมโพแนนท์สำหรับเก็บข้อความจากผู้ใช้งาน <code>TodoForm.js</code>  2) คอมโพแนนต์สำหรับแสดงผลข้อความจากผู้ใช้ <code>Todo.js</code> และสุดท้าย 3) คอมโพแนนท์ที่รวมสองคอมโพแนนท์แรกเข้าด้วยกัน <code>TodoList.js</code> ทำให้สามารถเขียนรูปได้ตามภาพ</p>
+<p class="image-container"><img style="width: 624.00px" src="img\\e1215301b01d74e3.png"></p>
+<p>เราจะทำการนำข้อมูลจาก <code>TodoForm</code> มาแสดงที่ Todo ดังนั้น เราจำสร้างตัวแปรและฟังชั่นที่ <code>TodoList</code> ที่ใช้สำหรับเก็บข้อมูลและส่งไปให้คอมโพแนนต์ย่อยทั้ง <code>TodoForm</code> และ <code>Todo</code> ใช้งาน</p>
+<p>ที่ไฟล์ <code>TodoList.js</code> เราจะสร้างฟังก์ชั่นสำหรับดึงข้อมูลจาก input แล้วทำการเซ็ตค่าที่ได้ลง state ของคอมโพแนนท์ <code>TodoList</code> ดังนั้น เราจะส่งฟังก์ชั่นดังกล่าวไปเป็นพร๊อพเพอร์ตี้ ของ <code>TodoForm</code> เพื่อให้คอมโพแนนท์สามารถส่งค่าขึ้นมาที่ List ได้</p>
+<h2 is-upgraded><strong>สร้างตัวแปรใน state และฟังชั่น</strong></h2>
+<p>ที่ TodoList สร้าง state ชื่อ <code>todos</code> เพื่อใช้เก็บค่าที่ได้รับจากผู้ใช้งาน โดยให้กำหนดค่าเริ่มต้นเป็นแอร์เรย์เปล่า และสร้างฟังชั่น <code>addTodo</code> สำหรับส่งและให้ <code>TodoForm</code> เรียกใช้</p>
+<p><code>TodoList.js</code></p>
+<pre><code>const [todos, setTodos] = useState([]);
+
+const addTodo = (todo) =&gt; {
+    const newTodos = [todo, ...todos];
+
+    setTodos(newTodos);
+    console.log(todo);
+  };
+</code></pre>
+<p>จะเห็นว่า <code>addTodo</code> จะทำการรับค่า <code>Todo</code> เข้ามาและทำการใส่ลงไปแอร์เรย์ <code>todos</code> โดยใช้คำสั่ง <code>[todo, ...todos]</code> หลังจากนั้นทำการบันทึกลง <code>todos</code> ที่เป็น State ของคอมโพแนนต์ และทำการแสดงผลออกทาง log เพิ่มตรวจสอบการทำงาน</p>
+<p>ส่งฟังก์ชั่นไปยังคอมโพเนนท์ <code>TodoForm</code> ผ่านพร๊อพเพอร์ตี้ของ <code>TodoForm</code></p>
+<p><code>TodoList.js</code></p>
+<pre><code>return (
+    &lt;div&gt;
+      &lt;h1&gt;What is the plan for today ?&lt;/h1&gt;
+      &lt;TodoForm onSubmit={addTodo} /&gt;
+    &lt;/div&gt;
+  );</code></pre>
+<h2 is-upgraded><strong>รับพร๊อพเพอร์ตี้</strong></h2>
+<p>ที่ <code>TodoForm</code> เราจะทำการใช้งานพร๊อพเพอร์ตี้ที่เราส่งมาให้เรากำหนดใช้ props ที่ฟังชั่นก่อนด้วยคำสั่ง</p>
+<p><code>TodoForm.js</code></p>
+<pre><code>function TodoForm(props) {
+  ...
+ }</code></pre>
+<p>ที่ฟอร์ม เราเพิ่มเติมฟังชั่น <code>handleSubmit</code> โดยฟังชั่นนี้จะทำการเพิ่มข้อมูลใหม่ลงใน props โดยประกอบไปด้วย <code>id</code> และ <code>text</code> ในรูปแบบของแอร์เรย์</p>
+<p>โดย id จะทำการสุ่มจากฟังชั่นแรนด้อม ส่วนข้อมูล text ก็นำมาจากตัวแปร input ที่ถูกกำหนดไว้ที่กล่องรับข้อความ</p>
+<p><code>TodoForm.js</code></p>
+<pre><code>function TodoForm(props) {
+  
+  ...
+
+  const handleSubmit = (e) =&gt; {
+    e.preventDefault();
+
+    props.onSubmit({
+      id: Math.floor(Math.random * 10000),
+      text: input,
+    });
+
+    setInput(&#34;&#34;);
+  };
+  ...
+ }</code></pre>
+<p>ทดสอบการทำงานของเว็บไซด์ จะแสดงผลข้อมูลที่เราแอดเข้าไปผ่าน console</p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="แสดงข้อมูลที่คอมโพแนนท์" duration="15">
+        <p>ที่ไฟล์ <code>Todo.js</code> เราจะทำการแสดงข้อมูลที่เราได้ใส่ลงไปใน input โดยทำการดึงข้อมูลที่มีอยู่มาแสดงโดยการทำซ้ำของตัวแปร todo</p>
+<p>เราจะทำการส่งข้อมูลเอร์เรย์จาก <code>todos</code> มายังคอมโพแนนท์ todo เพื่อแสดงผล โดยประกาศรับพารามิเตอร์ที่ <code>function Todo({todos})</code></p>
+<p>ที่ return ให้ทำการทำซ้ำจากข้อมูลของ todos ที่เรารับมา โดยใช้คำสั่ง <code>map</code> เพื่อนำค่าทุกค่าในแอร์เรย์มาแสดงผล โดยประกอบไปด้วยตัวแปรสองตัว <code>todo</code> และ <code>index </code></p>
+<p>นำ todo ที่ได้ใส่ลองในอิลิเมนท์</p>
+<p><code>Todo.js</code></p>
+<pre><code>import React, { useState } from &#34;react&#34;;
+import TodoList from &#34;./TodoList&#34;;
+import { RiCloseCircleLine } from &#34;react-icons/ri&#34;;
+import { TiEdit } from &#34;react-icons/ti&#34;;
+
+function Todo({ todos }) {
+
+  return todos.map((todo, index) =&gt; (
+    &lt;div key={index} &gt;
+      &lt;div key={todo.id}&gt;
+        {todo.text}
+      &lt;/div&gt;
+
+      &lt;div className=&#34;icons&#34;&gt;
+        &lt;RiCloseCircleLine /&gt;
+        &lt;TiEdit /&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  ));
+}
+
+export default Todo;</code></pre>
+<p>เพิ่ม Todo ลงไปใน <code>TodoList</code> คอมโพแนนท์</p>
+<p><code>TodoList.js</code></p>
+<pre><code>...
+import Todo from &#34;./Todo&#34;;
+
+function TodoList() {
+  ...
+
+  return (
+    &lt;div&gt;
+      &lt;h1&gt;What is the plan for today ?&lt;/h1&gt;
+      &lt;TodoForm onSubmit={addTodo} /&gt;
+      &lt;Todo /&gt;
+    &lt;/div&gt;
+  );
+}
+
+export default TodoList;
+</code></pre>
+<h2 is-upgraded><strong>ส่ง todos ไปยังคอมโพแนนท์ todo เพื่อแสดงผล</strong></h2>
+<p>เพิ่มแอททริบิวท์ให้กับคอมโพเนนท์ แล้วสร้างพร้อพ์ที่ Todo เพื่อทำการรับข้อมูลเพื่อมาแสดงผล</p>
+<p><code>TodoList.js</code></p>
+<pre><code>  return (
+    &lt;div&gt;
+      &lt;h1&gt;What is the plan for today ?&lt;/h1&gt;
+      &lt;TodoForm onSubmit={addTodo} /&gt;
+      &lt;Todo todos={todos}/&gt;
+    &lt;/div&gt;
+  );</code></pre>
+<p>ทดสอบการทำงาน ตอนนี้เราจะสามารถใส่ข้อมูลลงไปในรายการได้แล้วตามภาพ</p>
+<p class="image-container"><img style="width: 613.00px" src="img\\2f758a0a69f0aa8d.png"></p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="เพิ่มปุ่มสำหรับแก้ไขและลบ" duration="10">
+        <p>ก่อนหน้านั้น ให้ทำการติดตั้ง <a href="https://react-icons.github.io/react-icons/" target="_blank">react-icons</a> ก่อน โดยใช้คำสั่ง</p>
+<pre><code>npm install react-icons</code></pre>
+<p><code>Todo.js</code></p>
+<pre><code>import React, { useState } from &#34;react&#34;;
+import TodoList from &#34;./TodoList&#34;;
+import { RiCloseCircleLine } from &#34;react-icons/ri&#34;;
+import { TiEdit } from &#34;react-icons/ti&#34;;
+
+function Todo({ todos }) {
+  ...
+  return todos.map((todo, index) =&gt; (
+    &lt;div key={index} &gt;
+      &lt;div key={todo.id}&gt;
+        {todo.text}
+      &lt;/div&gt;
+
+      &lt;div className=&#34;icons&#34;&gt;
+        &lt;RiCloseCircleLine /&gt;
+        &lt;TiEdit /&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  ));
+}
+
+export default Todo;</code></pre>
+<p class="image-container"><img style="width: 613.00px" src="img\\dccd70c63b3d3522.png"></p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="ปุ่มลบ" duration="20">
+        <p>เราจะสร้างเหตุการณ์ที่ปุ่มลบ ใช้สำหรับลบข้อมูลเมื่อมีการกดปุ่มลบออก โดยเราจะส่งฟังก์ชั่นมาจาก TodoList ที่ชื่อ <code>removeTodo</code> โดยเพิ่มพารามิตเตอร์ให้กับฟังชั่น <code>Todo({ todos, removeTodo })</code></p>
+<p>ที่คอมโพแนนท์ todo เพิ่มเหตุการณ์ <code>onClick</code> ให้กับปุ่มลบ เพิ่มให้ส่ง id ของ todo ที่เราต้องการลบกลับไป</p>
+<p><code>Todo.js</code></p>
+<pre><code>import React, { useState } from &#34;react&#34;;
+import TodoList from &#34;./TodoList&#34;;
+import { RiCloseCircleLine } from &#34;react-icons/ri&#34;;
+import { TiEdit } from &#34;react-icons/ti&#34;;
+
+function Todo({ todos, removeTodo }) {
+  ...
+  return todos.map((todo, index) =&gt; (
+    &lt;div key={index} &gt;
+      &lt;div key={todo.id}&gt;
+        {todo.text}
+      &lt;/div&gt;
+
+      &lt;div className=&#34;icons&#34;&gt;
+        &lt;RiCloseCircleLine onClick={() =&gt; removeTodo(todo.id)}/&gt;
+        &lt;TiEdit /&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  ));
+}
+
+export default Todo;</code></pre>
+<p>ที่ TodoList ให้สร้างฟังก์ชั่นสำหรับลย todo โดยสร้าง <code>removeTodo</code> เพื่อลบ todo ออกจาก state ที่ชื่อ todos โดยอ้างอิ่งจาก <code>todo.id</code></p>
+<p>ใช้คำสั่ง filter ของแอร์เรย์ เปลี่ยบเทียบข้อมูลที่มีอยู่ หาเป็น id ที่ถูกส่งมาจากคอมโพแนนท์ ก็ให้ทำการลบออก</p>
+<p><code>TodoList.js</code></p>
+<pre><code>  const removeTodo = (id) =&gt; {
+    const removedArr = [...todos].filter((todo) =&gt; todo.id !== id);
+    setTodos(removedArr);
+  };
+  
+   return (
+    &lt;div&gt;
+      &lt;h1&gt;What is the plan for today ?&lt;/h1&gt;
+      &lt;TodoForm onSubmit={addTodo} /&gt;
+      &lt;Todo todos={todos}
+            removeTodo={removeTodo}/&gt;
+    &lt;/div&gt;
+  );</code></pre>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="ปุ่มแก้ไข" duration="20">
+        <p>ที่ปุ่มแก้ไข เราจะทำการเก็บข้อมูลที่เราต้องการแก้ไขลงใน state ของคอมโพแนนท์ก่อน แล้วค่อยทำการอัพเดตขึ้นไปยัง todos </p>
+<p>ก่อนอื่นสร้าง state สำหรับเก็บข้อมูล</p>
+<p><code>Todo.js</code></p>
+<pre><code>import React, { useState } from &#34;react&#34;;
+import { RiCloseCircleLine } from &#34;react-icons/ri&#34;;
+import { TiEdit } from &#34;react-icons/ti&#34;;
+
+function Todo({ todos, removeTodo }) {
+  const [edit, setEdit] = useState({
+    id: null,
+    value: &#34;&#34;,
+  });
+
+  ...
+}
+
+export default Todo;</code></pre>
+<p>ต่อไปเราจะกำหนดเหตุการณ์ให้กับปุ่ม edit ของเรา เมื่อมีการกด ให้ทำการบันทึกข้อมูลลงใน state ก่อน</p>
+<p><code>Todo.js</code></p>
+<pre><code>import React, { useState } from &#34;react&#34;;
+import { RiCloseCircleLine } from &#34;react-icons/ri&#34;;
+import { TiEdit } from &#34;react-icons/ti&#34;;
+
+function Todo({ todos, removeTodo }) {
+  const [edit, setEdit] = useState({
+    id: null,
+    value: &#34;&#34;,
+  });
+
+  ...
+return todos.map((todo, index) =&gt; (
+    &lt;div key={index} &gt;
+      &lt;div key={todo.id} &gt;
+        {todo.text}
+      &lt;/div&gt;
+      &lt;div className=&#34;icons&#34;&gt;
+        &lt;RiCloseCircleLine
+          onClick={() =&gt; removeTodo(todo.id)}
+        /&gt;
+        &lt;TiEdit
+          onClick={() =&gt; setEdit({ id: todo.id, value: todo.text })}
+        /&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  ));
+
+}
+
+export default Todo;</code></pre>
+<p>ต่อไปเราจะให้คอมโพเนนต์ตรวจสอบว่า state ของเรามีข้อมูลหรือไม่ เนื่อจากตอนแรกเรากำหนดไว้ใน state ว่า <code>edit.id</code> มีค่าเท่ากับ null</p>
+<p>ตรวจสอบค่าใน state ผ่าน edit.id</p>
+<p><code>Todo.js</code></p>
+<pre><code>import React, { useState } from &#34;react&#34;;
+import TodoForm from &#34;./TodoForm&#34;;
+import { RiCloseCircleLine } from &#34;react-icons/ri&#34;;
+import { TiEdit } from &#34;react-icons/ti&#34;;
+
+function Todo({ todos, removeTodo }) {
+  ...
+  if (edit.id) {
+    return &lt;TodoForm edit={edit} onSubmit={submitUpdate} /&gt;;
+  }
+  ...
+}
+
+export default Todo;</code></pre>
+<p>คำสั่งด้านบนจะตรวจสอบค่า หากมีค่าเปลี่ยนแปลงจาก null นั่นคือผู้ใช้มีการกดปุ่ม edit ทำให้ state มีการเปลี่ยนแปลงค่าจากเดิม จะทำการส่งคอมโพแนนท์ TodoForm กลับ พร้อมกับเรียกใช้ฟังชั่น submitUpdate เมื่อกดยืนยัน และอย่าลืมเพิ่ม import TodoForm ในส่งหัวของไฟล์เพิ่มเรียกใช้งานคอมโพแนนท์ให้ถูกต้อง</p>
+<h2 is-upgraded><strong>เพิ่มคำสั่ง submitUpdate</strong></h2>
+<p><code>Todo.js</code></p>
+<pre><code>import React, { useState } from &#34;react&#34;;
+import TodoForm from &#34;./TodoForm&#34;;
+import { RiCloseCircleLine } from &#34;react-icons/ri&#34;;
+import { TiEdit } from &#34;react-icons/ti&#34;;
+
+function Todo({ todos, removeTodo, updateTodo }) {
+  ...
+  const submitUpdate = (value) =&gt; {
+    updateTodo(edit.id, value);
+    setEdit({
+      id: null,
+      value: &#34;&#34;,
+    });
+  };
+  if (edit.id) {
+    return &lt;TodoForm edit={edit} onSubmit={submitUpdate} /&gt;;
+  }
+  ...
+}
+
+export default Todo;</code></pre>
+<p>ที่ <code>submitUpdate</code> จะทำการอัพเดตค่า value โดยเรียกผ่านพร้อพเพอร์ตี้ <code>updateTodo</code> หลังจากส่งค่ากลับผ่านำพร๊อพเพอร์ตี้แล้ว ทำการเปลี่ยนค่า state ของคอมโพแนนท์ให้เป็นค่าว่างดังเดิม เพื่อให้ TodoForm หายไป</p>
+<p>สร้างฟังก์ชั่นที่ TodoList เพื่ออัพเดตรายการ todos ใน state และส่งพร๊อพเพอร์ตี้ให้กับ Todo คอมโพแนนท์</p>
+<p><code>TodoList.js</code></p>
+<pre><code>const updateTodo = (todoId, newValue) =&gt; {
+    setTodos((prev) =&gt;
+      prev.map((item) =&gt; (item.id === todoId ? newValue : item))
+    );
+  };
+
+...
+return (
+    &lt;&gt;
+      &lt;h1&gt;What&#39;s the Plan for Today?&lt;/h1&gt;
+      &lt;TodoForm onSubmit={addTodo} /&gt;
+      &lt;Todo
+        todos={todos}
+        removeTodo={removeTodo}
+        updateTodo={updateTodo}
+      /&gt;
+    &lt;/&gt;
+  );</code></pre>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="ตกแต่งด้วย CSS" duration="20">
+        <p>แก้ไข App.css เพื่อใช้สำหรับตกแต่งหน้าตาของแอพทั้งหมด</p>
+<p><code>App.css</code></p>
+<pre><code>.todo-app {
+  display: flex;
+  flex-direction: column;
+  justify-content: start;
+  width: 520px;
+  min-height: 600px;
+  background: #161a2b;
+  text-align: center;
+  margin: 128px auto;
+  border-radius: 10px;
+  padding-bottom: 32px;
+}</code></pre>
+<h2 is-upgraded><strong>App Component</strong></h2>
+<p>เพิ่ม Class ให้กับ div ของไฟล์ App.js</p>
+<p><code>App.js</code></p>
+<pre><code>function App() {
+  return (
+    &lt;div className=&#34;todo-app&#34;&gt;
+      &lt;TodoList /&gt;
+    &lt;/div&gt;
+  );
+}</code></pre>
+<h2 is-upgraded><strong>TodoForm Component</strong></h2>
+<p>ที่ TodoForm คอมโพแนนท์ ใส่คลาสให้กับอิลิเม้นต์ดังนี้</p>
+<p><code>TodoForm.js</code></p>
+<pre><code>&lt;form onSubmit={handleSubmit} className=&#34;todo-form&#34;&gt;
+&lt;input
+    placeholder=&#34;Add a todo&#34;
+    value={input}
+    onChange={handleChange}
+    name=&#34;text&#34;
+    className=&#34;todo-input&#34;
+    /&gt;
+&lt;button onClick={handleSubmit} className=&#34;todo-button&#34;&gt;
+     Add todo
+&lt;/button&gt;
+&lt;/form&gt;</code></pre>
+<p>เพิ่มคลาส todo-form, todo-input และ todo-button ใน App.css</p>
+<p><code>App.css</code></p>
+<pre><code>.todo-form {
+  margin-bottom: 32px;
+}
+.todo-input {
+  padding: 14px 32px 14px 16px;
+  border-radius: 4px 0 0 4px;
+  border: 2px solid #5d0cff;
+  outline: none;
+  width: 320px;
+  background: transparent;
+  color: #fff;
+}
+.todo-input::placeholder {
+  color: #e2e2e2;
+}
+.todo-button {
+  padding: 16px;
+  border: none;
+  border-radius: 0 4px 4px 0;
+  cursor: pointer;
+  outline: none;
+  background: linear-gradient(
+    90deg,
+    rgba(93, 12, 255, 1) 0%,
+    rgba(155, 0, 250, 1) 100%
+  );
+  color: #fff;
+  text-transform: capitalize;
+}</code></pre>
+<h2 is-upgraded><strong>Todo Component</strong></h2>
+<p>ที่คอมโพแนนท์ todo เอาไว้แสดงรายการ todos ทั้งหมดที่ได้บันทึกไว้ ให้เราเพิ่มคลาส <code>todo-row</code> เพื่อให้แสดงผลในรูปแบบรายการ และใส่คลาส สำหรับปุ่มกดแก้ไข และปุ่มลบ</p>
+<p><code>Todo.js</code></p>
+<pre><code>   &lt;div className=&#34;todo-row&#34; key={index}&gt;
+      &lt;div key={todo.id} onClick={() =&gt; completeTodo(todo.id)}&gt;
+        {todo.text}
+      &lt;/div&gt;
+      &lt;div className=&#34;icons&#34;&gt;
+        &lt;RiCloseCircleLine
+          onClick={() =&gt; removeTodo(todo.id)}
+          className=&#34;delete-icon&#34; /&gt;
+        &lt;TiEdit
+          onClick={() =&gt; setEdit({ id: todo.id, value: todo.text })}
+          className=&#34;edit-icon&#34; /&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;</code></pre>
+<p><code>App.css</code></p>
+<pre><code>.todo-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 4px auto;
+  color: #fff;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 118, 20, 1) 0%,
+    rgba(255, 84, 17, 1) 100%
+  );
+
+  padding: 16px;
+  border-radius: 5px;
+  width: 90%;
+}
+.icons {
+  display: flex;
+  align-items: center;
+  font-size: 24px;
+  cursor: pointer;
+}
+
+.delete-icon {
+  margin-right: 5px;
+  color: #fff;
+}
+
+.edit-icon {
+  color: #fff;
+}</code></pre>
+<h2 is-upgraded><strong>TodoList Component</strong></h2>
+<p>เรารวมคอมโพแนนท์ย่อยเอาไว้ที่ TodoList แล้ว ดังนั้น เราไม่จำเป็นต้องใส่คลาสเพื่อปรับแต่งรายละเอียดอะไรอีก</p>
+<p><code>TodoList.js</code></p>
+<pre><code>    &lt;&gt;
+      &lt;h1&gt;What&#39;s the Plan for Today?&lt;/h1&gt;
+      &lt;TodoForm onSubmit={addTodo} /&gt;
+      &lt;Todo
+        todos={todos}
+        removeTodo={removeTodo}
+        updateTodo={updateTodo}
+      /&gt;
+    &lt;/&gt;</code></pre>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="เรียบร้อย !" duration="0">
+        <p>ขอแสดงความยินดีด้วย คุณได้สร้างเว็บแอพพลิเคชั่นโดยใช้ React JS สำเร็จแล้ว</p>
+<p>ในการทดลองนี้เราสร้างแอพพลิเคชั่นสำหรับกดบันทึกรายการโดยใช้ React มีการใช้ state ในคอมโพแนนท์และการส่งผ่านพร๊อพเพอร์ตี้ไปยังคอมโพแนนท์อื่น ให้ได้ใช้งาน รวมถึงการใช้ไลบราลี่ react-icon ช่วยในการทำงาน</p>
+<p class="image-container"><img style="width: 624.00px" src="img\\55be503123ff3de7.png"></p>
+<h2 is-upgraded><strong>กลับไปดูการทดลองก่อนหน้า</strong></h2>
+<ul>
+<li>การติดตั้งและการสร้าง React JS Component</li>
+<li>การสร้าง React Composing Component </li>
+<li>React Shopping Cart</li>
+</ul>
+<h2 is-upgraded><strong>ต่อไป</strong></h2>
+<h2 is-upgraded><strong>อ้างอิง</strong></h2>
+<ul>
+<li><a href="https://reactjs.org/" target="_blank">Reactjs.org</a></li>
+<li><a href="https://react-icons.github.io/react-icons/" target="_blank">react-icons</a></li>
+</ul>
+
+
+      </google-codelab-step>
+    
+  </google-codelab>
+
+  <script src="https://storage.googleapis.com/codelab-elements/native-shim.js"></script>
+  <script src="https://storage.googleapis.com/codelab-elements/custom-elements.min.js"></script>
+  <script src="https://storage.googleapis.com/codelab-elements/prettify.js"></script>
+  <script src="https://storage.googleapis.com/codelab-elements/codelab-elements.js"></script>
+  <script src="//support.google.com/inapp/api.js"></script>
+
+</body>
+</html>

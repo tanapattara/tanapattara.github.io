@@ -13,6 +13,7 @@
 - [React component](/codelab/web/react-component/)
 - [React composing](/codelab/web/react-composing-component/)
 - [React Shopingcart](/codelab/web/react-shoppingcart/)
+- [React Todo](/codelab/web/react-todo/)
 
 ## Students Showcase
 
