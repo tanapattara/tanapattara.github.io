@@ -14,6 +14,7 @@
 - [React composing](/codelab/web/react-composing-component/)
 - [React Shopingcart](/codelab/web/react-shoppingcart/)
 - [React Todo](/codelab/web/react-todo/)
+- [React Weather application with API](/codelab/web/react-weather-api/)
 
 ## Students Showcase
 

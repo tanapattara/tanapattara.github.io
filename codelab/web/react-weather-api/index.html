@@ -1,0 +1,349 @@
+
+<!doctype html>
+
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+  <meta name="theme-color" content="#4F7DC9">
+  <meta charset="UTF-8">
+  <title>React JS TODO Application</title>
+  <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Source+Code+Pro:400|Roboto:400,300,400italic,500,700|Roboto+Mono">
+  <link rel="stylesheet" href="//fonts.googleapis.com/icon?family=Material+Icons">
+  <link rel="stylesheet" href="https://storage.googleapis.com/codelab-elements/codelab-elements.css">
+  <style>
+    .success {
+      color: #1e8e3e;
+    }
+    .error {
+      color: red;
+    }
+  </style>
+</head>
+<body>
+  <google-codelab-analytics gaid="UA-49880327-14"></google-codelab-analytics>
+  <google-codelab codelab-gaid="G-DSKNQHDNJK"
+                  id="react-weather-api"
+                  title="React JS TODO Application"
+                  environment="web"
+                  feedback-link="https://github.com/tanapattara/react-weather-api/issues">
+    
+      <google-codelab-step label="เกี่ยวกับบทเรียน" duration="0">
+        <p class="image-container"><img style="width: 391.00px" src="img\\3bc001a2e8425ef7.png"></p>
+<p><strong>ปรับปรุงล่าสุด:</strong> 2021-06-12</p>
+<p>เราจะได้เรียนรู้การใช้งาน React ดึงข้อมูลผ่านเว็บบริการเพื่อนำข้อมูลที่ได้มาแสดงผลที่แอพพลิเคชั่นของเรา รวมถึงการใช้งานไลบรารี่อื่นๆ ที่มีให้ใน React Library</p>
+<p class="image-container"><img style="width: 411.00px" src="img\\2b2a75d499694d02.png"></p>
+<h2 is-upgraded><strong>การติดตั้ง React</strong></h2>
+<ol type="1" start="1">
+<li>ติดตั้ง Nodejs เวอร์ชั่นล่าสุดจากเว็บไซต์ <a href="http://www.nodejs.org" target="_blank"><paper-button class="colored" raised>nodejs.org</paper-button></a></li>
+<li>ติดตั้ง react โดยใช้คำสั่ง <code>npm i -g create-react-app</code>  จาก <code>command line</code></li>
+<li>ติดตั้ง <a href="https://code.visualstudio.com/download" target="_blank"><paper-button class="colored" raised>Visual Studio Code Editor</paper-button></a></li>
+<li>ติดตั้ง Visual Studio Code Extension - ES7 React/Redux/GraphQL/React-Native snippets</li>
+<li>ติดตั้ง Visual Studio Code Extension - Prettier - Code Formatter (ตัวเลือกเพิ่มเติม)</li>
+</ol>
+<aside class="special"><p><strong>Note:</strong> เราสามารถตั้งค่าให้ Visual Studio Code ทำการปรับปรุงโค้ด (Format) ให้อยู่ในรูปแบบอัตโนมัติหลังจากการบันทึกโดยไปที่เมนู Settings เลือก Editor: Format On Save</p>
+</aside>
+<h2 is-upgraded><strong>สิ่งที่จะได้จากบทเรียน</strong></h2>
+<ul>
+<li>สร้างเว็บแอพพลิเคชั่น Weather อย่างง่ายโดยใช้ react ร่วมกับ </li>
+</ul>
+<h2 is-upgraded><strong>ความรู้พื้นฐานก่อนการทำเลป</strong></h2>
+<ul>
+<li>HTML</li>
+<li>CSS</li>
+<li>JavaScript</li>
+<li>React JS</li>
+<li><a href="https://developer.chrome.com/devtools" target="_blank">Chrome DevTools</a>.</li>
+</ul>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="สร้างโปรเจค" duration="5">
+        <h2 is-upgraded><strong>สร้างโปรเจคใหม่</strong></h2>
+<p>สร้างโปรเจคใหม่ ตั้งชื่อว่า counter-app ไว้ในโฟลเดอร์ที่ต้องการ</p>
+<pre><code>npx create-react-app react-weather-app</code></pre>
+<p>เปิดโปรเจค โดยใช้คำสั่ง <code>cd react-todo-app</code> และ <code>code .</code> ตามลำดับ</p>
+<pre><code>cd react-weather-app
+code .</code></pre>
+<p>ติดตั้ง library เพิ่มเติม</p>
+<pre><code>npm install semantic-ui-react semantic-ui-css
+npm install moment --save</code></pre>
+<p>นำเข้า semantic css ที่ไฟล์ <code>App.js</code></p>
+<p><code>App.js</code></p>
+<pre><code>import &#39;semantic-ui-css/semantic.min.css&#39;</code></pre>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="รับ API Key" duration="5">
+        <p>เราจะทำการดึงข้อมูลมาจาก API ก่อนที่เราจะทำได้ต้องมีกุญแจสำหรับเข้าถึงบริการก่อน ในการทดลองนี้เราจะดึงข้อมูลสภาพอากาศ จากเว็บไซต์ OpenWeatherMap ให้เราไปที่เว็บไซด์ <a href="https://openweathermap.org/" target="_blank">https://openweathermap.org/</a> ทำการสมัครสมาชิกให้เรียบร้อย</p>
+<p>ที่เมนู API เราจะเห็นบริการที่เว็บไซด์นี้เปิดให้เราใช้งาน จะมีเอกสาร API Doc ให้เรา เราสามารถศึกษาข้อมูลการใช้งาน API ต่างๆ ได้จากเมนูนี้</p>
+<p class="image-container"><img style="width: 624.00px" src="img\\a56f76e8eb7e3c58.png"></p>
+<p>สร้าง API Key ให้ไปที่เมนูชื่อเราและเลือก My API Key ให้เราสร้าง โดยการใส่ชื่อลงใน API Key name ทางขวามือ เป็นชื่อที่เราต้องการเรียกและกดปุ่ม Generate </p>
+<p>เราจะได้ Key ทางขวามือ เพื่อนำไปใช้งานในโปรแกรมของเรา</p>
+<p class="image-container"><img style="width: 624.00px" src="img\\d865b3847e56a36f.png"></p>
+<p>ที่โฟลเดอร์หลักของเรา ให้สร้างไฟล์ที่ชื่อ .env โดยนำ API Key ที่เราสร้างมาใส่ลงไป พร้อมกับใส่การตั้งค่าต่อไปนี้ </p>
+<p><code>.env</code></p>
+<pre><code>REACT_APP_API_URL = &#39;https://api.openweathermap.org/data/2.5&#39;
+REACT_APP_API_KEY = Paste your API key here.
+REACT_APP_ICON_URL = &#39;https://openweathermap.org/img/w&#39;</code></pre>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="เข้าถึงตำแหน่งของผู้ใช้" duration="10">
+        <p>นำเข้า useState และ useEffect จาก React Hook ในไฟล์ App.js</p>
+<p><code>App.js</code></p>
+<pre><code>import React, { useEffect, useState } from &#34;react&#34;;</code></pre>
+<p>สร้าง state สำหรับเก็บค่าตำแหน่งพิกัด</p>
+<p><code>App.js</code></p>
+<pre><code>const [lat, setLat] = useState([]);
+const [long, setLong] = useState([]);</code></pre>
+<p>สร้างฟังชั่นสำหรับดึงข้อมูลจากอุปกรณ์ เราจะเตรียมไว้สำหรับเรียกใช้งานเมื่อมีการเปิดแอพพลิเคชั่นขึ้นมาทำงาน</p>
+<p><code>App.js</code></p>
+<pre><code>useEffect(() =&gt; {
+    navigator.geolocation.getCurrentPosition(function(position) {
+      setLat(position.coords.latitude);
+      setLong(position.coords.longitude);
+    });
+
+    console.log(&#34;Latitude is:&#34;, lat)
+    console.log(&#34;Longitude is:&#34;, long)
+  }, [lat, long]);</code></pre>
+<p>ทดสอบการทำงานของแอพพลิเคชั่น โดยดูการแสดงผลผ่าน console โดยจะมีการขออนุญาติการเข้าถึงตำแหน่งจากผู้ใช้งานก่อน</p>
+<p class="image-container"><img style="width: 624.00px" src="img\\7e70ca5aff176f1c.png"></p>
+<p class="image-container"><img style="width: 624.00px" src="img\\40248af81f4be365.png"></p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="เรียกใช้ API" duration="20">
+        <p>ที่ OpenWeather เราจะเรียกใช้ API ทีชื่อ Current Weather Data โดยระบุตำแหน่งพิกัดที่เราได้จากผู้ใช้งานส่งไปยัง API ตามรายละเอียดที่ API กำหนดไว้ที่ <a href="https://openweathermap.org/current" target="_blank">Current weather data - OpenWeatherMap</a></p>
+<p><code>API call</code></p>
+<pre><code>api.openweathermap.org/data/2.5/weather?lat={lat}&amp;lon={lon}&amp;appid={API key}</code></pre>
+<p>ในการเรียกใช้งาน api เราจะใช้ url ตามที่กำหนดมาให้ โดยเราจะเปลี่ยนแปลงพารามิตเตอร์ ตามค่าที่เราต้องการ นั่นก็คือค่าพิกัดที่เราต้องการสภาพอากาศ และ API Key ที่เราได้จากการสร้างในหน้าเว็บ</p>
+<p>ทดสอบการเรียกใช้งาน โดยให้เราลง extension ที่ชื่อ REST Client เพื่อทำการทดสอบ</p>
+<p>สร้างไฟล์ request.http ในโฟลเดอร์ source เพื่อทดสอบการทำงาน</p>
+<p><code>API call</code></p>
+<pre><code>GET https://api.openweathermap.org/data/2.5/weather?lat=17.8262293&amp;lon=102.7427118&amp;appid={API key}</code></pre>
+<p>หลังจากนั้น คลิ๊กขวาที่ url และเลือก sent request จะได้รับข้อมูลจากเว็บบริการ API ตอบกลับมาในรูปแบบของ JSON ดังนี้</p>
+<p class="image-container"><img style="width: 624.00px" src="img\\dd2117c34315731.png"></p>
+<p>รูปทางขวาคือข้อมูลตอบกลับจากเว็บ API เป็นข้อมูลสภาพอากาศ ละรายละเอียดต่างๆเราจะนำข้อมูลนี้ไปแสดงผลที่เว็บไซด์ของเราอีกที</p>
+<p>เมื่อทดสอบการเรียกใช้งานว่า เราสามารถเรียกใช้งานได้ถูกต้อง และได้รับข้อมูลจากเว็บแล้ว ให้เราเพิ่มโค้ดของเราในไฟล์ App.js ส่วนของการดึงข้อมูลพิกัดสถานที่ หลังจากได้แล้วก็ส่งข้อมูลไปที่เว็บ API โดยเรียกผ่านตัวแปลที่เราสร้างไว้ในไฟล์ .env</p>
+<p><code>App.js</code></p>
+<pre><code>await fetch(`${process.env.REACT_APP_API_URL}/weather/?lat=${lat}&amp;lon=${long}&amp;units=metric&amp;APPID=${process.env.REACT_APP_API_KEY}`)
+      .then(res =&gt; res.json())
+      .then(result =&gt; {
+        setData(result)
+        console.log(result);
+      });</code></pre>
+<p>เราได้ใช้คำสั่ง fetch เรียกข้อมูลผ่าน url ที่เราได้กำหนดไว้ใน และได้มีการเพิ่มพารามิตเตอร์พิกัดและตำแหน่ง</p>
+<p>เมื่อเราได้ข้อมูล คำสั่งจะทำการแปลงข้อมูลที่ได้จาก API เก็บไว้ในตัวแปร result และทำการบันทึกลงไปใน state ที่ชื่อ data</p>
+<p class="image-container"><img style="width: 532.00px" src="img\\97b798a8acfd45b8.png"></p>
+<p>ที่ไฟล์ App.js เราจะได้ useEffect สำหรับการดึงข้อมูล API และการเก็บข้อมูลลง state ดังนี้</p>
+<p><code>App.js</code></p>
+<pre><code>  const [lat, setLat] = useState([]);
+  const [long, setLong] = useState([]);
+  const [data, setData] = useState([]);
+
+  useEffect(() =&gt; {
+    const fetchData = async () =&gt; {
+      navigator.geolocation.getCurrentPosition(function(position) {
+        setLat(position.coords.latitude);
+        setLong(position.coords.longitude);
+      });
+
+      await fetch(`${process.env.REACT_APP_API_URL}/weather/?lat=${lat}&amp;lon=${long}&amp;units=metric&amp;APPID=${process.env.REACT_APP_API_KEY}`)
+      .then(res =&gt; res.json())
+      .then(result =&gt; {
+        setData(result)
+        console.log(result);
+      });
+    }
+    fetchData();
+  }, [lat,long])
+  
+  return (
+    &lt;div className=&#34;App&#34;&gt;
+      
+    &lt;/div&gt;
+  );</code></pre>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="สร้างคอมโพแนนท์สำหรับแสดงผล" duration="10">
+        <p>ต่อไปเราจะเตรียมคอมโพแนนท์สำหรับแสดงผลสภาพอากาศจากข้อมูลที่เราได้รับมา ให้เราสร้างไฟล์ใหม่ชื่อ Weather.js โดยในคอมโพแนนท์นี้ใช้สำหรับแสดงผลอย่างเดียวเราสามารถสร้างเป็นแค่ฟังชั่นที่ใช้เก็บโครงสร้าง html สำหรับ render ก็เพียงพอ </p>
+<p>สร้างไฟล์ Weather.js ที่โพลเดอร์ components และทำการนำเข้า sematic-ui-react เพื่อใช้งาน css ที่เราได้ทำการติดตั้งไว้ตั้งแต่ตอนแรก</p>
+<p><code>Weather.js</code></p>
+<pre><code>import React from &#39;react&#39;
+import { Card } from &#39;semantic-ui-react&#39;
+
+const WeatherCard = ({weatherData}) =&gt; (
+  &lt;Card&gt;
+    &lt;Card.Content&gt;
+         &lt;Card.Header className=&#34;header&#34;&gt;City Name: {weatherData.name}&lt;/Card.Header&gt;
+    &lt;/Card.Content&gt;
+  &lt;/Card&gt;
+)
+
+export default WeatherCard</code></pre>
+<p>จะเห็นว่า เราสร้างตัวฟังก์ชั่นขึ้นมาในคอมโพแนนท์ แล้วทำการรับช้อมูลมาจากอาร์กูเม้นท์ที่ชื่อ weatherData และทำการนำไปแสดงผลชื่อเมืองโดยใช้คำสั่ง <code>weatherData.name</code></p>
+<p>ที่ App.js หลังจากที่ได้รับค่าช้อมูลจาก API และทำการบันทึกลง state แล้ว เราจะส่งค่าไปยังคอมโพเน้นท์ที่เราได้ทำการสร้างขึ้น โดยเราจะทำการเช็คก่อนว่า data.main มีข้อมูลจาก API แล้วหรือยัง</p>
+<p><code>App.js</code></p>
+<pre><code>    &lt;div className=&#34;App&#34;&gt;
+      {(typeof data.main != &#39;undefined&#39;) ? (
+        &lt;Weather weatherData={data}/&gt;
+      ): (
+        &lt;div&gt;&lt;/div&gt;
+      )}
+    &lt;/div&gt;</code></pre>
+<p>ทดสอบการทำงาน และดูการแสดงผลผ่านเว็บบราวเซอร์</p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="แปลงข้อมูลวันที่และแสดงผล" duration="5">
+        <p>จะเห็นได้ว่าข้อมูลพระอาทิตย์ขึ้น และตกนั้น เป็นข้อมูลตัวเลข ซึ่งไม่อยู่ในรูปแบบที่เราใช้งานทั่วไป ให้เราแปลงข้อมูลให้ตรงกับเวลาท้องถิ่งโดยใช้คำสั่ง toLocalTimeString</p>
+<p><code>Weather.js</code></p>
+<pre><code>&lt;p&gt;Sunrise: {new Date(weatherData.sys.sunrise * 1000).toLocaleTimeString(&#39;en-IN&#39;)}&lt;/p&gt;
+&lt;p&gt;Sunset: {new Date(weatherData.sys.sunset * 1000).toLocaleTimeString(&#39;en-IN&#39;)}&lt;/p&gt;</code></pre>
+<p>เรียกใช้ไลบรารี่ moment เพื่อใช้งานข้อมูลเวลาปัจจุบัน ผ่านคำสั่ง moment()</p>
+<p><code>Weather.js</code></p>
+<pre><code>import moment from &#39;moment&#39;;
+...
+        &lt;p&gt;Day: {moment().format(&#39;dddd&#39;)}&lt;/p&gt;
+        &lt;p&gt;Date: {moment().format(&#39;LL&#39;)}&lt;/p&gt;</code></pre>
+<p class="image-container"><img style="width: 624.00px" src="img\\6fb492855c0388e1.png"></p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="เพิ่มปุ่ม Refresh" duration="10">
+        <p>ต่อไปเราจะทำปุ่มรีเฟรสให้กับการ์ดของเรา เมื่อกดปุ่ม จะให้หน้าต่างวินโด้ทำการรีโหลดข้อมูลใหม่ โดยให้เราเพิ่มปุ่มลงไปในส่วนห้วของการ์ด ดังนี้</p>
+<p><code>Weather.js</code></p>
+<pre><code>...
+    &lt;Card.Content&gt;
+      &lt;Button
+        circular
+        color=&#34;blue&#34;
+        floated=&#34;right&#34;
+        size=&#34;mini&#34;
+        icon=&#34;refresh&#34;
+        onClick={refresh}
+      &gt;&lt;/Button&gt;
+      &lt;Card.Header&gt;
+        {weatherData.name} - &lt;strong&gt;{weatherData.weather[0].main}&lt;/strong&gt;{&#34; &#34;}
+      &lt;/Card.Header&gt;
+      &lt;Card.Meta&gt;Friends of Elliot&lt;/Card.Meta&gt;
+      &lt;Card.Description&gt;
+        &lt;p&gt;&lt;/p&gt;
+        &lt;p&gt;Temperature: {weatherData.main.temp} &amp;deg;C&lt;/p&gt;
+        &lt;p&gt;Humidity: {weatherData.main.humidity} %&lt;/p&gt;
+      &lt;/Card.Description&gt;
+    &lt;/Card.Content&gt;
+...</code></pre>
+<p>เราได้ทำการใส่เหตุการณ์ onClick ให้กับปุ่มที่สร้างขึ้น ต่อไปสร้าง ฟังก์ชั่น refresh เพื่อรองรับการทำงานของเหตุการณ์จากปุ่มที่สร้างขึ้น</p>
+<p><code>Weather.js</code></p>
+<pre><code>...
+  const refresh = () =&gt; {
+    window.location.reload();
+  };
+...</code></pre>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="เพิ่มหน้าจอโหลดข้อมูล" duration="10">
+        <p>ในกรณีที่เราทำการดึงข้อมูลจาก API บางครั้ง ยังไม่ได้ข้อมูลจาก API ทำให้ค่า data ยังเป็น undefined อยู่ ให้เราทำการตรวจสอบก่อนว่าค่าดังกล่าวได้รับข้อมูลมาจาก API หรือยัง หากว่ายังไม่มีข้อมูล ให้เรียกใช้ Loader ของ Semantic-ui</p>
+<p><code>App.js</code></p>
+<pre><code>import { Dimmer, Loader } from &#34;semantic-ui-react&#34;;
+
+...
+
+return (
+    &lt;div className=&#34;App&#34;&gt;
+      {typeof data.main != &#34;undefined&#34; ? (
+        &lt;Weather weatherData={data} /&gt;
+      ) : (
+        &lt;div&gt;
+          &lt;Dimmer active&gt;
+            &lt;Loader&gt;Loading..&lt;/Loader&gt;
+          &lt;/Dimmer&gt;
+        &lt;/div&gt;
+      )}
+    &lt;/div&gt;
+  );
+</code></pre>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="เพิ่มสัญลักษณ์ให้กับการ์ด" duration="10">
+        <p>เนื่องจากว่าสภาพอากาศที่เราได้ เราสามารถใส่รูปภาพเพื่อเพิ่มความสวยงามให้กับการ์ดของเรา แต่ตอนนี้เราจะใส่ไอคอนให้กับการ์ดของเราก่อน โดยทำการเพิ่มไลบรารี่ที่ชื่อว่า react-fontawesome และ free-solid-svg-icons</p>
+<p><code>terminal</code></p>
+<pre><code>npm install react-fontawesome
+npm install free-solid-svg-icons</code></pre>
+<p>หลังจากนั้นให้เราทำการ importไลบราลี่เข้าไปยังคอมโพเน้นท์ที่เราต้องการใช้</p>
+<p><code>Weather.js</code></p>
+<pre><code>import { FontAwesomeIcon } from &#34;@fortawesome/react-fontawesome&#34;;
+import {
+  faBolt,
+  faCloudShowersHeavy,
+  faSun,
+  faCloud,
+  faSmog,
+} from &#34;@fortawesome/free-solid-svg-icons&#34;;</code></pre>
+<p>เราได้ทำการนำเข้าไอคอลเรียบร้อยแล้ว ต่อไปทำการตรวจสอบค่าที่ได้จาก API ว่ามีสภาพอากาศเป็นอย่างไร แล้วทำการเก็บไอคอลไว้ในตัวแปร</p>
+<p><code>Weather.js</code></p>
+<pre><code>...
+  let weatherIcon = null;
+
+  if (weatherData.weather[0].main === &#34;Thunderstorm&#34;) {
+    weatherIcon = &lt;FontAwesomeIcon icon={faBolt} /&gt;;
+  } else if (weatherData.weather[0].main === &#34;Rain&#34;) {
+    weatherIcon = &lt;FontAwesomeIcon icon={faCloudShowersHeavy} /&gt;;
+  } else if (weatherData.weather[0].main === &#34;Clear&#34;) {
+    weatherIcon = &lt;FontAwesomeIcon icon={faSun} /&gt;;
+  } else if (weatherData.weather[0].main === &#34;Clouds&#34;) {
+    weatherIcon = &lt;FontAwesomeIcon icon={faCloud} /&gt;;
+  } else {
+    weatherIcon = &lt;FontAwesomeIcon icon={faSmog} /&gt;;
+  }
+...</code></pre>
+<p>หลังจากนั้น นำตัวแปรที่ได้ ไปใส่ในการ์ดในตำแหน่งที่เราต้องการ</p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="เรียบร้อย !" duration="0">
+        <p>ขอแสดงความยินดีด้วย คุณได้สร้างเว็บแอพพลิเคชั่นโดยใช้ React JS ทำการเชื่อมต่อไป ส่งข้อมูลตำแหน่งจากผู้ใช้งาน และรับค่าจากเว็บบริการ สำเร็จแล้ว</p>
+<p class="image-container"><img style="width: 411.00px" src="img\\2b2a75d499694d02.png"></p>
+<h2 is-upgraded><strong>กลับไปดูการทดลองก่อนหน้า</strong></h2>
+<ul>
+<li>การติดตั้งและการสร้าง React JS Component</li>
+<li>การสร้าง React Composing Component </li>
+<li>React Shopping Cart</li>
+</ul>
+<h2 is-upgraded><strong>ต่อไป</strong></h2>
+<h2 is-upgraded><strong>อ้างอิง</strong></h2>
+<ul>
+<li><a href="https://reactjs.org/" target="_blank">Reactjs.org</a></li>
+<li><a href="https://react.semantic-ui.com/" target="_blank">Semantic UI React</a></li>
+<li><a href="https://reactjs.org/docs/hooks-state.html" target="_blank">Using the State Hook – React (reactjs.org)</a></li>
+<li><a href="https://reactjs.org/docs/hooks-effect.html" target="_blank">Using the Effect Hook – React (reactjs.org)</a></li>
+</ul>
+
+
+      </google-codelab-step>
+    
+  </google-codelab>
+
+  <script src="https://storage.googleapis.com/codelab-elements/native-shim.js"></script>
+  <script src="https://storage.googleapis.com/codelab-elements/custom-elements.min.js"></script>
+  <script src="https://storage.googleapis.com/codelab-elements/prettify.js"></script>
+  <script src="https://storage.googleapis.com/codelab-elements/codelab-elements.js"></script>
+  <script src="//support.google.com/inapp/api.js"></script>
+
+</body>
+</html>
