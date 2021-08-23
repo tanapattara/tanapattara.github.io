@@ -1,0 +1,30 @@
+{
+  "environment": "web",
+  "format": "html",
+  "prefix": "https://storage.googleapis.com",
+  "mainga": "UA-49880327-14",
+  "updated": "2021-08-23T16:35:49Z",
+  "id": "node-js-crud-api",
+  "duration": 65,
+  "title": "Node.js with CRUD api",
+  "authors": "Tanapattara Wongkhamchan",
+  "summary": "สร้างแอพพลิเคชันบันทึกรายการที่ต้องทำด้วย react js เรียนรู้และใช้งานคอมโพแนนท์",
+  "source": "1sM6r1_EVXsHSt63Ns_-qmBJPVW6XElNzIs0w9c78xgE",
+  "theme": "web",
+  "status": [
+    "published"
+  ],
+  "category": [
+    "web"
+  ],
+  "tags": [
+    "api",
+    "crud",
+    "express",
+    "node",
+    "web"
+  ],
+  "feedback": "https://github.com/tanapattara/NodeJS-CRUD-api/issues",
+  "ga": "G-DSKNQHDNJK",
+  "url": "node-js-crud-api"
+}

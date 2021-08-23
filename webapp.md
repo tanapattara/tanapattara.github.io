@@ -15,6 +15,7 @@
 - [React Shopingcart](/codelab/web/react-shoppingcart/)
 - [React Todo](/codelab/web/react-todo/)
 - [React Weather application with API](/codelab/web/react-weather-api/)
+- [CRUD API with Express web framework for Node JS](/codelab/web/node-js-crud-api/)
 
 ## Students Showcase
 

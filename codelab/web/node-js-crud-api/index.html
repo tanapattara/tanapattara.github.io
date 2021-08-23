@@ -1,0 +1,261 @@
+
+<!doctype html>
+
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+  <meta name="theme-color" content="#4F7DC9">
+  <meta charset="UTF-8">
+  <title>Node.js with CRUD api</title>
+  <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Source+Code+Pro:400|Roboto:400,300,400italic,500,700|Roboto+Mono">
+  <link rel="stylesheet" href="//fonts.googleapis.com/icon?family=Material+Icons">
+  <link rel="stylesheet" href="https://storage.googleapis.com/codelab-elements/codelab-elements.css">
+  <style>
+    .success {
+      color: #1e8e3e;
+    }
+    .error {
+      color: red;
+    }
+  </style>
+</head>
+<body>
+  <google-codelab-analytics gaid="UA-49880327-14"></google-codelab-analytics>
+  <google-codelab codelab-gaid="G-DSKNQHDNJK"
+                  id="node-js-crud-api"
+                  title="Node.js with CRUD api"
+                  environment="web"
+                  feedback-link="https://github.com/tanapattara/NodeJS-CRUD-api/issues">
+    
+      <google-codelab-step label="เกี่ยวกับบทเรียน" duration="0">
+        <p class="image-container"><img style="width: 365.00px" src="img\\2732b6d30208c6d6.png"></p>
+<p><strong>ปรับปรุงล่าสุด:</strong> 2021-08-12</p>
+<p>ในการทดลองนี้ เราจะลองสร้าง API เป็นของตนเอง คุณสมบัติที่สำคัญของ NodeJS ที่ใช้ในการทำงานฝั่ง server นั่นก็คือ Asynchronous นึกถึงร้านอาหาร ที่ประกอบไปด้วยห้องครัว พนักงานเสริฟอาหาร และลูกค้า หากมีลูกค้าเข้ามาที่ร้านสองคน พนักงานเสริฟรับออร์เดอร์ลูกค้าคนแรก แล้วนำไปส่งที่ห้องครัวเพื่อทำอาหาร หลักจากที่ส่งรายการอาหารแล้ว พนักงานเสริฟไม่ต้องรอให้ห้องครัวทำเมนูเสร็จก่อน แต่พนักงานสามารถเดินมารับออร์เดอร์จากลูกค้าคนที่สองได้เลย เราเรียกการทำงานแบบนี้ว่า Non-blocking หรือ Asynchronous ซึ่ง node ทำงานในลักษณะนี้ คือไม่จำเป็นต้องรอกระบวนการใดๆให้เสร็จสิ้นสมบูรณ์ก่อน ก็สามารถทำงานอื่นต่อได้ ทำให้ 1 thread สามารถรองรับหลายๆ request จาก client ได้ โดยที่ไม่ต้องเพิ่ม hardware </p>
+<p>เราจะสร้างเว็บบริการรองรับการทำงานร่วมกันข้อมูลที่เราเรียกว่า CRUD ที่มาจาก Create Read Update Delete ฐานข้อมูล ใช้ร่วมกัน HTTP Request Methods ประกอบไปด้วย GET POST PUT DELETE ในการทำปฏิบัติการ CRUD ข้อมูลสำหรับบริการที่เรียกว่า RESTful Service</p>
+<h2 is-upgraded><strong>การติดตั้ง</strong></h2>
+<ol type="1" start="1">
+<li>ติดตั้ง Nodejs เวอร์ชั่นล่าสุดจากเว็บไซต์ <a href="http://www.nodejs.org" target="_blank"><paper-button class="colored" raised>nodejs.org</paper-button></a></li>
+<li>ติดตั้ง Postman app สำหรับทดสอบการเรียกใช้งาน API ที่ <a href="https://www.postman.com/downloads/" target="_blank"><paper-button class="colored" raised>Postman</paper-button></a></li>
+</ol>
+<aside class="special"><p><strong>Note:</strong> เราสามารถตั้งค่าให้ Visual Studio Code ทำการปรับปรุงโค้ด (Format) ให้อยู่ในรูปแบบอัตโนมัติหลังจากการบันทึกโดยไปที่เมนู Settings เลือก Editor: Format On Save</p>
+</aside>
+<h2 is-upgraded><strong>สิ่งที่จะได้จากบทเรียน</strong></h2>
+<ul>
+<li>โครงสร้างและการทำงานของ node.js</li>
+<li>การสร้างและการเรียกใช้ node.js</li>
+<li>การเรียกใช้ module ของ node.js</li>
+<li>การสร้างตัวแปรภายใน module</li>
+</ul>
+<h2 is-upgraded><strong>ความรู้พื้นฐานก่อนการทำเลป</strong></h2>
+<ul>
+<li>JavaScript</li>
+<li><a href="https://developer.chrome.com/devtools" target="_blank">Chrome DevTools</a>.</li>
+</ul>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="สร้างโปรเจค" duration="5">
+        <p>สร้างโฟลเดอร์ที่เราต้องการ และเพิ่มคำสั่งลงไปที่ยังตำแหน่งของโฟลเดอร์แอพที่เราสร้างขึ้น</p>
+<pre><code>npm init</code></pre>
+<p>จะมีข้อความขึ้นมาให้เราต้องค่า ชื่อโปรเจค เลขเวอร์ชั่น โดยเราสามารถข้ามไปได้โดยการกด enter หรือจะกรอกข้อมูลรายละเอียดของโปรเจคลงไปได้</p>
+<p class="image-container"><img style="width: 624.00px" src="img\\fd7ffbacd15e30d2.png"></p>
+<p>คำสั่งข้างบนเราจะได้ <code>package.json</code> บรรจุแพกเก็จเริ่มต้นให้เรา ต่อจากนั้นให้เราทำการเพิ่มแพกเก็จที่เราจะใช้งานในโปรเจคโดยใช้คำสั่ง</p>
+<pre><code>npm install express --save
+npm install body-parser --save
+npm install mysql --save
+npm install --save-dev nodemon</code></pre>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="สร้าง API" duration="10">
+        <p>ให้เราสร้างไฟล์ที่ชื่อ <code>index.js</code> ที่โฟลเดอร์ของโปรเจคและใส่คำสั่งในการเรียกใช้งานเว็บบริการจาก express โดยใช้คำสั่ง</p>
+<p><code>index.js</code></p>
+<pre><code>const express = require(&#34;express&#34;);
+const bodyParser = require(&#34;body-parser&#34;);
+
+const app = express();
+// Setup server port
+const port = process.env.PORT || 8000;
+
+// parse requests of content-type: application/json
+app.use(bodyParser.json());
+
+// parse requests of content-type: application/x-www-form-urlencoded
+app.use(bodyParser.urlencoded({ extended: true }));</code></pre>
+<p>สร้างเส้นทางให้กับเซอร์เวอร์ในครั้งแรก โดยกำหนดเส้นทางเริ่มต้นนั่นคือ <code>/</code> และแสดงข้อความออกมา</p>
+<p><code>index.js</code></p>
+<pre><code>// simple route
+app.get(&#34;/&#34;, (req, res) =&gt; {
+  res.json({ message: &#34;Hello world&#34; });
+});
+
+// listen for requests
+app.listen(port, () =&gt; {
+  console.log(`Server is listening on http://localhost:${port}`);
+});</code></pre>
+<p>เริ่มทดสอบการทำงานโดบใช้คำสั่งที่เทอร์มิเนอร์ <code>node index.js</code></p>
+<p><code>terminal</code></p>
+<pre><code>node index.js</code></pre>
+<p class="image-container"><img style="width: 624.00px" src="img\\9d2560bdc01d4f6e.png"></p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="สร้างฐานข้อมูล" duration="10">
+        <p>สร้างไฟล์สำหรับเขื่อมต่อฐานข้อมูลในโฟลเดอร์ <code>app/config</code> ชื่อไฟล์ <code>db.config.js</code> กำหนดที่อยู่ของฐานข้อมูล ชื่อและรหัสผ่านสำหรับเข้าใช้งาน และสุดท้าย ชื่อฐานข้อมูลที่เราจะใช้</p>
+<p><code>db.config.js</code></p>
+<pre><code>module.exports = {
+  HOST: &#34;localhost&#34;,
+  USER: &#34;root&#34;,
+  PASSWORD: &#34;&#34;,
+  DB: &#34;nodejsapi&#34;
+};</code></pre>
+<p>ใส่สร้างฐานข้อมูลใน phpmyadmin ให้เรียบร้อย กำหนดชื่อและพาสเวิร์สให้ถูกต้องสำหรับการเข้าใช้งาน</p>
+<p>สร้างไฟล์ <code>db.js</code> ไว้ในโฟลเดอร์ <code>app/models</code> สำหรับใช้ในการเชื่อมต่อฐานข้อมูลผ่านการตั้งค่าที่กำหนดไว้</p>
+<p><code>db.js</code></p>
+<pre><code>const mysql = require(&#34;mysql&#34;);
+const dbConfig = require(&#34;../config/db.config.js&#34;);
+
+// Create a connection to the database
+const connection = mysql.createConnection({
+  host: dbConfig.HOST,
+  user: dbConfig.USER,
+  password: dbConfig.PASSWORD,
+  database: dbConfig.DB,
+});
+
+// open the MySQL connection
+connection.connect((error) =&gt; {
+  if (error) throw error;
+  console.log(&#34;Successfully connected to the database.&#34;);
+});
+
+module.exports = connection;</code></pre>
+<p>เรียกใช้ mysql packet ทีเ่ราได้ทำการติดตั้งไว้ตั้งแต่ตอนแรก แล้วเรียกใช้การตั้งค่าจากไฟล์ <code>db.config.js</code> เพื่อใช้ในการเชื่อมต่อฐานข้อมูลผ่านคำสั่ง <code>createConnection</code></p>
+<p>หากทำการเชื่อมต่อฐานข้อมูลสำเร็จ จะแสดงข้อความผ่าน <code>console.log</code> เพื่อแสดงผลการทำงาน</p>
+<p>เราจะทำการส่งตัวแปร <code>connection</code> ที่ได้เชื่อมต่อฐานข้อมูลแล้ว ออกไปใช้กับโมดูลอื่นๆ</p>
+<p>ให้เราสร้างตารางในฐานข้อมูลประกอบไปด้วย ไอดี ชื่อ รหัสนักศึกษา และสาขา สำหรับเก็บข้อมูลนักศึกษาในฐานข้อมูลที่เราได้ทำการเชื่อมต่อ</p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="สร้างโมเดล" duration="10">
+        <p>เราจะสร้างไฟล์ <code>student.model.js</code> ขึ้นมาในโฟลเดอร์ <code>app/models</code> แทนนักศึกษาที่เราใช้เก็บข้อมูล ประกอบไปด้วย ชื่อ รหัสนักศึกษา และสาขา โดยประกาศไว้ใน constructor ของโมเดล</p>
+<p><code>student.model.js</code></p>
+<pre><code>const sql = require(&#34;./db.js&#34;);
+
+// constructor
+const Student = function (student) {
+  this.studentid = student.studentid;
+  this.name = student.name;
+  this.major = student.major;
+};
+
+module.exports = Student;</code></pre>
+<p>ที่โมเดลนี้ เราจะเก็บคำสั่งสำหรับใช้ในการทำงานร่วมกับฐานข้อมูล ผ่านฟังก์ชั่นที่เราสร้างขึ้น ตอนนี้เราจะลองดึงข้อมูลนักศึกษาจากตาราง ดังนั้นเราจะสร้างคำสั่งสำหรับแสดงข้อมูลของนักศึกษาในตาราง</p>
+<p>สร้างฟังก์ชั่น <code>getAll</code> สำหรับดึงข้อมูลจากฐานข้อมูล ต่อจากคำสั่ง constructor</p>
+<p><code>student.model.js</code></p>
+<pre><code>...
+
+Student.getAll = (result) =&gt; {
+  sql.query(&#34;SELECT * FROM Students&#34;, (err, res) =&gt; {
+    if (err) {
+      console.log(&#34;error: &#34;, err);
+      result(null, err);
+      return;
+    }
+
+    console.log(&#34;Students: &#34;, res);
+    result(null, res);
+  });
+};
+
+module.exports = Student;</code></pre>
+<p>จะเห็นว่า ภายในเป็นคำสั่ง sql command ในการดึงข้อมูลจากฐานข้อมูลผ่านคำสั่ง <code>SELECT * FROM [TABLENAME]</code></p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="สร้างคอนโทรลเลอร์" duration="10">
+        <p>เราจะสร้างคอลโทรลเลอร์สำหรับบรรจุกระบวนการ หรือขั้นตอนวิธีในการทำงานของเรา ในการจัดการข้อมูลในแต่ละขั้นตอน แยกออกจากกันตามแนวคิด MVC</p>
+<p>ให้เราสร้างไฟล์ <code>student.controller.js</code> ในโฟลเดอร์ <code>app/controllers</code></p>
+<p>นำเข้าโมเดล student ที่เราสร้างไว้ และสร้างฟังก์ชั่นสำหรับดึงข้อมูลนักศึกษาทั้งหมด ให้เรียกใช้คำสั่งในโมเดล student</p>
+<p><code>student.conntroller.js</code></p>
+<pre><code>const Student = require(&#34;../models/student.model.js&#34;);
+
+// Retrieve all Student from the database.
+exports.findAll = (req, res) =&gt; {
+  Student.getAll((err, data) =&gt; {
+    if (err)
+      res.status(500).send({
+        message:
+          err.message || &#34;Some error occurred while retrieving students.&#34;,
+      });
+    else res.send(data);
+  });
+};</code></pre>
+<p>เหมื่อมีการเรียกใช้คำสั่งจากโมเดลผ่านฟังก์ชั่น <code>getAll</code> จะมีการเช็คผลการทำงาน หากมีข้อผิดพลาดจาก server จะได้รหัสเป็น 500 ทำให้เรากำหนดให้ส่งข้อความแจ้งข้อผิดพลาดในการทำงาน</p>
+<p>หากไม่ใช่รหัส 500 แล้วให้ทำการส่งข้อมูลที่ได้กลับผ่านตัวแปร์ res</p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="สร้างเส้นทาง" duration="10">
+        <p>เมื่อสร้างการเชื่อมต่อไปยังฐานข้อมูลแล้ว เราจะต้องสร้างเส้นทาง หรือ route สำหรับให้ผู้ใช้งานเรียกใช้ผ่าน url ที่เราต้องระบุ</p>
+<p>ตอนนี้เรามีแค่คำสั่งดึงข้อมูลจากฐานข้อมูลนักศึกษาอย่างเดียวเท่านั้น ดังนั้นเราจะสร้างเส้นทางสำหรับดึงข้อมูลนักศึกษา</p>
+<p>ในการสร้างเส้นทางนั้น เราต้องกำหนดชื่อของบริการให้ผู้ใช้งานเข้าใจได้ง่าย เมื่อเห็น url ที่จะเรียกใช้แล้วต้องสื่อถึงการส่งค่ากลับของบริการนั้นๆ อย่างเช่น เราจะส่งค่ากลับเป็นค่านักศึกษา เราต้องตั้งค่าเส้นทางเป็นชื่อ students เป็นต้น</p>
+<p>ทำให้เราได้เส้นทางสำหรับดึงข้อมูลนักศึกษาคือ</p>
+<pre><code>/student</code></pre>
+<p>ให้เราสร้างไฟล์ <code>student.routes.js</code> ในโฟลเดอร์ <code>app/routes</code> และเรียกใช้งานคอนโทรลเลอร์ <code>student</code> ผ่านคำสั่ง <code>student.findAll</code> สำหรับเส้นทาง /student</p>
+<p><code>student.routes.js</code></p>
+<pre><code>module.exports = (app) =&gt; {
+  const student = require(&#34;../controllers/student.controller.js&#34;);
+
+  // Retrieve all student
+  app.get(&#34;/student&#34;, student.findAll);
+
+};</code></pre>
+<p>หลักจากนั้นตั้งค่า <code>index.js</code> ให้เรียกใช้งาน <code>student.routes.js</code> เพื่อให้ express ทราบถึงเส้นทางที่เรากำหนดไว้ในชื่อ <code>/student</code></p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="ทดสอบการทำงานผ่าน POSTMAN" duration="10">
+        <p>ใช้โปรแกรม postman สำหรับทดสอบการเรียกใช้ api โดยเลือก <code>GET</code> และกำหนด URL ของ server ของเรานั่นคือ <code>localhost:8000</code> และเพิ่มเป็นเส้นทางที่เราได้กำหนดไว้เพื่อเรียกใช้บริการสำหรับดึงข้อมูลนักศึกษา <code>/student</code></p>
+<p>เราจะได้ <code>http://localhost:8000/student</code> หลังจากนั้นกด send ผลลัพท์จากการเรียกใช้ API จะแสดงข้างล่าง คือข้อมูลนักศึกษาที่เรามีในระบบ</p>
+<p class="image-container"><img style="width: 624.00px" src="img\\f1e517c2aa58f568.png"></p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="เรียบร้อย !" duration="0">
+        <p>ขอแสดงความยินดีด้วย คุณได้สร้างเว็บบริการโดยใช้ Node.JS ในการเข้าถึงข้อมูลในฐานข้อมูล ทั้งการสร้าง อ่าน ปรับปรุง และลบข้อมูลออกจากฐานข้อมู,</p>
+<p class="image-container"><img style="width: 624.00px" src="img\\f1e517c2aa58f568.png"></p>
+<h2 is-upgraded><strong>กลับไปดูการทดลองก่อนหน้า</strong></h2>
+<ul>
+<li>การติดตั้งและการสร้าง React JS Component</li>
+<li>การสร้าง React Composing Component </li>
+<li>React Shopping Cart</li>
+</ul>
+<h2 is-upgraded><strong>ต่อไป</strong></h2>
+<h2 is-upgraded><strong>อ้างอิง</strong></h2>
+<ul>
+<li><a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods" target="_blank">HTTP request methods - HTTP | MDN (mozilla.org)</a></li>
+<li><a href="https://expressjs.com/" target="_blank">Express - Node.js web application framework (expressjs.com)</a></li>
+</ul>
+
+
+      </google-codelab-step>
+    
+  </google-codelab>
+
+  <script src="https://storage.googleapis.com/codelab-elements/native-shim.js"></script>
+  <script src="https://storage.googleapis.com/codelab-elements/custom-elements.min.js"></script>
+  <script src="https://storage.googleapis.com/codelab-elements/prettify.js"></script>
+  <script src="https://storage.googleapis.com/codelab-elements/codelab-elements.js"></script>
+  <script src="//support.google.com/inapp/api.js"></script>
+
+</body>
+</html>
