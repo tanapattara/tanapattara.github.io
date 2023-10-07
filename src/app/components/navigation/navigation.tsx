@@ -1,15 +1,14 @@
 "usen client";
+import Link from "next/link";
 import styles from "./navigation.module.css";
 
 export default function NavigationBar() {
   return (
     <>
-      <nav
-        className={`navbar navbar-expand-lg navbar-light bg-light ${styles.navbarModule}`}
-      >
+      <nav className={`navbar navbar-expand-lg navbar-light bg-light `}>
         <div className="container">
           <a className="navbar-brand" href="#">
-            Tanapattara
+            Tanapattara_
           </a>
           <button
             className="navbar-toggler"
@@ -28,9 +27,13 @@ export default function NavigationBar() {
           >
             <ul className={`navbar-nav mr-auto ${styles.navbarMenu}`}>
               <li className="nav-item active">
-                <a className="nav-link" href="#">
-                  Home <span className="sr-only"></span>
-                </a>
+                <Link
+                  href="http://cis.kku.ac.th"
+                  target="blank"
+                  className="nav-link"
+                >
+                  CIS
+                </Link>
               </li>
               <li className="nav-item dropdown">
                 <a
@@ -47,26 +50,31 @@ export default function NavigationBar() {
                 </a>
                 <ul className="dropdown-menu dropdown-menu-end">
                   <li>
-                    <a className="dropdown-item" href="#">
+                    <Link href="/oop" className="dropdown-item">
                       Object Oriented Programming
-                    </a>
+                    </Link>
                   </li>
                   <li>
-                    <a className="dropdown-item" href="#">
+                    <Link href="/web" className="dropdown-item">
                       Frontend Web Development
-                    </a>
+                    </Link>
                   </li>
                   <li>
-                    <a className="dropdown-item" href="#">
+                    <Link href="/mobile" className="dropdown-item">
                       Native Mobile Development
-                    </a>
+                    </Link>
+                  </li>
+                  <li>
+                    <Link href="/itsec" className="dropdown-item">
+                      Information Technology Security and IT Laws
+                    </Link>
                   </li>
                 </ul>
               </li>
               <li className="nav-item">
-                <a className="nav-link disabled" href="#">
+                <Link href="/about" className="nav-link disabled">
                   About
-                </a>
+                </Link>
               </li>
             </ul>
           </div>
