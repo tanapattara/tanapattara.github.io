@@ -1,12 +1,13 @@
-import Image from "next/image";
-import styles from "./page.module.css";
-
-import { useEffect } from "react";
+"use client";
+import AppAppBar from "./components/AppAppBar";
+import PageLayout from "./components/layouts/page_layout";
 
 export default function Home() {
   return (
-    <>
-      <h1>Hello World_</h1>
-    </>
+    <PageLayout>
+      <>
+        <h1>Hello World_</h1>
+      </>
+    </PageLayout>
   );
 }
