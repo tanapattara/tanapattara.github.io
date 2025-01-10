@@ -25,7 +25,7 @@ import WebIcon from "@mui/icons-material/Web";
 import PhoneAndroidIcon from "@mui/icons-material/PhoneAndroid";
 import SecurityIcon from "@mui/icons-material/Security";
 import CodeIcon from "@mui/icons-material/Code";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 
 const drawerWidth = 240;
@@ -44,8 +44,8 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
-  const [open, setOpen] = useState(!isMobile);
+  const isDesktop = useMediaQuery(theme.breakpoints.up("md"));
+  const [open, setOpen] = useState(isDesktop);
 
   const handleDrawerToggle = () => {
     setOpen(!open);
@@ -88,98 +88,46 @@ export default function AdminLayout({
         </Toolbar>
       </AppBar>
 
-      {/* Desktop/Tablet Drawer */}
-      {!isMobile && (
-        <Drawer
-          variant="permanent"
-          open={open}
-          sx={{
-            width: open ? drawerWidth : theme.spacing(7),
-            flexShrink: 0,
-            whiteSpace: "nowrap",
+      <Drawer
+        variant={isDesktop ? "permanent" : "temporary"}
+        open={open}
+        onClose={isDesktop ? undefined : handleDrawerToggle}
+        sx={{
+          width: drawerWidth,
+          flexShrink: 0,
+          whiteSpace: "nowrap",
+          boxSizing: "border-box",
+          "& .MuiDrawer-paper": {
+            width: drawerWidth,
             boxSizing: "border-box",
-            "& .MuiDrawer-paper": {
-              width: open ? drawerWidth : theme.spacing(7),
-              boxSizing: "border-box",
-              overflowX: "hidden",
-              transition: theme.transitions.create("width", {
-                easing: theme.transitions.easing.sharp,
-                duration: theme.transitions.duration.enteringScreen,
-              }),
-            },
-          }}
-        >
-          <Toolbar />
-          <Divider />
-          <List>
-            {menuItems.map((item) => (
-              <Link
-                key={item.text}
-                href={item.path}
-                style={{ textDecoration: "none", color: "inherit" }}
-              >
-                <ListItem disablePadding>
-                  <ListItemButton
-                    sx={{
-                      minHeight: 48,
-                      justifyContent: open ? "initial" : "center",
-                      px: 2.5,
-                    }}
-                  >
-                    <ListItemIcon
-                      sx={{
-                        minWidth: 0,
-                        mr: open ? 3 : "auto",
-                        justifyContent: "center",
-                      }}
-                    >
-                      {item.icon}
-                    </ListItemIcon>
-                    <ListItemText
-                      primary={item.text}
-                      sx={{ opacity: open ? 1 : 0 }}
-                    />
-                  </ListItemButton>
-                </ListItem>
-              </Link>
-            ))}
-          </List>
-        </Drawer>
-      )}
-
-      {/* Mobile Drawer */}
-      {isMobile && (
-        <Drawer
-          variant="temporary"
-          open={open}
-          onClose={handleDrawerToggle}
-          sx={{
-            "& .MuiDrawer-paper": {
-              width: drawerWidth,
-              boxSizing: "border-box",
-            },
-          }}
-        >
-          <Toolbar />
-          <Divider />
-          <List>
-            {menuItems.map((item) => (
-              <Link
-                key={item.text}
-                href={item.path}
-                style={{ textDecoration: "none", color: "inherit" }}
-              >
-                <ListItem disablePadding>
-                  <ListItemButton>
-                    <ListItemIcon>{item.icon}</ListItemIcon>
-                    <ListItemText primary={item.text} />
-                  </ListItemButton>
-                </ListItem>
-              </Link>
-            ))}
-          </List>
-        </Drawer>
-      )}
+            overflowX: "hidden",
+            transition: theme.transitions.create("width", {
+              easing: theme.transitions.easing.sharp,
+              duration: theme.transitions.duration.enteringScreen,
+            }),
+          },
+        }}
+      >
+        <Toolbar />
+        <Divider />
+        <List>
+          {menuItems.map((item) => (
+            <Link
+              key={item.text}
+              href={item.path}
+              style={{ textDecoration: "none", color: "inherit" }}
+              onClick={isDesktop ? undefined : handleDrawerToggle}
+            >
+              <ListItem disablePadding>
+                <ListItemButton>
+                  <ListItemIcon>{item.icon}</ListItemIcon>
+                  <ListItemText primary={item.text} />
+                </ListItemButton>
+              </ListItem>
+            </Link>
+          ))}
+        </List>
+      </Drawer>
 
       <Box
         component="main"
