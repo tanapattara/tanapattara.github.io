@@ -1,6 +1,7 @@
 import GoogleAdsense from "./components/GoogleAdsense";
+import AdminLayout from "./components/AdminLayout";
+import ThemeRegistry from "./components/ThemeRegistry";
 import "./globals.css";
-
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -15,10 +16,12 @@ export default function RootLayout({
 }) {
   return (
     <html lang="th">
-      <body>
-        <div className="container">{children}</div>
+      <body style={{ margin: 0 }}>
+        <ThemeRegistry>
+          <AdminLayout>{children}</AdminLayout>
+        </ThemeRegistry>
+        <GoogleAdsense />
       </body>
-      <GoogleAdsense />
     </html>
   );
 }
