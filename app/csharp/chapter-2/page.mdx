@@ -1,0 +1,115 @@
+# บทที่ 2: ชนิดข้อมูลและตัวแปร
+
+## 2.1 ชนิดข้อมูลพื้นฐาน (Primitive Data Types)
+
+ภาษา C# มีชนิดข้อมูลพื้นฐานที่แบ่งออกตามลักษณะการใช้งาน ดังนี้
+
+**ชนิดข้อมูลตัวเลขจำนวนเต็ม** ใช้สำหรับเก็บตัวเลขที่ไม่มีทศนิยม ซึ่งมีหลายขนาดให้เลือกใช้ตามความเหมาะสม เช่น `byte` (0 ถึง 255), `short` (-32,768 ถึง 32,767), `int` (-2,147,483,648 ถึง 2,147,483,647) และ `long` สำหรับตัวเลขขนาดใหญ่มาก
+
+**ชนิดข้อมูลตัวเลขทศนิยม** ใช้สำหรับเก็บตัวเลขที่มีจุดทศนิยม เช่น `float` (ความแม่นยำ 7 หลัก), `double` (ความแม่นยำ 15-16 หลัก) และ `decimal` (ความแม่นยำสูงสุด 28-29 หลัก เหมาะสำหรับการคำนวณทางการเงิน)
+
+**ชนิดข้อมูลอื่นๆ** ได้แก่ `bool` สำหรับค่าความจริง (true/false), `char` สำหรับตัวอักษรเดี่ยว และ `string` สำหรับข้อความ
+
+```csharp
+using System;
+
+namespace DataTypesDemo
+{
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            // ชนิดข้อมูลตัวเลขจำนวนเต็ม
+            byte studentAge = 20;
+            int studentID = 6501001234;
+            long nationalID = 1100100123456;
+
+            // ชนิดข้อมูลตัวเลขทศนิยม
+            float temperature = 36.5f;      // ต้องใส่ f ท้าย
+            double distance = 384400.75;
+            decimal price = 1299.99m;       // ต้องใส่ m ท้ายสำหรับ decimal
+
+            // ชนิดข้อมูลอื่นๆ
+            bool isEnrolled = true;
+            char grade = 'A';
+            string studentName = "สมชาย ใจดี";
+
+            // แสดงผลข้อมูล
+            Console.WriteLine($"ชื่อนักศึกษา: {studentName}");
+            Console.WriteLine($"รหัสนักศึกษา: {studentID}");
+            Console.WriteLine($"อายุ: {studentAge} ปี");
+            Console.WriteLine($"เกรด: {grade}");
+            Console.WriteLine($"ลงทะเบียนแล้ว: {isEnrolled}");
+            Console.WriteLine($"ราคาตำรา: {price:N2} บาท");
+        }
+    }
+}
+```
+
+## 2.2 การประกาศตัวแปรและการใช้ var
+
+C# รองรับการประกาศตัวแปรแบบระบุชนิดข้อมูลชัดเจน และแบบให้ Compiler อนุมานชนิดข้อมูลเองผ่านคำสั่ง `var` อย่างไรก็ตาม `var` จะยังคงเป็น Strongly Typed กล่าวคือ เมื่อกำหนดค่าแล้ว ชนิดข้อมูลจะไม่สามารถเปลี่ยนแปลงได้
+
+```csharp
+// การประกาศตัวแปรแบบระบุชนิดข้อมูลชัดเจน
+int explicitInt = 100;
+string explicitString = "ข้อความ";
+
+// การประกาศตัวแปรแบบให้ Compiler อนุมานชนิดข้อมูล
+var inferredInt = 100;          // Compiler รู้ว่าเป็น int
+var inferredString = "ข้อความ"; // Compiler รู้ว่าเป็น string
+var inferredDouble = 3.14;      // Compiler รู้ว่าเป็น double
+
+// ตัวแปรค่าคงที่ (Constant)
+const double PI = 3.14159265;
+const int MAX_STUDENTS = 50;
+
+Console.WriteLine($"ค่า PI = {PI}");
+Console.WriteLine($"จำนวนนักศึกษาสูงสุด = {MAX_STUDENTS} คน");
+```
+
+## 2.3 การแปลงชนิดข้อมูล (Type Conversion)
+
+การแปลงชนิดข้อมูลใน C# มีสองแบบหลัก คือ การแปลงแบบนัยปริยาย (Implicit Conversion) ซึ่ง Compiler ดำเนินการให้อัตโนมัติเมื่อไม่มีความเสี่ยงที่ข้อมูลจะสูญหาย และการแปลงแบบชัดแจ้ง (Explicit Conversion หรือ Casting) ที่ผู้เขียนโปรแกรมต้องระบุเองเมื่ออาจเกิดการสูญเสียข้อมูล
+
+```csharp
+using System;
+
+namespace TypeConversionDemo
+{
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            // Implicit Conversion (อัตโนมัติ ไม่สูญเสียข้อมูล)
+            int intValue = 100;
+            long longValue = intValue;      // int -> long (ปลอดภัย)
+            double doubleValue = intValue;  // int -> double (ปลอดภัย)
+
+            Console.WriteLine($"int: {intValue}, long: {longValue}, double: {doubleValue}");
+
+            // Explicit Conversion (Casting ต้องระบุเอง อาจสูญเสียข้อมูล)
+            double pi = 3.14159;
+            int truncatedPi = (int)pi;  // ทศนิยมจะถูกตัดทิ้ง
+
+            Console.WriteLine($"double: {pi}, หลังแปลงเป็น int: {truncatedPi}");
+
+            // การแปลงโดยใช้ Convert Class (แนะนำสำหรับการแปลงจาก string)
+            string numberText = "2567";
+            int year = Convert.ToInt32(numberText);
+            double amount = Convert.ToDouble("1234.56");
+
+            Console.WriteLine($"ปี: {year}, จำนวนเงิน: {amount}");
+
+            // การแปลง string โดยใช้ Parse
+            int parsedNumber = int.Parse("99");
+            double parsedDouble = double.Parse("3.14");
+
+            // TryParse - ปลอดภัยกว่า เพราะไม่ throw Exception เมื่อแปลงไม่ได้
+            string input = "abc123";
+            bool success = int.TryParse(input, out int result);
+            Console.WriteLine($"แปลง '{input}' สำเร็จ: {success}, ผลลัพธ์: {result}");
+        }
+    }
+}
+```

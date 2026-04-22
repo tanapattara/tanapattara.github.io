@@ -1,0 +1,99 @@
+# บทที่ 3: ตัวดำเนินการ (Operators)
+
+## 3.1 ตัวดำเนินการทางคณิตศาสตร์
+
+C# รองรับตัวดำเนินการทางคณิตศาสตร์พื้นฐานครบถ้วน รวมถึงตัวดำเนินการพิเศษสำหรับการเพิ่มและลดค่า
+
+```csharp
+using System;
+
+namespace OperatorsDemo
+{
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            int a = 17;
+            int b = 5;
+
+            // ตัวดำเนินการพื้นฐาน
+            Console.WriteLine($"{a} + {b} = {a + b}");   // บวก  = 22
+            Console.WriteLine($"{a} - {b} = {a - b}");   // ลบ   = 12
+            Console.WriteLine($"{a} * {b} = {a * b}");   // คูณ  = 85
+            Console.WriteLine($"{a} / {b} = {a / b}");   // หาร  = 3 (ผลหารจำนวนเต็ม)
+            Console.WriteLine($"{a} % {b} = {a % b}");   // เศษ  = 2
+
+            // ตัวดำเนินการเพิ่ม/ลดค่า
+            int counter = 10;
+            counter++;  // เพิ่มค่าทีละ 1 (เท่ากับ counter = counter + 1)
+            Console.WriteLine($"หลัง ++ : {counter}");   // 11
+
+            counter--;  // ลดค่าทีละ 1 (เท่ากับ counter = counter - 1)
+            Console.WriteLine($"หลัง -- : {counter}");   // 10
+
+            // ตัวดำเนินการกำหนดค่าแบบย่อ
+            int x = 20;
+            x += 5;   // x = x + 5 = 25
+            x -= 3;   // x = x - 3 = 22
+            x *= 2;   // x = x * 2 = 44
+            x /= 4;   // x = x / 4 = 11
+            x %= 3;   // x = x % 3 = 2
+            Console.WriteLine($"ผลลัพธ์สุดท้าย x = {x}");
+
+            // การหารทศนิยม (ต้องแปลงชนิดข้อมูลก่อน)
+            double exactDivision = (double)a / b;
+            Console.WriteLine($"{a} / {b} = {exactDivision}");  // 3.4
+        }
+    }
+}
+```
+
+## 3.2 ตัวดำเนินการเปรียบเทียบและตรรกะ
+
+ตัวดำเนินการเปรียบเทียบมักใช้ร่วมกับโครงสร้างการตัดสินใจ โดยผลลัพธ์ที่ได้จะเป็นค่า `bool` เสมอ ส่วนตัวดำเนินการตรรกะใช้สำหรับรวมเงื่อนไขหลายๆ อย่างเข้าด้วยกัน
+
+```csharp
+using System;
+
+namespace LogicalOperatorsDemo
+{
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            int score = 75;
+            int maxScore = 100;
+
+            // ตัวดำเนินการเปรียบเทียบ
+            Console.WriteLine($"score == 75 : {score == 75}");     // true
+            Console.WriteLine($"score != 80 : {score != 80}");     // true
+            Console.WriteLine($"score > 70  : {score > 70}");      // true
+            Console.WriteLine($"score < 80  : {score < 80}");      // true
+            Console.WriteLine($"score >= 75 : {score >= 75}");     // true
+            Console.WriteLine($"score <= 70 : {score <= 70}");     // false
+
+            // ตัวดำเนินการตรรกะ
+            bool isPass = score >= 50;
+            bool isDistinction = score >= 80;
+            bool isAbsent = false;
+
+            // AND (&&) - เงื่อนไขทั้งหมดต้องเป็น true
+            bool canGraduate = isPass && !isAbsent;
+            Console.WriteLine($"ผ่านและไม่ขาดเรียน: {canGraduate}");
+
+            // OR (||) - เงื่อนไขอย่างน้อยหนึ่งอย่างต้องเป็น true
+            bool needsInterview = isDistinction || score == 100;
+            Console.WriteLine($"ต้องสัมภาษณ์: {needsInterview}");
+
+            // NOT (!) - กลับค่าความจริง
+            bool isNotAbsent = !isAbsent;
+            Console.WriteLine($"ไม่ขาดเรียน: {isNotAbsent}");
+
+            // Null Coalescing Operator (??)
+            string? studentRemark = null;
+            string displayRemark = studentRemark ?? "ไม่มีหมายเหตุ";
+            Console.WriteLine($"หมายเหตุ: {displayRemark}");
+        }
+    }
+}
+```

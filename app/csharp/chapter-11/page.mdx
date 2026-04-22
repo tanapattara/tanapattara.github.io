@@ -1,0 +1,69 @@
+# บทที่ 11: String Manipulation และ String Formatting
+
+## 11.1 การจัดการ String
+
+```csharp
+using System;
+using System.Text;
+
+namespace StringDemo
+{
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            string text = "  สวัสดี โลก Welcome to C# Programming  ";
+
+            // เมธอดพื้นฐานของ String
+            Console.WriteLine($"ความยาว: {text.Length}");
+            Console.WriteLine($"ตัวพิมพ์ใหญ่: {text.ToUpper()}");
+            Console.WriteLine($"ตัวพิมพ์เล็ก: {text.ToLower()}");
+            Console.WriteLine($"ตัดช่องว่าง: '{text.Trim()}'");
+            Console.WriteLine($"มี 'C#': {text.Contains("C#")}");
+            Console.WriteLine($"ตำแหน่ง 'โลก': {text.IndexOf("โลก")}");
+
+            // การแทนที่และตัด
+            string replaced = text.Replace("โลก", "World").Trim();
+            Console.WriteLine($"หลังแทนที่: {replaced}");
+
+            string sub = text.Trim().Substring(7, 2);
+            Console.WriteLine($"ตัดตำแหน่ง 7 ความยาว 2: '{sub}'");
+
+            // การแยก String
+            string csv = "สมชาย,90,CS,ปี3";
+            string[] parts = csv.Split(',');
+            Console.WriteLine($"\nแยก CSV: {string.Join(" | ", parts)}");
+
+            // String Interpolation
+            string name = "อนัน";
+            int score = 95;
+            double gpa = 3.75;
+            Console.WriteLine($"\nString Interpolation:");
+            Console.WriteLine($"  ชื่อ: {name}, คะแนน: {score}, GPA: {gpa:F2}");
+            Console.WriteLine($"  GPA ที่จัดรูปแบบ: {gpa:N2}");
+            Console.WriteLine($"  คะแนนเป็น %: {score / 100.0:P1}");
+
+            // StringBuilder - ใช้เมื่อต้องต่อ String จำนวนมาก
+            Console.WriteLine("\nStringBuilder:");
+            StringBuilder sb = new StringBuilder();
+            sb.Append("สวัสดี");
+            sb.Append(" ");
+            sb.AppendLine("C#");
+            sb.AppendFormat("วันนี้วันที่: {0:dd MMMM yyyy}\n",
+                            new System.Globalization.CultureInfo("th-TH"),
+                            DateTime.Now);
+            sb.Insert(0, "[START] ");
+            Console.WriteLine(sb.ToString());
+
+            // Verbatim String (@) สำหรับ Path และข้อความหลายบรรทัด
+            string filePath = @"C:\Users\Student\Documents\project.cs";
+            string multiLine = @"บรรทัดที่ 1
+บรรทัดที่ 2
+บรรทัดที่ 3";
+
+            Console.WriteLine($"Path: {filePath}");
+            Console.WriteLine($"หลายบรรทัด:\n{multiLine}");
+        }
+    }
+}
+```

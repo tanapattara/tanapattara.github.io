@@ -1,0 +1,64 @@
+# บทที่ 10: การทำงานแบบ Asynchronous
+
+## 10.1 Async/Await
+
+การเขียนโปรแกรมแบบ Asynchronous ช่วยให้โปรแกรมสามารถดำเนินการอื่นต่อได้ในระหว่างที่รอการทำงานที่ใช้เวลานาน เช่น การอ่านไฟล์ การเรียก API หรือการเชื่อมต่อฐานข้อมูล โดยไม่ทำให้โปรแกรมหยุดค้าง
+
+```csharp
+using System;
+using System.Threading.Tasks;
+using System.Net.Http;
+
+namespace AsyncAwaitDemo
+{
+    class Program
+    {
+        // เมธอด async ต้องมีชนิดคืนค่าเป็น Task, Task<T> หรือ void
+        static async Task<string> FetchDataAsync(string url)
+        {
+            using HttpClient client = new HttpClient();
+            Console.WriteLine($"กำลังดึงข้อมูลจาก {url}...");
+            string data = await client.GetStringAsync(url);
+            return data;
+        }
+
+        // การจำลอง Process ที่ใช้เวลา
+        static async Task<int> ProcessDataAsync(int id, int delayMs)
+        {
+            Console.WriteLine($"เริ่มประมวลผล Task {id}");
+            await Task.Delay(delayMs);  // จำลองการรอ
+            Console.WriteLine($"เสร็จสิ้น Task {id} (ใช้เวลา {delayMs}ms)");
+            return id * 10;
+        }
+
+        static async Task Main(string[] args)
+        {
+            // การรัน Task ทีละอัน (Sequential)
+            Console.WriteLine("=== Sequential Execution ===");
+            var startTime = DateTime.Now;
+
+            int result1 = await ProcessDataAsync(1, 1000);
+            int result2 = await ProcessDataAsync(2, 1500);
+            int result3 = await ProcessDataAsync(3, 500);
+
+            Console.WriteLine($"ผลลัพธ์: {result1}, {result2}, {result3}");
+            Console.WriteLine($"เวลาที่ใช้: {(DateTime.Now - startTime).TotalMilliseconds:F0}ms\n");
+
+            // การรัน Task พร้อมกัน (Parallel)
+            Console.WriteLine("=== Parallel Execution ===");
+            startTime = DateTime.Now;
+
+            Task<int> task1 = ProcessDataAsync(1, 1000);
+            Task<int> task2 = ProcessDataAsync(2, 1500);
+            Task<int> task3 = ProcessDataAsync(3, 500);
+
+            int[] results = await Task.WhenAll(task1, task2, task3);
+
+            Console.WriteLine($"ผลลัพธ์: {results[0]}, {results[1]}, {results[2]}");
+            Console.WriteLine($"เวลาที่ใช้: {(DateTime.Now - startTime).TotalMilliseconds:F0}ms");
+        }
+    }
+}
+```
+
+---

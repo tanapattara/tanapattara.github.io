@@ -1,0 +1,109 @@
+# บทที่ 8: การจัดการข้อยกเว้น (Exception Handling)
+
+## 8.1 หลักการจัดการข้อผิดพลาด
+
+การจัดการข้อยกเว้นเป็นกระบวนการควบคุมข้อผิดพลาดที่อาจเกิดขึ้นระหว่างการทำงานของโปรแกรม โดยที่โปรแกรมไม่หยุดทำงานกะทันหัน C# ใช้โครงสร้าง `try-catch-finally` ซึ่งมีหลักการทำงานดังนี้ คำสั่งหลักจะอยู่ใน `try` block หากเกิดข้อผิดพลาด โปรแกรมจะกระโดดไปยัง `catch` block ที่ตรงกัน และ `finally` block จะทำงานเสมอไม่ว่าจะเกิดข้อผิดพลาดหรือไม่
+
+```csharp
+using System;
+using System.IO;
+
+namespace ExceptionHandlingDemo
+{
+    class Program
+    {
+        // เมธอดที่อาจเกิดข้อผิดพลาด
+        static double Divide(double a, double b)
+        {
+            if (b == 0)
+                throw new DivideByZeroException("ไม่สามารถหารด้วยศูนย์ได้");
+            return a / b;
+        }
+
+        static int ParseAge(string input)
+        {
+            int age = int.Parse(input);
+            if (age < 0 || age > 150)
+                throw new ArgumentOutOfRangeException(nameof(input),
+                    "อายุต้องอยู่ระหว่าง 0 ถึง 150");
+            return age;
+        }
+
+        static void Main(string[] args)
+        {
+            // การจัดการข้อยกเว้นพื้นฐาน
+            try
+            {
+                double result = Divide(10, 0);
+                Console.WriteLine($"ผลลัพธ์: {result}");
+            }
+            catch (DivideByZeroException ex)
+            {
+                Console.WriteLine($"ข้อผิดพลาดการหาร: {ex.Message}");
+            }
+
+            // การจัดการหลาย Exception
+            string[] inputs = { "25", "abc", "200", "30" };
+
+            foreach (string input in inputs)
+            {
+                try
+                {
+                    int age = ParseAge(input);
+                    Console.WriteLine($"อายุ: {age} ปี");
+                }
+                catch (FormatException)
+                {
+                    Console.WriteLine($"'{input}' ไม่ใช่ตัวเลขที่ถูกต้อง");
+                }
+                catch (ArgumentOutOfRangeException ex)
+                {
+                    Console.WriteLine($"ค่าไม่อยู่ในช่วงที่กำหนด: {ex.Message}");
+                }
+                catch (Exception ex)
+                {
+                    // จับ Exception ทั่วไปที่ไม่ได้ระบุไว้ข้างบน
+                    Console.WriteLine($"เกิดข้อผิดพลาดที่ไม่คาดคิด: {ex.Message}");
+                }
+                finally
+                {
+                    // ทำงานเสมอ ใช้สำหรับปิดไฟล์ หรือคืนทรัพยากร
+                    Console.WriteLine($"  -> ประมวลผล '{input}' เสร็จสิ้น");
+                }
+            }
+
+            // การสร้าง Custom Exception
+            Console.WriteLine("\n=== Custom Exception ===");
+            try
+            {
+                ValidateScore(-5);
+            }
+            catch (InvalidScoreException ex)
+            {
+                Console.WriteLine($"Custom Exception: {ex.Message}");
+                Console.WriteLine($"ค่าที่ไม่ถูกต้อง: {ex.InvalidScore}");
+            }
+        }
+
+        static void ValidateScore(int score)
+        {
+            if (score < 0 || score > 100)
+                throw new InvalidScoreException($"คะแนน {score} ไม่อยู่ในช่วง 0-100", score);
+        }
+    }
+
+    // การสร้าง Custom Exception Class
+    class InvalidScoreException : Exception
+    {
+        public int InvalidScore { get; }
+
+        public InvalidScoreException(string message, int score)
+            : base(message)
+        {
+            InvalidScore = score;
+        }
+    }
+}
+```
+
+---

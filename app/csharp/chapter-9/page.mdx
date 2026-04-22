@@ -1,0 +1,103 @@
+# บทที่ 9: Generic Collections
+
+## 9.1 List\<T\>, Dictionary\<TKey, TValue\> และ อื่นๆ
+
+Generic Collections เป็นโครงสร้างข้อมูลที่ยืดหยุ่นและมีประสิทธิภาพกว่าอาร์เรย์ทั่วไป เพราะสามารถปรับขนาดได้อัตโนมัติและมีเมธอดสำเร็จรูปจำนวนมาก
+
+```csharp
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+namespace CollectionsDemo
+{
+    class Student
+    {
+        public string Name { get; set; }
+        public int Score { get; set; }
+        public string Major { get; set; }
+
+        public Student(string name, int score, string major)
+        {
+            Name = name;
+            Score = score;
+            Major = major;
+        }
+
+        public override string ToString() => $"{Name} ({Major}): {Score}";
+    }
+
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            // === List<T> ===
+            Console.WriteLine("=== List<T> ===");
+            List<Student> students = new List<Student>
+            {
+                new Student("สมชาย", 85, "CS"),
+                new Student("สมหญิง", 92, "IT"),
+                new Student("วิชัย", 78, "CS"),
+                new Student("นุชนาฏ", 95, "IT"),
+                new Student("ประสิทธิ์", 88, "CS")
+            };
+
+            students.Add(new Student("มาลี", 72, "SE")); // เพิ่มสมาชิก
+            students.RemoveAt(0);                          // ลบตามตำแหน่ง
+
+            Console.WriteLine($"จำนวนนักศึกษา: {students.Count}");
+
+            // การค้นหาด้วย LINQ
+            var csStudents = students.Where(s => s.Major == "CS").ToList();
+            Console.WriteLine("\nนักศึกษา CS:");
+            csStudents.ForEach(s => Console.WriteLine($"  {s}"));
+
+            // การเรียงลำดับ
+            var sortedByScore = students.OrderByDescending(s => s.Score).ToList();
+            Console.WriteLine("\nเรียงตามคะแนน (มากไปน้อย):");
+            sortedByScore.ForEach(s => Console.WriteLine($"  {s}"));
+
+            // === Dictionary<TKey, TValue> ===
+            Console.WriteLine("\n=== Dictionary<TKey, TValue> ===");
+            Dictionary<string, int> subjectCredits = new Dictionary<string, int>
+            {
+                { "คณิตศาสตร์", 3 },
+                { "ฟิสิกส์", 4 },
+                { "ภาษาอังกฤษ", 3 }
+            };
+
+            subjectCredits["การเขียนโปรแกรม"] = 3; // เพิ่มหรืออัปเดต
+
+            foreach (KeyValuePair<string, int> item in subjectCredits)
+            {
+                Console.WriteLine($"  {item.Key}: {item.Value} หน่วยกิต");
+            }
+
+            // ตรวจสอบและเข้าถึงอย่างปลอดภัย
+            if (subjectCredits.TryGetValue("ฟิสิกส์", out int credits))
+            {
+                Console.WriteLine($"\nวิชาฟิสิกส์มี {credits} หน่วยกิต");
+            }
+
+            // === HashSet<T> - ไม่มีข้อมูลซ้ำ ===
+            Console.WriteLine("\n=== HashSet<T> ===");
+            HashSet<string> uniqueMajors = new HashSet<string>(
+                students.Select(s => s.Major)
+            );
+            Console.WriteLine("สาขาวิชาที่มี (ไม่ซ้ำ):");
+            foreach (string major in uniqueMajors)
+            {
+                Console.WriteLine($"  {major}");
+            }
+
+            // สถิติด้วย LINQ
+            Console.WriteLine("\n=== สถิติ (LINQ) ===");
+            Console.WriteLine($"คะแนนเฉลี่ย: {students.Average(s => s.Score):F2}");
+            Console.WriteLine($"คะแนนสูงสุด: {students.Max(s => s.Score)}");
+            Console.WriteLine($"นักศึกษาที่ผ่าน(>=80): {students.Count(s => s.Score >= 80)}");
+        }
+    }
+}
+```
+
+---

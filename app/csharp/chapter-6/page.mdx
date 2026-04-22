@@ -1,0 +1,146 @@
+# บทที่ 6: เมธอด (Methods)
+
+## 6.1 แนวคิดและการสร้างเมธอด
+
+เมธอดคือกลุ่มของคำสั่งที่ถูกจัดรวมไว้ด้วยกันเพื่อทำงานเฉพาะอย่าง การแยกโปรแกรมออกเป็นเมธอดย่อยๆ ช่วยให้โค้ดมีความเป็นระเบียบ นำกลับมาใช้ซ้ำได้ (Reusability) และง่ายต่อการบำรุงรักษา
+
+การกำหนดเมธอดในภาษา C# มีรูปแบบดังนี้
+
+```
+[Access Modifier] [static] ชนิดข้อมูลที่คืนค่า ชื่อเมธอด(พารามิเตอร์)
+{
+    // คำสั่งต่างๆ
+    return ค่าที่ต้องการคืน; // ถ้าไม่คืนค่า ใช้ void
+}
+```
+
+```csharp
+using System;
+
+namespace MethodsDemo
+{
+    class Program
+    {
+        // เมธอดที่ไม่คืนค่า (void) และไม่รับพารามิเตอร์
+        static void ShowWelcome()
+        {
+            Console.WriteLine("=== ยินดีต้อนรับสู่ระบบคำนวณ ===");
+        }
+
+        // เมธอดที่รับพารามิเตอร์แต่ไม่คืนค่า
+        static void ShowInfo(string name, int age)
+        {
+            Console.WriteLine($"ชื่อ: {name}, อายุ: {age} ปี");
+        }
+
+        // เมธอดที่คืนค่า
+        static double CalculateCircleArea(double radius)
+        {
+            return Math.PI * radius * radius;
+        }
+
+        // เมธอดที่มีหลายพารามิเตอร์และคืนค่า
+        static double CalculateAverage(int[] numbers)
+        {
+            if (numbers.Length == 0) return 0;
+
+            int sum = 0;
+            foreach (int num in numbers)
+            {
+                sum += num;
+            }
+            return (double)sum / numbers.Length;
+        }
+
+        // เมธอดที่มีพารามิเตอร์เริ่มต้น (Default Parameters)
+        static string FormatScore(double score, string prefix = "คะแนน", int decimals = 2)
+        {
+            return $"{prefix}: {score.ToString($"F{decimals}")}";
+        }
+
+        // เมธอดแบบ Expression Body (C# 6.0+) สำหรับเมธอดที่มีคำสั่งบรรทัดเดียว
+        static int Max(int a, int b) => a > b ? a : b;
+        static bool IsEven(int n) => n % 2 == 0;
+
+        static void Main(string[] args)
+        {
+            ShowWelcome();
+            ShowInfo("สมศรี มีสุข", 21);
+
+            double area = CalculateCircleArea(5.0);
+            Console.WriteLine($"พื้นที่วงกลมรัศมี 5 = {area:F4}");
+
+            int[] scores = { 85, 92, 78, 90, 88 };
+            double avg = CalculateAverage(scores);
+            Console.WriteLine($"คะแนนเฉลี่ย = {avg:F2}");
+
+            // การเรียกเมธอดที่มี Default Parameters
+            Console.WriteLine(FormatScore(88.5));
+            Console.WriteLine(FormatScore(88.5, "ผลการสอบ"));
+            Console.WriteLine(FormatScore(88.5, "คะแนนสุดท้าย", 0));
+
+            // Named Arguments - ระบุชื่อพารามิเตอร์เมื่อเรียกใช้
+            Console.WriteLine(FormatScore(score: 95.75, decimals: 1, prefix: "คะแนนทดสอบ"));
+
+            Console.WriteLine($"Max(10, 25) = {Max(10, 25)}");
+            Console.WriteLine($"IsEven(7) = {IsEven(7)}");
+        }
+    }
+}
+```
+
+## 6.2 การส่งพารามิเตอร์แบบ ref และ out
+
+ตามปกติ C# ส่งพารามิเตอร์แบบ Pass by Value หมายความว่าเมธอดได้รับสำเนาของค่า การแก้ไขค่าภายในเมธอดจึงไม่กระทบกับตัวแปรเดิม อย่างไรก็ตาม หากต้องการให้เมธอดแก้ไขค่าของตัวแปรเดิม สามารถใช้ `ref` หรือ `out` ได้
+
+```csharp
+using System;
+
+namespace RefOutDemo
+{
+    class Program
+    {
+        // ref - ส่งข้อมูลเข้าและรับกลับ ตัวแปรต้องมีค่าก่อนส่ง
+        static void Swap(ref int a, ref int b)
+        {
+            int temp = a;
+            a = b;
+            b = temp;
+        }
+
+        // out - ส่งข้อมูลออกจากเมธอด ตัวแปรไม่ต้องมีค่าก่อน แต่ต้องกำหนดค่าภายในเมธอด
+        static bool TryDivide(int dividend, int divisor, out double result)
+        {
+            if (divisor == 0)
+            {
+                result = 0;
+                return false;
+            }
+            result = (double)dividend / divisor;
+            return true;
+        }
+
+        static void Main(string[] args)
+        {
+            // การใช้ ref
+            int x = 10, y = 20;
+            Console.WriteLine($"ก่อน swap: x = {x}, y = {y}");
+            Swap(ref x, ref y);
+            Console.WriteLine($"หลัง swap: x = {x}, y = {y}");
+
+            // การใช้ out
+            if (TryDivide(10, 3, out double quotient))
+            {
+                Console.WriteLine($"10 / 3 = {quotient:F4}");
+            }
+
+            if (!TryDivide(5, 0, out double badResult))
+            {
+                Console.WriteLine("ไม่สามารถหารด้วย 0 ได้");
+            }
+        }
+    }
+}
+```
+
+---

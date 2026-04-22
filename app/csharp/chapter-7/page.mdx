@@ -1,0 +1,354 @@
+# บทที่ 7: การเขียนโปรแกรมเชิงวัตถุ (Object-Oriented Programming)
+
+## 7.1 แนวคิดพื้นฐาน OOP
+
+การเขียนโปรแกรมเชิงวัตถุ (OOP) เป็นแนวคิดที่จำลองโปรแกรมให้เป็นเหมือนวัตถุในโลกจริง โดยมีหลักการสำคัญ 4 ประการ ได้แก่
+
+**1. Encapsulation (การห่อหุ้ม)** คือการรวมข้อมูล (Fields) และพฤติกรรม (Methods) ไว้ในหน่วยเดียวกัน พร้อมกำหนดการเข้าถึงผ่าน Access Modifier เพื่อปกป้องข้อมูลภายใน
+
+**2. Inheritance (การสืบทอด)** คือความสามารถในการสร้าง Class ใหม่โดยรับคุณสมบัติจาก Class ที่มีอยู่แล้ว ช่วยลดการเขียนโค้ดซ้ำซ้อน
+
+**3. Polymorphism (พหุสัณฐาน)** คือความสามารถของวัตถุชนิดเดียวกันที่สามารถแสดงพฤติกรรมต่างกันได้ตามบริบท
+
+**4. Abstraction (การสรุปรูป)** คือการซ่อนรายละเอียดความซับซ้อนและแสดงเฉพาะสิ่งที่จำเป็นต่อผู้ใช้
+
+## 7.2 Class และ Object
+
+```csharp
+using System;
+
+namespace OOPDemo
+{
+    // การกำหนด Class
+    class Student
+    {
+        // Fields (ควรกำหนดเป็น private เพื่อ Encapsulation)
+        private string _studentID;
+        private string _name;
+        private double _gpa;
+
+        // Properties - ช่องทางเข้าถึง Fields อย่างปลอดภัย
+        public string StudentID
+        {
+            get { return _studentID; }
+            private set { _studentID = value; }  // กำหนดได้แค่ภายใน Class
+        }
+
+        public string Name
+        {
+            get { return _name; }
+            set
+            {
+                if (string.IsNullOrWhiteSpace(value))
+                    throw new ArgumentException("ชื่อต้องไม่ว่างเปล่า");
+                _name = value.Trim();
+            }
+        }
+
+        public double GPA
+        {
+            get { return _gpa; }
+            set
+            {
+                if (value < 0 || value > 4.0)
+                    throw new ArgumentOutOfRangeException("GPA ต้องอยู่ระหว่าง 0 ถึง 4.0");
+                _gpa = value;
+            }
+        }
+
+        // Auto-implemented Properties (รูปแบบย่อ)
+        public string Faculty { get; set; }
+        public int Year { get; set; }
+
+        // Constructor - เมธอดที่เรียกอัตโนมัติเมื่อสร้าง Object
+        public Student(string studentID, string name, string faculty, int year)
+        {
+            StudentID = studentID;
+            Name = name;
+            Faculty = faculty;
+            Year = year;
+            GPA = 0.0;
+        }
+
+        // Constructor Overloading - Constructor ที่ 2 พร้อม GPA
+        public Student(string studentID, string name, string faculty, int year, double gpa)
+            : this(studentID, name, faculty, year)  // เรียก Constructor แรก
+        {
+            GPA = gpa;
+        }
+
+        // Methods
+        public string GetStatus()
+        {
+            if (GPA >= 3.50) return "เกียรตินิยมอันดับ 1";
+            if (GPA >= 3.25) return "เกียรตินิยมอันดับ 2";
+            if (GPA >= 2.00) return "ปกติ";
+            return "รอพิจารณา";
+        }
+
+        // Override ToString() เพื่อแสดงผลข้อมูล
+        public override string ToString()
+        {
+            return $"[{StudentID}] {Name} | {Faculty} ปีที่ {Year} | GPA: {GPA:F2} ({GetStatus()})";
+        }
+    }
+
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            // การสร้าง Object จาก Class
+            Student student1 = new Student("65010001", "สมชาย รักเรียน",
+                                           "วิศวกรรมศาสตร์", 3, 3.75);
+
+            Student student2 = new Student("65010002", "นิดา ขยันดี",
+                                           "วิทยาการคอมพิวเตอร์", 2);
+            student2.GPA = 2.85;
+
+            // การเข้าถึง Properties และ Methods
+            Console.WriteLine(student1.ToString());
+            Console.WriteLine(student2.ToString());
+
+            // อาร์เรย์ของ Object
+            Student[] students =
+            {
+                student1,
+                student2,
+                new Student("65010003", "วิชาญ ตั้งใจ", "บริหารธุรกิจ", 4, 3.50)
+            };
+
+            Console.WriteLine("\n=== รายชื่อนักศึกษาทั้งหมด ===");
+            foreach (Student s in students)
+            {
+                Console.WriteLine(s);
+            }
+        }
+    }
+}
+```
+
+## 7.3 การสืบทอด (Inheritance)
+
+```csharp
+using System;
+
+namespace InheritanceDemo
+{
+    // Base Class (Parent Class)
+    class Person
+    {
+        public string Name { get; set; }
+        public int Age { get; set; }
+        public string Email { get; set; }
+
+        public Person(string name, int age, string email)
+        {
+            Name = name;
+            Age = age;
+            Email = email;
+        }
+
+        // virtual - อนุญาตให้ Derived Class Override ได้
+        public virtual string GetRole()
+        {
+            return "บุคคล";
+        }
+
+        public virtual void DisplayInfo()
+        {
+            Console.WriteLine($"ชื่อ: {Name} | อายุ: {Age} | อีเมล: {Email}");
+        }
+    }
+
+    // Derived Class (Child Class) - สืบทอดจาก Person
+    class Student : Person
+    {
+        public string StudentID { get; set; }
+        public double GPA { get; set; }
+
+        // : base() เรียก Constructor ของ Class แม่
+        public Student(string studentID, string name, int age, string email, double gpa)
+            : base(name, age, email)
+        {
+            StudentID = studentID;
+            GPA = gpa;
+        }
+
+        // override - เขียนทับเมธอดจาก Class แม่
+        public override string GetRole()
+        {
+            return "นักศึกษา";
+        }
+
+        public override void DisplayInfo()
+        {
+            base.DisplayInfo();  // เรียกเมธอดจาก Class แม่
+            Console.WriteLine($"รหัสนักศึกษา: {StudentID} | GPA: {GPA:F2}");
+        }
+    }
+
+    // อีกหนึ่ง Derived Class
+    class Instructor : Person
+    {
+        public string Department { get; set; }
+        public string Title { get; set; }
+
+        public Instructor(string name, int age, string email, string department, string title)
+            : base(name, age, email)
+        {
+            Department = department;
+            Title = title;
+        }
+
+        public override string GetRole()
+        {
+            return "อาจารย์";
+        }
+
+        public override void DisplayInfo()
+        {
+            base.DisplayInfo();
+            Console.WriteLine($"ภาควิชา: {Department} | ตำแหน่ง: {Title}");
+        }
+    }
+
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            // Polymorphism - ตัวแปรชนิด Person สามารถเก็บ Object ของ Class ลูกได้
+            Person[] people =
+            {
+                new Student("65010001", "อนุสรณ์ ใจดี", 21, "anusorn@uni.ac.th", 3.65),
+                new Instructor("ดร.สมศักดิ์ วิชาดี", 45, "somsak@uni.ac.th",
+                               "วิทยาการคอมพิวเตอร์", "รองศาสตราจารย์"),
+                new Student("65010002", "สุดา รักษ์การ", 20, "suda@uni.ac.th", 3.25)
+            };
+
+            foreach (Person p in people)
+            {
+                Console.WriteLine($"\n=== {p.GetRole()} ===");
+                p.DisplayInfo();  // เรียกเมธอดที่ถูก Override ตาม Object จริง
+            }
+        }
+    }
+}
+```
+
+## 7.4 Interface และ Abstract Class
+
+`Interface` และ `Abstract Class` เป็นกลไกสำหรับกำหนดสัญญา (Contract) ที่ Class ลูกต้องปฏิบัติตาม โดย `Abstract Class` สามารถมีการ Implement บางส่วนได้ ในขณะที่ `Interface` กำหนดเพียงโครงสร้างที่ต้องมีโดยไม่มี Implementation (ยกเว้น Default Methods ใน C# 8.0+)
+
+```csharp
+using System;
+
+namespace AbstractInterfaceDemo
+{
+    // Interface - กำหนดสัญญาที่ต้องปฏิบัติตาม
+    interface ICalculable
+    {
+        double CalculateArea();
+        double CalculatePerimeter();
+    }
+
+    interface IPrintable
+    {
+        void Print();
+    }
+
+    // Abstract Class - Class ที่ไม่สามารถสร้าง Object ได้โดยตรง
+    abstract class Shape : ICalculable, IPrintable
+    {
+        public string Color { get; set; }
+
+        public Shape(string color)
+        {
+            Color = color;
+        }
+
+        // Abstract Methods - Class ลูกต้อง Implement
+        public abstract double CalculateArea();
+        public abstract double CalculatePerimeter();
+
+        // Concrete Method - มี Implementation ครบ ใช้ร่วมกันได้เลย
+        public void Print()
+        {
+            Console.WriteLine($"รูป: {GetType().Name}, สี: {Color}");
+            Console.WriteLine($"  พื้นที่: {CalculateArea():F4}");
+            Console.WriteLine($"  เส้นรอบรูป: {CalculatePerimeter():F4}");
+        }
+    }
+
+    // Concrete Class - Class ที่ Implement Abstract Class
+    class Circle : Shape
+    {
+        public double Radius { get; set; }
+
+        public Circle(double radius, string color) : base(color)
+        {
+            Radius = radius;
+        }
+
+        public override double CalculateArea()
+        {
+            return Math.PI * Radius * Radius;
+        }
+
+        public override double CalculatePerimeter()
+        {
+            return 2 * Math.PI * Radius;
+        }
+    }
+
+    class Rectangle : Shape
+    {
+        public double Width { get; set; }
+        public double Height { get; set; }
+
+        public Rectangle(double width, double height, string color) : base(color)
+        {
+            Width = width;
+            Height = height;
+        }
+
+        public override double CalculateArea()
+        {
+            return Width * Height;
+        }
+
+        public override double CalculatePerimeter()
+        {
+            return 2 * (Width + Height);
+        }
+    }
+
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            Shape[] shapes =
+            {
+                new Circle(5.0, "แดง"),
+                new Rectangle(4.0, 6.0, "น้ำเงิน"),
+                new Circle(3.5, "เขียว")
+            };
+
+            foreach (Shape shape in shapes)
+            {
+                shape.Print();
+                Console.WriteLine();
+            }
+
+            // คำนวณพื้นที่รวม
+            double totalArea = 0;
+            foreach (Shape shape in shapes)
+            {
+                totalArea += shape.CalculateArea();
+            }
+            Console.WriteLine($"พื้นที่รวมทั้งหมด: {totalArea:F4}");
+        }
+    }
+}
+```
+
+---

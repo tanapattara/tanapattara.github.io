@@ -1,0 +1,115 @@
+# บทที่ 5: อาร์เรย์และชุดข้อมูล
+
+## 5.1 อาร์เรย์หนึ่งมิติ (One-Dimensional Array)
+
+อาร์เรย์คือโครงสร้างข้อมูลที่ใช้เก็บข้อมูลชนิดเดียวกันหลายค่าในหน่วยความจำต่อเนื่องกัน แต่ละสมาชิกสามารถเข้าถึงได้ผ่าน Index ซึ่งเริ่มนับจาก 0 เสมอ
+
+```csharp
+using System;
+
+namespace ArrayDemo
+{
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            // การประกาศและกำหนดค่าอาร์เรย์
+            int[] scores = new int[5];      // ประกาศอาร์เรย์ว่างขนาด 5
+            scores[0] = 85;
+            scores[1] = 90;
+            scores[2] = 78;
+            scores[3] = 92;
+            scores[4] = 88;
+
+            // การประกาศและกำหนดค่าพร้อมกัน
+            string[] students = { "สมชาย", "สมหญิง", "วิชัย", "นุชนาฏ" };
+
+            // การแสดงผลอาร์เรย์และการคำนวณ
+            int sum = 0;
+            int max = scores[0];
+            int min = scores[0];
+
+            Console.WriteLine("คะแนนนักศึกษา:");
+            for (int i = 0; i < scores.Length; i++)
+            {
+                Console.WriteLine($"  {students[i]}: {scores[i]} คะแนน");
+                sum += scores[i];
+                if (scores[i] > max) max = scores[i];
+                if (scores[i] < min) min = scores[i];
+            }
+
+            double average = (double)sum / scores.Length;
+            Console.WriteLine($"\nคะแนนรวม: {sum}");
+            Console.WriteLine($"คะแนนเฉลี่ย: {average:F2}");
+            Console.WriteLine($"คะแนนสูงสุด: {max}");
+            Console.WriteLine($"คะแนนต่ำสุด: {min}");
+
+            // การเรียงลำดับอาร์เรย์
+            Array.Sort(scores);
+            Console.WriteLine("\nคะแนนหลังเรียงลำดับ:");
+            foreach (int score in scores)
+            {
+                Console.Write($"{score} ");
+            }
+            Console.WriteLine();
+
+            // การค้นหาในอาร์เรย์
+            int searchScore = 90;
+            int index = Array.IndexOf(scores, searchScore);
+            Console.WriteLine(index >= 0
+                ? $"พบคะแนน {searchScore} ที่ตำแหน่ง {index}"
+                : $"ไม่พบคะแนน {searchScore}");
+        }
+    }
+}
+```
+
+## 5.2 อาร์เรย์สองมิติ (Two-Dimensional Array)
+
+```csharp
+using System;
+
+namespace TwoDArrayDemo
+{
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            // การประกาศอาร์เรย์สองมิติ (3 แถว, 4 คอลัมน์)
+            int[,] gradeTable = new int[3, 4]
+            {
+                { 85, 90, 78, 92 },   // นักศึกษาคนที่ 1
+                { 70, 85, 88, 75 },   // นักศึกษาคนที่ 2
+                { 92, 88, 95, 90 }    // นักศึกษาคนที่ 3
+            };
+
+            string[] studentNames = { "อนุชา", "บุญมี", "ชัยวัฒน์" };
+            string[] subjectNames = { "คณิต", "ฟิสิกส์", "เคมี", "ชีวะ" };
+
+            // แสดงตารางคะแนน
+            Console.Write($"{"นักศึกษา",-12}");
+            foreach (string subject in subjectNames)
+            {
+                Console.Write($"{subject,-10}");
+            }
+            Console.WriteLine("เฉลี่ย");
+            Console.WriteLine(new string('-', 55));
+
+            for (int row = 0; row < gradeTable.GetLength(0); row++)
+            {
+                Console.Write($"{studentNames[row],-12}");
+                int rowSum = 0;
+                for (int col = 0; col < gradeTable.GetLength(1); col++)
+                {
+                    Console.Write($"{gradeTable[row, col],-10}");
+                    rowSum += gradeTable[row, col];
+                }
+                double rowAvg = (double)rowSum / gradeTable.GetLength(1);
+                Console.WriteLine($"{rowAvg:F2}");
+            }
+        }
+    }
+}
+```
+
+---

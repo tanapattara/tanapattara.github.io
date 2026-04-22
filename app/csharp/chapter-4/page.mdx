@@ -1,0 +1,193 @@
+# บทที่ 4: โครงสร้างการควบคุมโปรแกรม (Control Flow)
+
+## 4.1 โครงสร้างการตัดสินใจ (if-else)
+
+โครงสร้าง `if-else` เป็นโครงสร้างพื้นฐานที่ใช้สำหรับตัดสินใจดำเนินการตามเงื่อนไขที่กำหนด สามารถซ้อนกันได้หลายระดับผ่าน `else if`
+
+```csharp
+using System;
+
+namespace IfElseDemo
+{
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            Console.Write("กรอกคะแนน (0-100): ");
+            int score = int.Parse(Console.ReadLine());
+
+            // โครงสร้าง if-else if-else
+            if (score >= 80)
+            {
+                Console.WriteLine("เกรด A - ดีเยี่ยม");
+            }
+            else if (score >= 70)
+            {
+                Console.WriteLine("เกรด B - ดี");
+            }
+            else if (score >= 60)
+            {
+                Console.WriteLine("เกรด C - พอใช้");
+            }
+            else if (score >= 50)
+            {
+                Console.WriteLine("เกรด D - ผ่าน");
+            }
+            else
+            {
+                Console.WriteLine("เกรด F - ไม่ผ่าน");
+            }
+
+            // Ternary Operator (? :) - สำหรับเงื่อนไขง่ายๆ ที่มีสองทางเลือก
+            string status = score >= 50 ? "ผ่าน" : "ไม่ผ่าน";
+            Console.WriteLine($"สถานะ: {status}");
+
+            // การตรวจสอบเงื่อนไขซ้อน (Nested if)
+            if (score >= 50)
+            {
+                if (score >= 80)
+                {
+                    Console.WriteLine("ได้รับเกียรตินิยม");
+                }
+                else
+                {
+                    Console.WriteLine("ผ่านแบบปกติ");
+                }
+            }
+        }
+    }
+}
+```
+
+## 4.2 โครงสร้าง switch-case
+
+`switch` เหมาะสำหรับการตรวจสอบตัวแปรเดียวกับหลายค่าที่เป็นไปได้ ซึ่งทำให้โค้ดอ่านง่ายกว่าการใช้ `if-else if` หลายครั้ง C# 8.0 ขึ้นไปยังรองรับ Switch Expression ซึ่งมีรูปแบบที่กระชับยิ่งขึ้น
+
+```csharp
+using System;
+
+namespace SwitchDemo
+{
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            Console.Write("กรอกวันในสัปดาห์ (1-7): ");
+            int day = int.Parse(Console.ReadLine());
+
+            // switch-case แบบดั้งเดิม
+            switch (day)
+            {
+                case 1:
+                    Console.WriteLine("วันจันทร์");
+                    break;
+                case 2:
+                    Console.WriteLine("วันอังคาร");
+                    break;
+                case 3:
+                    Console.WriteLine("วันพุธ");
+                    break;
+                case 4:
+                    Console.WriteLine("วันพฤหัสบดี");
+                    break;
+                case 5:
+                    Console.WriteLine("วันศุกร์");
+                    break;
+                case 6:
+                case 7:
+                    // รวม case เมื่อผลลัพธ์เหมือนกัน
+                    Console.WriteLine("วันหยุดสุดสัปดาห์");
+                    break;
+                default:
+                    Console.WriteLine("ค่าไม่ถูกต้อง");
+                    break;
+            }
+
+            // Switch Expression (C# 8.0+) - รูปแบบกระชับ
+            string dayName = day switch
+            {
+                1 => "วันจันทร์",
+                2 => "วันอังคาร",
+                3 => "วันพุธ",
+                4 => "วันพฤหัสบดี",
+                5 => "วันศุกร์",
+                6 or 7 => "วันหยุด",
+                _ => "ไม่ถูกต้อง"  // _ คือ default
+            };
+
+            Console.WriteLine($"วันที่เลือก: {dayName}");
+        }
+    }
+}
+```
+
+## 4.3 โครงสร้างการวนซ้ำ (Loops)
+
+C# มีโครงสร้างการวนซ้ำหลายรูปแบบ การเลือกใช้รูปแบบใดขึ้นอยู่กับลักษณะของปัญหา กล่าวคือ `for` เหมาะเมื่อทราบจำนวนรอบที่แน่นอน `while` เหมาะเมื่อไม่ทราบจำนวนรอบล่วงหน้า และ `foreach` เหมาะสำหรับการวนซ้ำผ่านชุดข้อมูล
+
+```csharp
+using System;
+
+namespace LoopsDemo
+{
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            // for loop - ใช้เมื่อทราบจำนวนรอบล่วงหน้า
+            Console.WriteLine("=== for loop ===");
+            for (int i = 1; i <= 5; i++)
+            {
+                Console.WriteLine($"รอบที่ {i}");
+            }
+
+            // while loop - วนซ้ำตราบที่เงื่อนไขเป็น true
+            Console.WriteLine("\n=== while loop ===");
+            int count = 1;
+            while (count <= 5)
+            {
+                Console.WriteLine($"นับ: {count}");
+                count++;
+            }
+
+            // do-while loop - ทำงานก่อนอย่างน้อยหนึ่งครั้ง แล้วค่อยตรวจเงื่อนไข
+            Console.WriteLine("\n=== do-while loop ===");
+            int num = 0;
+            do
+            {
+                Console.WriteLine($"ค่า: {num}");
+                num++;
+            } while (num < 3);
+
+            // foreach loop - วนซ้ำผ่านชุดข้อมูล
+            Console.WriteLine("\n=== foreach loop ===");
+            string[] subjects = { "คณิตศาสตร์", "ฟิสิกส์", "เคมี", "ชีววิทยา" };
+            foreach (string subject in subjects)
+            {
+                Console.WriteLine($"วิชา: {subject}");
+            }
+
+            // break และ continue
+            Console.WriteLine("\n=== break และ continue ===");
+            for (int i = 1; i <= 10; i++)
+            {
+                if (i % 2 == 0) continue;  // ข้ามเลขคู่
+                if (i > 7) break;          // หยุดเมื่อเกิน 7
+                Console.Write($"{i} ");
+            }
+            Console.WriteLine();
+
+            // การวนซ้ำซ้อน (Nested Loops) - ตัวอย่างตารางสูตรคูณ
+            Console.WriteLine("\n=== ตารางสูตรคูณ (1-3) ===");
+            for (int i = 1; i <= 3; i++)
+            {
+                for (int j = 1; j <= 3; j++)
+                {
+                    Console.Write($"{i} x {j} = {i * j,-5}");
+                }
+                Console.WriteLine();
+            }
+        }
+    }
+}
+```

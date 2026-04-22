@@ -4,4 +4,507 @@ sidebarTitle: Git
 asIndexPage: true
 ---
 
-# Git
+# Git Version Control System
+
+---
+
+## บทนำ
+
+Git คือระบบควบคุมเวอร์ชัน (Version Control System) แบบกระจาย (Distributed) ที่ได้รับความนิยมสูงสุดในอุตสาหกรรมซอฟต์แวร์ปัจจุบัน พัฒนาขึ้นโดย Linus Torvalds ในปี ค.ศ. 2005 Git ช่วยให้นักพัฒนาสามารถติดตามการเปลี่ยนแปลงของโค้ด ทำงานร่วมกันเป็นทีม และย้อนกลับไปยังเวอร์ชันก่อนหน้าได้อย่างมีประสิทธิภาพ
+
+---
+
+## ส่วนที่ 1: แนวคิดพื้นฐานของ Git
+
+### 1.1 โครงสร้างของ Git Repository
+
+Git แบ่งพื้นที่การทำงานออกเป็น 3 ส่วนหลัก ได้แก่
+
+**Working Directory** คือพื้นที่ที่ผู้ใช้แก้ไขไฟล์จริง ๆ บนเครื่องคอมพิวเตอร์ ไฟล์ในส่วนนี้ยังไม่ถูกบันทึกเข้าสู่ระบบ Git
+
+**Staging Area (Index)** คือพื้นที่พักชั่วคราวสำหรับเตรียมไฟล์ก่อนที่จะบันทึกลงใน Repository ผู้ใช้สามารถเลือกได้ว่าจะนำการเปลี่ยนแปลงใดเข้าสู่ขั้นตอนถัดไป
+
+**Repository (.git)** คือฐานข้อมูลที่ Git ใช้เก็บประวัติการเปลี่ยนแปลงทั้งหมด ซึ่งอยู่ในโฟลเดอร์ `.git` ภายในโปรเจกต์
+
+### 1.2 วงจรชีวิตของไฟล์ใน Git
+
+ไฟล์ใน Git มีสถานะดังต่อไปนี้ตามลำดับ
+
+```
+Untracked → Staged → Committed → Modified → Staged → Committed
+```
+
+ไฟล์ที่สร้างใหม่จะมีสถานะ **Untracked** จนกว่าจะถูก Add เข้า Staging Area จากนั้นจะกลายเป็น **Staged** และเมื่อทำการ Commit แล้วจะกลายเป็น **Committed** หากมีการแก้ไขในภายหลัง สถานะจะเปลี่ยนเป็น **Modified**
+
+---
+
+## ส่วนที่ 2: การติดตั้งและตั้งค่าเบื้องต้น
+
+### 2.1 การติดตั้ง Git
+
+สามารถดาวน์โหลด Git ได้จาก [https://git-scm.com](https://git-scm.com) และติดตั้งตามระบบปฏิบัติการที่ใช้งาน
+
+### 2.2 การตั้งค่าข้อมูลผู้ใช้
+
+หลังจากติดตั้งเสร็จสิ้น ควรตั้งค่าข้อมูลประจำตัวก่อนเริ่มใช้งาน เพื่อให้ Git บันทึกชื่อและอีเมลของผู้เขียนโค้ดในทุก Commit
+
+```bash
+git config --global user.name "ชื่อของคุณ"
+git config --global user.email "email@example.com"
+git config --global core.editor "code --wait"   # ตั้ง VS Code เป็น Editor หลัก
+```
+
+ตรวจสอบการตั้งค่าด้วยคำสั่ง
+
+```bash
+git config --list
+```
+
+---
+
+## ส่วนที่ 3: คำสั่งพื้นฐาน (Basic Commands)
+
+### 3.1 การสร้างและเริ่มต้น Repository
+
+**`git init`** — สร้าง Repository ใหม่ในโฟลเดอร์ปัจจุบัน
+
+```bash
+mkdir my-project
+cd my-project
+git init
+```
+
+ผลลัพธ์ที่ได้คือโฟลเดอร์ `.git` จะถูกสร้างขึ้นในโปรเจกต์ หมายความว่า Git เริ่มติดตามโปรเจกต์นี้แล้ว
+
+**`git clone`** — คัดลอก Repository จากแหล่งภายนอก (เช่น GitHub) มายังเครื่องของคุณ
+
+```bash
+git clone https://github.com/username/repository-name.git
+git clone https://github.com/username/repository-name.git my-folder   # ระบุชื่อโฟลเดอร์ปลายทาง
+```
+
+---
+
+### 3.2 การติดตามการเปลี่ยนแปลง
+
+**`git status`** — แสดงสถานะของไฟล์ในโปรเจกต์ทั้งหมด
+
+```bash
+git status
+```
+
+ตัวอย่างผลลัพธ์
+
+```
+On branch main
+Changes not staged for commit:
+  modified:   index.html
+
+Untracked files:
+  style.css
+```
+
+**`git add`** — เพิ่มไฟล์เข้าสู่ Staging Area
+
+```bash
+git add index.html              # เพิ่มไฟล์เดียว
+git add style.css index.html    # เพิ่มหลายไฟล์พร้อมกัน
+git add .                       # เพิ่มไฟล์ทั้งหมดที่เปลี่ยนแปลง
+git add *.js                    # เพิ่มไฟล์ทั้งหมดที่มีนามสกุล .js
+```
+
+**`git diff`** — แสดงความแตกต่างของไฟล์ที่ถูกแก้ไขแต่ยังไม่ได้ Stage
+
+```bash
+git diff                        # ดูการเปลี่ยนแปลงทั้งหมดใน Working Directory
+git diff --staged               # ดูการเปลี่ยนแปลงใน Staging Area
+git diff index.html             # ดูการเปลี่ยนแปลงเฉพาะไฟล์ที่ระบุ
+```
+
+---
+
+### 3.3 การบันทึก Commit
+
+**`git commit`** — บันทึกการเปลี่ยนแปลงที่อยู่ใน Staging Area ลงใน Repository
+
+```bash
+git commit -m "Add navigation bar to homepage"
+git commit -am "Fix login bug"    # Add และ Commit ไฟล์ที่ Modified พร้อมกันในคำสั่งเดียว
+```
+
+**หลักการเขียน Commit Message ที่ดี** ควรเขียนในรูปแบบ Imperative Mood (คำสั่ง) เช่น "Add feature", "Fix bug", "Update documentation" โดยไม่ใช้ "Added" หรือ "Fixed" และควรอธิบายให้ชัดเจนว่าการเปลี่ยนแปลงนี้ทำ "อะไร" ไม่ใช่ "ทำอย่างไร"
+
+ตัวอย่าง Commit Message ที่ดี
+
+```
+✅ Add user authentication module
+✅ Fix null pointer exception in payment service
+✅ Update README with installation instructions
+
+❌ fix
+❌ update code
+❌ changes
+```
+
+---
+
+### 3.4 การดูประวัติ Commit
+
+**`git log`** — แสดงประวัติ Commit ทั้งหมด
+
+```bash
+git log                         # แสดงข้อมูลเต็ม
+git log --oneline               # แสดงแบบสรุปบรรทัดเดียวต่อ Commit
+git log --oneline --graph       # แสดงกราฟสาขา
+git log --oneline -5            # แสดงเฉพาะ 5 Commit ล่าสุด
+git log --author="John"         # กรองตามชื่อผู้ Commit
+git log --since="2024-01-01"    # กรองตามช่วงวันที่
+```
+
+ตัวอย่างผลลัพธ์ของ `git log --oneline`
+
+```
+a3f1c2d Add payment gateway integration
+b7e4d91 Fix session timeout issue
+c2a8f03 Update user profile page
+d5b1e44 Initial commit
+```
+
+---
+
+## ส่วนที่ 4: การทำงานกับ Branch
+
+### 4.1 แนวคิดของ Branch
+
+Branch คือเส้นทางการพัฒนาที่แยกออกมาจาก Branch หลัก ช่วยให้นักพัฒนาสามารถทำงานบนฟีเจอร์ใหม่หรือแก้ไขบัคได้โดยไม่กระทบโค้ดหลัก โดย Branch หลักมักใช้ชื่อว่า `main` หรือ `master`
+
+**กลยุทธ์การตั้งชื่อ Branch ที่นิยมใช้**
+
+```
+feature/user-authentication     # Branch สำหรับพัฒนาฟีเจอร์ใหม่
+bugfix/fix-login-error          # Branch สำหรับแก้ไขบัค
+hotfix/critical-security-patch  # Branch สำหรับแก้ปัญหาเร่งด่วน
+release/v1.2.0                  # Branch สำหรับเตรียม Release
+```
+
+### 4.2 คำสั่งจัดการ Branch
+
+**`git branch`** — จัดการ Branch
+
+```bash
+git branch                      # แสดง Branch ทั้งหมด (* คือ Branch ปัจจุบัน)
+git branch -a                   # แสดง Branch ทั้งหมดรวม Remote
+git branch feature/login        # สร้าง Branch ใหม่
+git branch -d feature/login     # ลบ Branch (ปลอดภัย จะไม่ลบถ้ายังไม่ Merge)
+git branch -D feature/login     # บังคับลบ Branch
+git branch -m old-name new-name # เปลี่ยนชื่อ Branch
+```
+
+**`git checkout` / `git switch`** — สลับ Branch
+
+```bash
+git checkout feature/login              # สลับไปยัง Branch ที่มีอยู่แล้ว
+git checkout -b feature/register        # สร้างและสลับไปยัง Branch ใหม่พร้อมกัน
+
+# คำสั่งใหม่ที่แนะนำใน Git 2.23+
+git switch feature/login                # สลับ Branch
+git switch -c feature/register          # สร้างและสลับ Branch ใหม่
+```
+
+### 4.3 การรวม Branch (Merge)
+
+**`git merge`** — รวมการเปลี่ยนแปลงจาก Branch หนึ่งเข้าสู่ Branch ปัจจุบัน
+
+```bash
+# ตัวอย่าง: รวม feature/login เข้าสู่ main
+git switch main
+git merge feature/login
+```
+
+**ประเภทของ Merge**
+
+_Fast-forward Merge_ เกิดขึ้นเมื่อ Branch ปัจจุบันไม่มีการเปลี่ยนแปลงใหม่นับตั้งแต่แยก Branch ออกไป Git จะย้าย Pointer ไปข้างหน้าโดยไม่สร้าง Merge Commit ใหม่
+
+```bash
+git merge feature/login --ff-only    # บังคับให้ใช้ Fast-forward เท่านั้น
+```
+
+_Three-way Merge_ เกิดขึ้นเมื่อทั้งสอง Branch มีการเปลี่ยนแปลงที่แตกต่างกัน Git จะสร้าง Merge Commit ใหม่เพื่อรวมการเปลี่ยนแปลง
+
+```bash
+git merge feature/login --no-ff      # บังคับให้สร้าง Merge Commit เสมอ
+```
+
+### 4.4 การแก้ไข Merge Conflict
+
+Merge Conflict เกิดขึ้นเมื่อทั้งสอง Branch แก้ไขบรรทัดเดียวกันในไฟล์เดียวกัน Git จะแสดงเครื่องหมายเพื่อระบุส่วนที่ขัดแย้งกัน
+
+```
+<<<<<<< HEAD
+    <h1>Welcome to Our Website</h1>    ← โค้ดจาก Branch ปัจจุบัน (main)
+=======
+    <h1>Welcome to My Portfolio</h1>   ← โค้ดจาก Branch ที่กำลัง Merge
+>>>>>>> feature/update-header
+```
+
+ขั้นตอนการแก้ไข Conflict มีดังนี้
+
+```bash
+# ขั้นที่ 1: ดูไฟล์ที่มี Conflict
+git status
+
+# ขั้นที่ 2: แก้ไขไฟล์ด้วยมือ โดยลบเครื่องหมาย <<<<<<<, =======, >>>>>>> ออก
+# และเลือกหรือผสมโค้ดที่ต้องการ
+
+# ขั้นที่ 3: Mark ว่าแก้ไขเสร็จแล้ว
+git add index.html
+
+# ขั้นที่ 4: Commit การ Merge
+git commit -m "Merge feature/update-header into main"
+```
+
+---
+
+## ส่วนที่ 5: การทำงานกับ Remote Repository
+
+### 5.1 การเชื่อมต่อ Remote
+
+**`git remote`** — จัดการการเชื่อมต่อกับ Remote Repository
+
+```bash
+git remote -v                                          # แสดง Remote ทั้งหมด
+git remote add origin https://github.com/user/repo.git # เพิ่ม Remote ใหม่
+git remote remove origin                               # ลบ Remote
+git remote rename origin upstream                      # เปลี่ยนชื่อ Remote
+```
+
+### 5.2 การอัปโหลดและดาวน์โหลดโค้ด
+
+**`git push`** — อัปโหลดการเปลี่ยนแปลงไปยัง Remote Repository
+
+```bash
+git push origin main                    # Push Branch main ไปยัง Remote
+git push -u origin feature/login        # Push และตั้ง Upstream (ครั้งแรก)
+git push                                # Push หลังจากตั้ง Upstream แล้ว
+git push origin --delete feature/login  # ลบ Branch จาก Remote
+```
+
+**`git fetch`** — ดาวน์โหลดข้อมูลจาก Remote โดยไม่รวมกับ Branch ปัจจุบัน
+
+```bash
+git fetch origin                # ดาวน์โหลดข้อมูลจาก Remote ทั้งหมด
+git fetch origin main           # ดาวน์โหลดเฉพาะ Branch main
+```
+
+**`git pull`** — ดาวน์โหลดและรวมการเปลี่ยนแปลงจาก Remote เข้าสู่ Branch ปัจจุบัน (เทียบเท่ากับ `git fetch` + `git merge`)
+
+```bash
+git pull origin main            # Pull จาก Branch main ของ Remote
+git pull --rebase origin main   # Pull โดยใช้ Rebase แทน Merge
+```
+
+---
+
+## ส่วนที่ 6: คำสั่งขั้นสูง (Advanced Commands)
+
+### 6.1 Git Rebase
+
+**`git rebase`** ใช้สำหรับย้าย Commit ของ Branch ปัจจุบันไปต่อท้าย Branch เป้าหมาย ทำให้ประวัติ Commit ดูเป็นเส้นตรงและสะอาดขึ้น
+
+```bash
+# ตัวอย่าง: Rebase feature branch บน main
+git switch feature/login
+git rebase main
+```
+
+ก่อน Rebase
+
+```
+main:    A → B → C
+feature:     ↘ D → E
+```
+
+หลัง Rebase
+
+```
+main:    A → B → C
+feature:           → D' → E'
+```
+
+> **ข้อควรระวัง:** ไม่ควรใช้ Rebase กับ Branch ที่ Push ขึ้น Remote และมีผู้อื่นใช้งานอยู่ เนื่องจากจะทำให้ประวัติ Commit ของผู้อื่นขัดแย้งกัน
+
+### 6.2 Git Stash
+
+**`git stash`** ใช้สำหรับเก็บการเปลี่ยนแปลงที่ยังไม่ Commit ไว้ชั่วคราว เพื่อให้สามารถสลับ Branch ได้โดยไม่ต้อง Commit งานที่ยังไม่เสร็จ
+
+```bash
+git stash                       # เก็บการเปลี่ยนแปลงปัจจุบันไว้
+git stash save "WIP: login UI"  # เก็บพร้อมระบุชื่อ
+git stash list                  # แสดงรายการ Stash ทั้งหมด
+git stash pop                   # นำ Stash ล่าสุดกลับมาและลบออกจากรายการ
+git stash apply stash@{1}       # นำ Stash ที่ระบุกลับมาโดยไม่ลบ
+git stash drop stash@{0}        # ลบ Stash ที่ระบุ
+git stash clear                 # ลบ Stash ทั้งหมด
+```
+
+**ตัวอย่างการใช้งาน Stash**
+
+```bash
+# กำลังทำงานบน feature/login แต่ต้องการสลับไปแก้ด่วนที่ main
+git stash save "WIP: half-done login form"
+git switch main
+git switch -c hotfix/urgent-bug
+# แก้ไขบัค...
+git commit -m "Fix critical security vulnerability"
+git switch feature/login
+git stash pop    # นำงานที่ค้างไว้กลับมา
+```
+
+### 6.3 การย้อนกลับการเปลี่ยนแปลง
+
+**`git restore`** — ยกเลิกการเปลี่ยนแปลงใน Working Directory หรือ Staging Area
+
+```bash
+git restore index.html              # ยกเลิกการแก้ไขใน Working Directory
+git restore --staged index.html     # นำไฟล์ออกจาก Staging Area
+git restore --staged .              # นำไฟล์ทั้งหมดออกจาก Staging Area
+```
+
+**`git revert`** — สร้าง Commit ใหม่ที่มีเนื้อหาตรงข้ามกับ Commit ที่ระบุ (ปลอดภัยสำหรับ Branch ที่ Push ขึ้น Remote แล้ว)
+
+```bash
+git revert a3f1c2d                  # Revert Commit ที่ระบุ
+git revert HEAD                     # Revert Commit ล่าสุด
+git revert HEAD~3..HEAD             # Revert 3 Commit ล่าสุด
+```
+
+**`git reset`** — ย้าย HEAD ไปยัง Commit ที่ระบุ (ควรใช้เฉพาะ Branch ที่ยังไม่ Push)
+
+```bash
+git reset --soft HEAD~1    # ย้อนกลับ 1 Commit แต่เก็บการเปลี่ยนแปลงใน Staging Area
+git reset --mixed HEAD~1   # ย้อนกลับ 1 Commit เก็บการเปลี่ยนแปลงใน Working Directory (Default)
+git reset --hard HEAD~1    # ย้อนกลับ 1 Commit และลบการเปลี่ยนแปลงทั้งหมด (อันตราย)
+```
+
+---
+
+## ส่วนที่ 7: ไฟล์ .gitignore
+
+ไฟล์ `.gitignore` ใช้สำหรับกำหนดไฟล์หรือโฟลเดอร์ที่ไม่ต้องการให้ Git ติดตาม เช่น ไฟล์ที่สร้างโดย IDE, ไฟล์ Dependencies, หรือไฟล์ที่มีข้อมูลสำคัญ
+
+**ตัวอย่างไฟล์ `.gitignore` สำหรับโปรเจกต์ Node.js**
+
+```
+# Dependencies
+node_modules/
+
+# Environment Variables
+.env
+.env.local
+.env.production
+
+# Build Output
+dist/
+build/
+
+# Log Files
+*.log
+npm-debug.log*
+
+# OS Files
+.DS_Store
+Thumbs.db
+
+# IDE Files
+.vscode/
+.idea/
+*.swp
+```
+
+**รูปแบบการเขียน Pattern ใน .gitignore**
+
+```
+*.log           # ไม่ติดตามไฟล์ทุกไฟล์ที่มีนามสกุล .log
+!important.log  # ยกเว้นให้ติดตาม important.log
+build/          # ไม่ติดตามโฟลเดอร์ build ทั้งหมด
+**/temp         # ไม่ติดตามโฟลเดอร์ temp ในทุกระดับ
+doc/*.txt       # ไม่ติดตาม .txt ในโฟลเดอร์ doc แต่ไม่รวม Subfolder
+```
+
+---
+
+## ส่วนที่ 8: Workflow ที่แนะนำสำหรับการทำงานเป็นทีม
+
+### 8.1 Git Flow
+
+Git Flow เป็น Workflow มาตรฐานที่นิยมใช้ในโปรเจกต์ขนาดกลางถึงใหญ่ โดยมีโครงสร้าง Branch หลักดังนี้
+
+```
+main          → โค้ดที่ Deploy ใน Production
+develop       → โค้ดล่าสุดที่ผ่านการทดสอบ
+feature/*     → Branch สำหรับพัฒนาฟีเจอร์ใหม่
+release/*     → Branch สำหรับเตรียม Release
+hotfix/*      → Branch สำหรับแก้ปัญหาเร่งด่วนใน Production
+```
+
+### 8.2 ขั้นตอนการทำงานมาตรฐาน
+
+```bash
+# 1. อัปเดต Branch หลักก่อนเริ่มงานใหม่เสมอ
+git switch main
+git pull origin main
+
+# 2. สร้าง Branch ใหม่สำหรับงานที่จะทำ
+git switch -c feature/shopping-cart
+
+# 3. ทำงานและ Commit อย่างสม่ำเสมอ
+git add .
+git commit -m "Add product listing to cart"
+git commit -m "Implement quantity adjustment"
+git commit -m "Add cart total calculation"
+
+# 4. อัปเดต Branch จาก main ก่อน Push เพื่อลด Conflict
+git fetch origin
+git rebase origin/main
+
+# 5. Push Branch ขึ้น Remote
+git push -u origin feature/shopping-cart
+
+# 6. สร้าง Pull Request บน GitHub/GitLab เพื่อให้ทีม Review
+```
+
+---
+
+## สรุปคำสั่งที่ใช้บ่อย (Quick Reference)
+
+| คำสั่ง                | ความหมาย                      |
+| --------------------- | ----------------------------- |
+| `git init`            | สร้าง Repository ใหม่         |
+| `git clone <url>`     | คัดลอก Repository จากภายนอก   |
+| `git status`          | ดูสถานะไฟล์ปัจจุบัน           |
+| `git add <file>`      | เพิ่มไฟล์เข้า Staging Area    |
+| `git commit -m "msg"` | บันทึก Commit                 |
+| `git log --oneline`   | ดูประวัติ Commit แบบสรุป      |
+| `git branch <name>`   | สร้าง Branch ใหม่             |
+| `git switch <branch>` | สลับ Branch                   |
+| `git merge <branch>`  | รวม Branch                    |
+| `git pull`            | ดาวน์โหลดและรวมโค้ดจาก Remote |
+| `git push`            | อัปโหลดโค้ดไปยัง Remote       |
+| `git stash`           | เก็บการเปลี่ยนแปลงชั่วคราว    |
+| `git revert <commit>` | ยกเลิก Commit อย่างปลอดภัย    |
+
+---
+
+## แบบฝึกหัดท้ายบท
+
+**แบบฝึกหัดที่ 1:** สร้าง Repository ใหม่ในเครื่อง สร้างไฟล์ `README.md` แล้วทำการ Add และ Commit พร้อมเขียน Commit Message ที่สื่อความหมาย
+
+**แบบฝึกหัดที่ 2:** สร้าง Branch ชื่อ `feature/about-page` จากนั้นสร้างไฟล์ `about.html` และ Commit แล้วทดลอง Merge กลับเข้าสู่ Branch `main`
+
+**แบบฝึกหัดที่ 3:** จำลองสถานการณ์ Merge Conflict โดยแก้ไขบรรทัดเดียวกันในทั้งสอง Branch แล้วฝึกแก้ไข Conflict ด้วยมือ
+
+**แบบฝึกหัดที่ 4:** สร้าง Repository บน GitHub เชื่อมต่อกับ Repository ในเครื่อง แล้วทดลอง Push และ Pull
+
+---
+
+_เอกสารฉบับนี้ครอบคลุมคำสั่งและแนวคิดที่จำเป็นสำหรับการใช้งาน Git ในระดับเริ่มต้นถึงระดับกลาง สำหรับข้อมูลเพิ่มเติมสามารถศึกษาได้จาก [https://git-scm.com/doc](https://git-scm.com/doc)_
