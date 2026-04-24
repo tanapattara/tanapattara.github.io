@@ -11,5 +11,4 @@ export default {
   nextjs: "Next.js",
   react_native: "React Native",
   unity2d: "Unity 2D",
-  handouts: "Handouts",
 };

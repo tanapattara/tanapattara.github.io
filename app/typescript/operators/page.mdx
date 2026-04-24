@@ -1,0 +1,151 @@
+# ตัวดำเนินการ (Operators)
+
+## ตัวดำเนินการทางคณิตศาสตร์ (Arithmetic Operators)
+
+ตัวดำเนินการทางคณิตศาสตร์ใช้สำหรับคำนวณค่าตัวเลข ได้แก่ บวก `+` ลบ `-` คูณ `*` หาร `/` เศษจากการหาร `%` และยกกำลัง `**`
+
+```typescript
+let a: number = 20;
+let b: number = 6;
+
+let sum: number = a + b;        // บวก: 26
+let diff: number = a - b;       // ลบ: 14
+let product: number = a * b;    // คูณ: 120
+let quotient: number = a / b;   // หาร: 3.333...
+let remainder: number = a % b;  // เศษจากหาร: 2
+let power: number = a ** 2;     // ยกกำลัง: 400
+
+console.log(`${a} + ${b} = ${sum}`);
+console.log(`${a} - ${b} = ${diff}`);
+console.log(`${a} * ${b} = ${product}`);
+console.log(`${a} / ${b} = ${quotient.toFixed(2)}`);
+console.log(`${a} % ${b} = ${remainder}`);
+console.log(`${a} ** 2 = ${power}`);
+
+// ตัวดำเนินการเพิ่ม/ลด 1
+let count: number = 10;
+count++;  // เพิ่มทีละ 1 → 11
+count--;  // ลดทีละ 1 → 10
+console.log(`count = ${count}`); // 10
+```
+
+## ตัวดำเนินการกำหนดค่า (Assignment Operators)
+
+ตัวดำเนินการกำหนดค่าใช้เพื่อกำหนดหรือปรับเปลี่ยนค่าของตัวแปร รูปแบบย่อจะรวมการคำนวณกับการกำหนดค่าเข้าด้วยกันในคำสั่งเดียว
+
+```typescript
+let score: number = 100;
+
+score += 10;  // เหมือน score = score + 10 → 110
+score -= 20;  // เหมือน score = score - 20 → 90
+score *= 2;   // เหมือน score = score * 2  → 180
+score /= 3;   // เหมือน score = score / 3  → 60
+score %= 7;   // เหมือน score = score % 7  → 4
+
+console.log(`score หลังการคำนวณ: ${score}`); // 4
+
+// ตัวอย่างในสถานการณ์จริง
+let totalPrice: number = 0;
+const itemPrice: number = 250;
+const quantity: number = 3;
+
+totalPrice += itemPrice * quantity; // รวมราคาสินค้า
+console.log(`ราคารวม: ${totalPrice} บาท`); // ราคารวม: 750 บาท
+```
+
+## ตัวดำเนินการเปรียบเทียบ (Comparison Operators)
+
+ตัวดำเนินการเปรียบเทียบใช้เปรียบเทียบค่าสองค่าและส่งคืนผลลัพธ์เป็น `boolean` คือ `true` หรือ `false` ควรใช้ `===` และ `!==` แทน `==` และ `!=` เพราะตรวจสอบทั้งค่าและชนิดข้อมูลพร้อมกัน
+
+```typescript
+let x: number = 10;
+let y: number = 20;
+
+console.log(x === y);   // เท่ากัน (เปรียบทั้งค่าและชนิด): false
+console.log(x !== y);   // ไม่เท่ากัน: true
+console.log(x > y);     // มากกว่า: false
+console.log(x < y);     // น้อยกว่า: true
+console.log(x >= 10);   // มากกว่าหรือเท่ากับ: true
+console.log(y <= 20);   // น้อยกว่าหรือเท่ากับ: true
+
+// ตัวอย่างการใช้งาน
+let studentScore: number = 75;
+let passingScore: number = 50;
+
+let isPassed: boolean = studentScore >= passingScore;
+console.log(`ผ่านการสอบ: ${isPassed}`); // ผ่านการสอบ: true
+```
+
+## ตัวดำเนินการตรรกะ (Logical Operators)
+
+ตัวดำเนินการตรรกะใช้รวมเงื่อนไขหลายข้อเข้าด้วยกัน ได้แก่ `&&` (AND ต้องเป็นจริงทั้งคู่) `||` (OR เป็นจริงอย่างน้อยหนึ่งข้อ) และ `!` (NOT กลับค่า)
+
+```typescript
+let age: number = 20;
+let hasStudentCard: boolean = true;
+let gpa: number = 3.5;
+
+// && (AND) - ต้องเป็นจริงทั้งหมด
+let canRegister: boolean = age >= 18 && hasStudentCard;
+console.log(`ลงทะเบียนได้: ${canRegister}`); // true
+
+// || (OR) - เป็นจริงอย่างน้อยหนึ่งข้อ
+let getsScholarship: boolean = gpa >= 3.8 || age < 18;
+console.log(`ได้รับทุน: ${getsScholarship}`); // false
+
+// ! (NOT) - กลับค่า boolean
+let isAbsent: boolean = false;
+let isPresent: boolean = !isAbsent;
+console.log(`เข้าเรียน: ${isPresent}`); // true
+
+// รวมเงื่อนไขซับซ้อน
+let isEligible: boolean = age >= 18 && gpa >= 3.0 && hasStudentCard;
+console.log(`มีสิทธิ์: ${isEligible}`); // true
+```
+
+## ตัวดำเนินการ Nullish Coalescing และ Optional Chaining
+
+`??` (Nullish Coalescing) ใช้กำหนดค่าเริ่มต้นเมื่อค่าเป็น `null` หรือ `undefined` และ `?.` (Optional Chaining) ใช้เข้าถึง property ของออบเจกต์อย่างปลอดภัย โดยไม่เกิด Error หากค่าเป็น `null` หรือ `undefined`
+
+```typescript
+// ?? (Nullish Coalescing) - ใช้ค่าเริ่มต้นเมื่อค่าเป็น null หรือ undefined
+let inputName: string | null = null;
+let displayName: string = inputName ?? "ผู้ใช้งานทั่วไป";
+console.log(displayName); // ผู้ใช้งานทั่วไป
+
+let score: number | undefined = undefined;
+let finalScore: number = score ?? 0;
+console.log(`คะแนน: ${finalScore}`); // คะแนน: 0
+
+// ?. (Optional Chaining) - เข้าถึง property อย่างปลอดภัย
+type Student = {
+  name: string;
+  address?: {
+    city: string;
+  };
+};
+
+let student1: Student = { name: "อนุชา", address: { city: "เชียงใหม่" } };
+let student2: Student = { name: "บุญมี" }; // ไม่มี address
+
+console.log(student1.address?.city); // เชียงใหม่
+console.log(student2.address?.city); // undefined (ไม่เกิด Error)
+```
+
+## ตัวดำเนินการ Ternary
+
+Ternary Operator เป็นตัวดำเนินการที่ย่อการเขียน `if-else` ให้อยู่ในบรรทัดเดียว เหมาะสำหรับเงื่อนไขที่มีสองทางเลือกและมีความซับซ้อนน้อย
+
+```typescript
+// รูปแบบ: เงื่อนไข ? ค่าเมื่อจริง : ค่าเมื่อเท็จ
+let studentScore: number = 72;
+let grade: string = studentScore >= 80 ? "A" : studentScore >= 70 ? "B" : studentScore >= 60 ? "C" : "F";
+
+console.log(`เกรด: ${grade}`); // เกรด: B
+
+// ตัวอย่างการใช้งาน
+let hour: number = 14;
+let greeting: string = hour < 12 ? "สวัสดีตอนเช้า" : hour < 18 ? "สวัสดีตอนบ่าย" : "สวัสดีตอนเย็น";
+
+console.log(greeting); // สวัสดีตอนบ่าย
+```

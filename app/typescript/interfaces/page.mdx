@@ -1,0 +1,191 @@
+# อินเทอร์เฟซและประเภทข้อมูล (Interfaces and Types)
+
+## Interface คืออะไร
+
+Interface ใช้กำหนดโครงสร้างของออบเจกต์ ระบุว่าออบเจกต์นั้นต้องมี property หรือ method อะไรบ้าง การใช้ Interface ทำให้โค้ดมีโครงสร้างที่ชัดเจนและตรวจสอบได้
+
+```typescript
+// การประกาศ Interface
+interface Student {
+  id: number;
+  name: string;
+  age: number;
+  gpa: number;
+}
+
+// การสร้างออบเจกต์ที่ตรงกับ Interface
+let student1: Student = {
+  id: 6501001,
+  name: "สมชาย รักเรียน",
+  age: 20,
+  gpa: 3.5,
+};
+
+// TypeScript ตรวจสอบโครงสร้างให้
+// let wrongStudent: Student = { id: 1, name: "ทดสอบ" }; // ❌ Error: ขาด age และ gpa
+
+console.log(`${student1.name} (${student1.id})`); // สมชาย รักเรียน (6501001)
+console.log(`GPA: ${student1.gpa}`);               // GPA: 3.5
+```
+
+## Optional Properties
+
+Property ที่มีเครื่องหมาย `?` ต่อท้ายชื่อ หมายความว่าออบเจกต์นั้นจะมีหรือไม่มี property นี้ก็ได้
+
+```typescript
+interface CourseRegistration {
+  studentId: number;
+  courseName: string;
+  semester: number;
+  note?: string;        // Optional: อาจมีหรือไม่มีก็ได้
+  scholarshipCode?: string; // Optional
+}
+
+// ออบเจกต์ที่ไม่มี property optional
+let reg1: CourseRegistration = {
+  studentId: 6501001,
+  courseName: "TypeScript เบื้องต้น",
+  semester: 1,
+};
+
+// ออบเจกต์ที่มี property optional
+let reg2: CourseRegistration = {
+  studentId: 6501002,
+  courseName: "TypeScript เบื้องต้น",
+  semester: 1,
+  note: "ลงทะเบียนล่าช้า",
+  scholarshipCode: "SCH-2025",
+};
+
+console.log(reg1.note ?? "ไม่มีหมายเหตุ"); // ไม่มีหมายเหตุ
+console.log(reg2.note ?? "ไม่มีหมายเหตุ"); // ลงทะเบียนล่าช้า
+```
+
+## Readonly Properties
+
+Property ที่มีคำนำหน้า `readonly` ไม่สามารถเปลี่ยนค่าได้หลังจากสร้างออบเจกต์แล้ว เหมาะสำหรับข้อมูลที่ไม่ควรถูกแก้ไข
+
+```typescript
+interface PersonalInfo {
+  readonly idCardNumber: string;  // ไม่สามารถแก้ไขได้
+  readonly birthDate: string;     // ไม่สามารถแก้ไขได้
+  name: string;                   // แก้ไขได้
+  address: string;                // แก้ไขได้
+}
+
+let person: PersonalInfo = {
+  idCardNumber: "1234567890123",
+  birthDate: "2548-05-15",
+  name: "วิชัย สุขสม",
+  address: "กรุงเทพมหานคร",
+};
+
+// แก้ไข property ปกติได้
+person.name = "วิชัย สุขใจ";
+person.address = "เชียงใหม่";
+
+// person.idCardNumber = "9999999999999"; // ❌ Error: Cannot assign to 'idCardNumber'
+
+console.log(`ชื่อ: ${person.name}`);
+console.log(`เลขบัตร: ${person.idCardNumber}`);
+```
+
+## Interface กับ Method
+
+Interface สามารถกำหนด method ที่ออบเจกต์ต้องมีได้ด้วย โดยระบุ parameter และ return type
+
+```typescript
+interface Shape {
+  name: string;
+  color: string;
+  getArea(): number;       // method ที่ต้องมี
+  getPerimeter(): number;  // method ที่ต้องมี
+  describe(): string;
+}
+
+// สร้างออบเจกต์ที่ implement Interface
+let rectangle: Shape = {
+  name: "สี่เหลี่ยมผืนผ้า",
+  color: "แดง",
+  getArea(): number {
+    return 10 * 5; // สมมติ width=10, height=5
+  },
+  getPerimeter(): number {
+    return 2 * (10 + 5);
+  },
+  describe(): string {
+    return `${this.name} สี${this.color} พื้นที่ ${this.getArea()} ตร.หน่วย`;
+  },
+};
+
+console.log(rectangle.describe());       // สี่เหลี่ยมผืนผ้า สีแดง พื้นที่ 50 ตร.หน่วย
+console.log(`เส้นรอบรูป: ${rectangle.getPerimeter()}`); // เส้นรอบรูป: 30
+```
+
+## Type Alias
+
+Type Alias ใช้กำหนดชื่อย่อให้กับชนิดข้อมูล ช่วยให้โค้ดอ่านง่ายขึ้นและสามารถนำกลับมาใช้ซ้ำได้
+
+```typescript
+// Type Alias สำหรับชนิดข้อมูลพื้นฐาน
+type StudentId = number;
+type GradeLevel = "A" | "B" | "C" | "D" | "F"; // Literal Type
+type Coordinate = [number, number]; // Tuple
+
+let id: StudentId = 6501234;
+let grade: GradeLevel = "B";
+let position: Coordinate = [13.7563, 100.5018]; // ละติจูด, ลองจิจูด
+
+// Type Alias สำหรับออบเจกต์
+type Point = {
+  x: number;
+  y: number;
+};
+
+type Address = {
+  street: string;
+  city: string;
+  postalCode: string;
+};
+
+let home: Address = {
+  street: "ถนนสุขุมวิท",
+  city: "กรุงเทพมหานคร",
+  postalCode: "10110",
+};
+
+console.log(`${home.street}, ${home.city} ${home.postalCode}`);
+```
+
+## Interface vs Type Alias
+
+ทั้ง `interface` และ `type` ใช้กำหนดโครงสร้างข้อมูลได้คล้ายกัน แต่มีความแตกต่างกันบางส่วน โดยทั่วไปแนะนำให้ใช้ `interface` สำหรับออบเจกต์และ `type` สำหรับ Union Type หรือ Tuple
+
+```typescript
+// Interface - ขยายได้ด้วย extends
+interface Animal {
+  name: string;
+  sound(): string;
+}
+
+interface Pet extends Animal {
+  owner: string;
+}
+
+let myPet: Pet = {
+  name: "บิ๊กแบง",
+  owner: "สมชาย",
+  sound(): string {
+    return "โฮ่ง!";
+  },
+};
+
+console.log(`${myPet.name} ของ ${myPet.owner} ร้อง ${myPet.sound()}`);
+
+// Type - รองรับ Union ได้ดีกว่า
+type StringOrNumber = string | number;
+type Status = "active" | "inactive" | "pending";
+
+let currentStatus: Status = "active";
+console.log(`สถานะ: ${currentStatus}`);
+```

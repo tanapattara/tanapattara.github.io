@@ -1,0 +1,130 @@
+# ชนิดข้อมูลและตัวแปร
+
+## การประกาศตัวแปร (Variable Declaration)
+
+ใน TypeScript สามารถประกาศตัวแปรได้ 3 รูปแบบ ได้แก่ `let`, `const` และ `var` โดย `let` ใช้ประกาศตัวแปรที่เปลี่ยนค่าได้ `const` ใช้ประกาศค่าคงที่ที่ไม่ต้องการเปลี่ยนแปลง และ `var` เป็นแบบเก่าที่ไม่แนะนำให้ใช้ใน TypeScript สมัยใหม่
+
+```typescript
+// let - ประกาศตัวแปรที่เปลี่ยนค่าได้
+let studentName: string = "สมชาย";
+let age: number = 20;
+let isPassed: boolean = true;
+
+studentName = "สมหญิง"; // เปลี่ยนค่าได้
+
+// const - ประกาศค่าคงที่ที่ไม่สามารถเปลี่ยนค่าได้
+const MAX_SCORE: number = 100;
+const SCHOOL_NAME: string = "มหาวิทยาลัยตัวอย่าง";
+
+// MAX_SCORE = 90; // ❌ Error: ไม่สามารถกำหนดค่าใหม่ให้ const ได้
+
+console.log(`นักศึกษา: ${studentName}, อายุ: ${age}`);
+console.log(`คะแนนเต็ม: ${MAX_SCORE}`);
+```
+
+## ชนิดข้อมูลพื้นฐาน (Primitive Types)
+
+TypeScript มีชนิดข้อมูลพื้นฐานหลัก ได้แก่ `number` สำหรับตัวเลข `string` สำหรับข้อความ `boolean` สำหรับค่าจริงหรือเท็จ `null` สำหรับค่าว่างที่กำหนดตั้งใจ และ `undefined` สำหรับตัวแปรที่ยังไม่ได้กำหนดค่า
+
+```typescript
+// number - ตัวเลขจำนวนเต็มและทศนิยม
+let score: number = 95;
+let gpa: number = 3.75;
+let temperature: number = -5;
+
+// string - ข้อความ
+let firstName: string = "วิชัย";
+let lastName: string = "สุขสม";
+let greeting: string = `สวัสดี คุณ${firstName} ${lastName}`; // Template Literal
+
+// boolean - ค่าจริง/เท็จ
+let isStudent: boolean = true;
+let isGraduated: boolean = false;
+
+// null และ undefined
+let emptyValue: null = null;
+let notAssigned: undefined = undefined;
+
+console.log(score);         // 95
+console.log(greeting);      // สวัสดี คุณวิชัย สุขสม
+console.log(isStudent);     // true
+```
+
+## การระบุชนิดข้อมูล (Type Annotation)
+
+Type Annotation คือการระบุชนิดข้อมูลของตัวแปรอย่างชัดเจน โดยใช้เครื่องหมาย `:` ตามด้วยชื่อชนิดข้อมูล ช่วยให้ TypeScript ตรวจสอบความถูกต้องของข้อมูลได้ก่อนที่โปรแกรมจะทำงานจริง
+
+```typescript
+// Type Annotation - ระบุชนิดข้อมูลอย่างชัดเจน
+let studentId: number = 6501234;
+let courseName: string = "การเขียนโปรแกรม";
+let isEnrolled: boolean = true;
+
+// TypeScript จะแจ้งเตือนหากกำหนดค่าผิดชนิด
+// studentId = "ABC"; // ❌ Error: Type 'string' is not assignable to type 'number'
+// isEnrolled = 1;    // ❌ Error: Type 'number' is not assignable to type 'boolean'
+
+// การประกาศตัวแปรหลายตัวพร้อมกัน
+let x: number, y: number, z: number;
+x = 10;
+y = 20;
+z = x + y;
+
+console.log(`ผลรวม: ${z}`); // ผลรวม: 30
+```
+
+## การอนุมานชนิดข้อมูล (Type Inference)
+
+TypeScript สามารถอนุมาน (Infer) ชนิดข้อมูลได้โดยอัตโนมัติจากค่าที่กำหนดให้ตัวแปร จึงไม่จำเป็นต้องระบุ Type Annotation ทุกครั้ง แต่ยังคงมีการตรวจสอบชนิดข้อมูลอยู่เบื้องหลัง
+
+```typescript
+// Type Inference - TypeScript อนุมานชนิดข้อมูลเอง
+let city = "กรุงเทพมหานคร";    // อนุมานเป็น string
+let population = 10000000;    // อนุมานเป็น number
+let isCapital = true;         // อนุมานเป็น boolean
+
+// ยังคงตรวจสอบชนิดข้อมูลอยู่
+// city = 999;      // ❌ Error: Type 'number' is not assignable to type 'string'
+// population = "มาก"; // ❌ Error
+
+console.log(`${city} มีประชากร ${population.toLocaleString()} คน`);
+```
+
+## Union Type (ชนิดข้อมูลแบบผสม)
+
+Union Type ใช้เมื่อต้องการให้ตัวแปรรับค่าได้หลายชนิดข้อมูล โดยใช้เครื่องหมาย `|` คั่นระหว่างชนิดข้อมูลแต่ละชนิด
+
+```typescript
+// Union Type - ตัวแปรรับค่าได้หลายชนิด
+let studentCode: number | string;
+studentCode = 6501234;     // ✅ กำหนดเป็น number ได้
+studentCode = "ST-001";    // ✅ กำหนดเป็น string ได้
+
+// ตัวอย่างการใช้งานจริง
+function displayId(id: number | string): void {
+  console.log(`รหัสนักศึกษา: ${id}`);
+}
+
+displayId(6501234);   // รหัสนักศึกษา: 6501234
+displayId("ST-001");  // รหัสนักศึกษา: ST-001
+```
+
+## ชนิดข้อมูล any และ unknown
+
+`any` ใช้เมื่อต้องการให้ตัวแปรรับชนิดข้อมูลใดก็ได้ โดยปิดการตรวจสอบชนิดข้อมูล ส่วน `unknown` คล้ายกับ `any` แต่ปลอดภัยกว่า เพราะต้องตรวจสอบชนิดข้อมูลก่อนนำไปใช้
+
+```typescript
+// any - ปิดการตรวจสอบชนิดข้อมูล (ไม่แนะนำให้ใช้บ่อย)
+let flexibleValue: any = "ข้อความ";
+flexibleValue = 42;
+flexibleValue = true;
+flexibleValue = [1, 2, 3];
+
+// unknown - ปลอดภัยกว่า any ต้องตรวจสอบชนิดก่อนใช้
+let unknownData: unknown = "ข้อมูลจากภายนอก";
+
+// ต้องตรวจสอบชนิดก่อนนำไปใช้
+if (typeof unknownData === "string") {
+  console.log(unknownData.toUpperCase()); // ✅ ปลอดภัย
+}
+```

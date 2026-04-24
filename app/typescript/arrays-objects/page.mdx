@@ -1,0 +1,196 @@
+# อาร์เรย์และออบเจกต์ (Arrays and Objects)
+
+## อาร์เรย์ (Array)
+
+อาร์เรย์คือโครงสร้างข้อมูลที่ใช้เก็บข้อมูลหลายค่าในตัวแปรเดียว โดยสมาชิกแต่ละตัวเข้าถึงได้ด้วย Index ที่เริ่มจาก 0 ใน TypeScript สามารถระบุชนิดข้อมูลของสมาชิกได้
+
+```typescript
+// การประกาศอาร์เรย์
+let scores: number[] = [85, 90, 78, 92, 88];
+let names: string[] = ["สมชาย", "สมหญิง", "วิชัย", "นุชนาฏ"];
+let flags: boolean[] = [true, false, true];
+
+// หรือใช้รูปแบบ Generic
+let grades: Array<number> = [3.5, 3.0, 2.5];
+
+// การเข้าถึงสมาชิก
+console.log(scores[0]);         // 85 (สมาชิกตัวแรก)
+console.log(names[2]);          // วิชัย
+console.log(scores.length);     // 5 (จำนวนสมาชิก)
+
+// การแก้ไขค่า
+scores[1] = 95;
+console.log(`คะแนนที่ 2: ${scores[1]}`); // 95
+
+// วนซ้ำผ่านอาร์เรย์
+let total: number = 0;
+for (let score of scores) {
+  total += score;
+}
+console.log(`คะแนนรวม: ${total}`);
+console.log(`คะแนนเฉลี่ย: ${(total / scores.length).toFixed(2)}`);
+```
+
+## Array Methods ที่ใช้บ่อย
+
+TypeScript/JavaScript มี Built-in Methods สำหรับจัดการอาร์เรย์ที่ใช้งานบ่อย ได้แก่ การเพิ่ม ลบ ค้นหา และแปลงสมาชิก
+
+```typescript
+let fruits: string[] = ["แอปเปิ้ล", "กล้วย", "มะม่วง"];
+
+// push - เพิ่มสมาชิกที่ท้ายอาร์เรย์
+fruits.push("สับปะรด");
+console.log(fruits); // ["แอปเปิ้ล", "กล้วย", "มะม่วง", "สับปะรด"]
+
+// pop - ดึงสมาชิกตัวสุดท้ายออก
+let lastFruit = fruits.pop();
+console.log(lastFruit); // สับปะรด
+
+// unshift - เพิ่มสมาชิกที่ต้นอาร์เรย์
+fruits.unshift("ส้ม");
+console.log(fruits); // ["ส้ม", "แอปเปิ้ล", "กล้วย", "มะม่วง"]
+
+// includes - ตรวจสอบว่ามีสมาชิกนี้หรือไม่
+console.log(fruits.includes("กล้วย")); // true
+
+// indexOf - หา index ของสมาชิก
+console.log(fruits.indexOf("มะม่วง")); // 3
+
+// join - รวมสมาชิกเป็น string
+let fruitList: string = fruits.join(", ");
+console.log(fruitList); // ส้ม, แอปเปิ้ล, กล้วย, มะม่วง
+
+// slice - ตัดอาร์เรย์ (ไม่แก้ไขต้นฉบับ)
+let someFruits: string[] = fruits.slice(1, 3);
+console.log(someFruits); // ["แอปเปิ้ล", "กล้วย"]
+```
+
+## Array Methods แบบ Functional
+
+`map`, `filter`, และ `reduce` เป็น methods ที่ใช้แปลงหรือกรองข้อมูลในอาร์เรย์ด้วยรูปแบบที่กระชับ
+
+```typescript
+let scores: number[] = [85, 42, 91, 37, 78, 65, 55];
+
+// filter - กรองสมาชิกที่ตรงเงื่อนไข
+let passed: number[] = scores.filter((score) => score >= 50);
+console.log(`ผ่าน: ${passed}`); // 85, 91, 78, 65, 55
+
+// map - แปลงค่าทุกสมาชิก
+let gradeLetters: string[] = scores.map((score) => {
+  if (score >= 80) return "A";
+  if (score >= 70) return "B";
+  if (score >= 60) return "C";
+  if (score >= 50) return "D";
+  return "F";
+});
+console.log(`เกรด: ${gradeLetters}`); // A, F, A, F, B, C, D
+
+// reduce - รวมค่าทั้งหมดเป็นค่าเดียว
+let total: number = scores.reduce((sum, score) => sum + score, 0);
+let average: number = total / scores.length;
+console.log(`คะแนนเฉลี่ย: ${average.toFixed(2)}`); // 64.71
+
+// find - หาสมาชิกตัวแรกที่ตรงเงื่อนไข
+let firstPassed = scores.find((score) => score >= 50);
+console.log(`คนแรกที่ผ่าน: ${firstPassed}`); // 85
+
+// sort - เรียงลำดับ
+let sorted = [...scores].sort((a, b) => a - b);
+console.log(`เรียงน้อยไปมาก: ${sorted}`);
+```
+
+## ออบเจกต์ (Object)
+
+ออบเจกต์คือโครงสร้างข้อมูลที่เก็บข้อมูลในรูปแบบ key-value pairs ใน TypeScript สามารถกำหนดโครงสร้างของออบเจกต์ได้ผ่าน Type Annotation หรือ Interface
+
+```typescript
+// การสร้างออบเจกต์
+let student: { name: string; age: number; gpa: number } = {
+  name: "อนุชา ใจดี",
+  age: 20,
+  gpa: 3.5,
+};
+
+// การเข้าถึง property
+console.log(student.name);      // อนุชา ใจดี
+console.log(student["age"]);    // 20
+
+// การแก้ไข property
+student.gpa = 3.8;
+console.log(`เกรดเฉลี่ย: ${student.gpa}`); // 3.8
+
+// ออบเจกต์ซ้อนกัน (Nested Object)
+let course: {
+  code: string;
+  name: string;
+  teacher: { name: string; email: string };
+} = {
+  code: "CS101",
+  name: "การเขียนโปรแกรมเบื้องต้น",
+  teacher: {
+    name: "อ.สมศักดิ์",
+    email: "somsak@example.com",
+  },
+};
+
+console.log(`วิชา: ${course.name}`);
+console.log(`อาจารย์: ${course.teacher.name}`);
+```
+
+## Destructuring (การแตกโครงสร้าง)
+
+Destructuring ช่วยดึงค่าจาก Array หรือ Object มากำหนดให้ตัวแปรได้อย่างสะดวกในบรรทัดเดียว
+
+```typescript
+// Array Destructuring
+let rgb: number[] = [255, 128, 0];
+let [red, green, blue] = rgb;
+
+console.log(`R: ${red}, G: ${green}, B: ${blue}`); // R: 255, G: 128, B: 0
+
+// Object Destructuring
+let person = { name: "ชัยวัฒน์", age: 22, city: "เชียงใหม่" };
+let { name, age, city } = person;
+
+console.log(`${name} อายุ ${age} ปี อยู่ที่ ${city}`);
+
+// ตั้งชื่อตัวแปรใหม่เวลา destructure
+let { name: fullName, city: hometown } = person;
+console.log(`${fullName} บ้านอยู่ที่ ${hometown}`);
+
+// Destructuring ใน parameter ฟังก์ชัน
+function printStudent({ name, gpa }: { name: string; gpa: number }): void {
+  console.log(`${name} มี GPA: ${gpa}`);
+}
+
+printStudent({ name: "บุญมี", gpa: 3.2 });
+```
+
+## Spread Operator
+
+Spread Operator `...` ใช้กระจายสมาชิกของ Array หรือ Object ออกมา มีประโยชน์สำหรับการ copy หรือรวมข้อมูล
+
+```typescript
+// Spread กับ Array
+let firstGroup: number[] = [1, 2, 3];
+let secondGroup: number[] = [4, 5, 6];
+let combined: number[] = [...firstGroup, ...secondGroup];
+
+console.log(combined); // [1, 2, 3, 4, 5, 6]
+
+// Copy Array โดยไม่เชื่อมโยงกัน
+let original: string[] = ["ก", "ข", "ค"];
+let copy: string[] = [...original];
+copy.push("ง");
+
+console.log(`ต้นฉบับ: ${original}`); // ก, ข, ค
+console.log(`สำเนา: ${copy}`);       // ก, ข, ค, ง
+
+// Spread กับ Object
+let baseInfo = { id: 1, name: "สมชาย" };
+let fullInfo = { ...baseInfo, age: 21, department: "วิทยาการคอมพิวเตอร์" };
+
+console.log(fullInfo);
+// { id: 1, name: "สมชาย", age: 21, department: "วิทยาการคอมพิวเตอร์" }
+```

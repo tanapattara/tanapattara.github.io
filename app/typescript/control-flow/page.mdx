@@ -1,0 +1,178 @@
+# การควบคุมการทำงาน (Control Flow)
+
+## โครงสร้างการตัดสินใจ if-else
+
+โครงสร้าง `if-else` ใช้สำหรับตรวจสอบเงื่อนไขแล้วเลือกดำเนินการตามผลลัพธ์ที่ได้ สามารถเพิ่มเงื่อนไขเพิ่มเติมได้ด้วย `else if` และสามารถซ้อนกันได้หลายระดับ
+
+```typescript
+let score: number = 75;
+
+if (score >= 80) {
+  console.log("เกรด A - ดีเยี่ยม");
+} else if (score >= 70) {
+  console.log("เกรด B - ดี");
+} else if (score >= 60) {
+  console.log("เกรด C - พอใช้");
+} else if (score >= 50) {
+  console.log("เกรด D - ผ่าน");
+} else {
+  console.log("เกรด F - ไม่ผ่าน");
+}
+// เกรด B - ดี
+
+// ตัวอย่างเงื่อนไขซ้อน (Nested if)
+let age: number = 20;
+let hasID: boolean = true;
+
+if (age >= 18) {
+  if (hasID) {
+    console.log("สามารถเข้าได้ มีบัตรประชาชน");
+  } else {
+    console.log("ต้องแสดงบัตรประชาชน");
+  }
+} else {
+  console.log("อายุไม่ถึงเกณฑ์");
+}
+```
+
+## โครงสร้าง switch-case
+
+`switch` เหมาะสำหรับการตรวจสอบตัวแปรเดียวกับหลายค่าที่เป็นไปได้ ทำให้โค้ดอ่านง่ายกว่าการใช้ `else if` หลายครั้ง
+
+```typescript
+let dayNumber: number = 3;
+let dayName: string;
+
+switch (dayNumber) {
+  case 1:
+    dayName = "วันจันทร์";
+    break;
+  case 2:
+    dayName = "วันอังคาร";
+    break;
+  case 3:
+    dayName = "วันพุธ";
+    break;
+  case 4:
+    dayName = "วันพฤหัสบดี";
+    break;
+  case 5:
+    dayName = "วันศุกร์";
+    break;
+  case 6:
+  case 7:
+    // รวม case เมื่อผลลัพธ์เหมือนกัน
+    dayName = "วันหยุดสุดสัปดาห์";
+    break;
+  default:
+    dayName = "ไม่ถูกต้อง";
+}
+
+console.log(`วันที่ ${dayNumber} คือ${dayName}`); // วันที่ 3 คือวันพุธ
+```
+
+## การวนซ้ำด้วย for loop
+
+`for` loop ใช้เมื่อทราบจำนวนรอบที่ต้องการวนซ้ำล่วงหน้า ประกอบด้วย 3 ส่วน คือ ค่าเริ่มต้น เงื่อนไข และการปรับค่าในแต่ละรอบ
+
+```typescript
+// for loop พื้นฐาน
+console.log("=== ตารางสูตรคูณแม่ 3 ===");
+for (let i = 1; i <= 10; i++) {
+  console.log(`3 × ${i} = ${3 * i}`);
+}
+
+// for loop ถอยหลัง
+console.log("\n=== นับถอยหลัง ===");
+for (let i = 5; i >= 1; i--) {
+  console.log(`${i}...`);
+}
+console.log("หมดเวลา!");
+
+// for loop ซ้อนกัน
+console.log("\n=== รูปสามเหลี่ยม ===");
+for (let row = 1; row <= 5; row++) {
+  let line: string = "";
+  for (let col = 1; col <= row; col++) {
+    line += "* ";
+  }
+  console.log(line);
+}
+```
+
+## การวนซ้ำด้วย while loop
+
+`while` loop ใช้เมื่อไม่ทราบจำนวนรอบที่แน่นอนล่วงหน้า โดยวนซ้ำไปเรื่อยๆ ตราบที่เงื่อนไขยังเป็น `true`
+
+```typescript
+// while loop พื้นฐาน
+let number: number = 1;
+console.log("=== ตัวเลขคี่ 1-20 ===");
+while (number <= 20) {
+  if (number % 2 !== 0) {
+    console.log(number);
+  }
+  number++;
+}
+
+// do-while loop - ทำงานอย่างน้อย 1 ครั้งก่อนตรวจเงื่อนไข
+let attempt: number = 0;
+let maxAttempts: number = 3;
+
+do {
+  attempt++;
+  console.log(`ความพยายามครั้งที่ ${attempt}`);
+} while (attempt < maxAttempts);
+
+console.log("สิ้นสุดการทำงาน");
+```
+
+## การวนซ้ำด้วย for...of และ for...in
+
+`for...of` ใช้วนซ้ำผ่านสมาชิกแต่ละตัวของ Array หรือ Iterable object ส่วน `for...in` ใช้วนซ้ำผ่าน key ของออบเจกต์
+
+```typescript
+// for...of - วนซ้ำผ่าน Array
+let fruits: string[] = ["แอปเปิ้ล", "กล้วย", "มะม่วง", "สับปะรด"];
+
+console.log("=== รายการผลไม้ ===");
+for (let fruit of fruits) {
+  console.log(`- ${fruit}`);
+}
+
+// for...in - วนซ้ำผ่าน key ของออบเจกต์
+let student = {
+  name: "สมชาย",
+  age: 20,
+  gpa: 3.5,
+};
+
+console.log("\n=== ข้อมูลนักศึกษา ===");
+for (let key in student) {
+  console.log(`${key}: ${student[key as keyof typeof student]}`);
+}
+```
+
+## การควบคุม break และ continue
+
+`break` ใช้หยุดการวนซ้ำทันที ส่วน `continue` ใช้ข้ามรอบปัจจุบันและไปเริ่มรอบถัดไป
+
+```typescript
+// break - หยุดการวนซ้ำ
+console.log("=== หาตัวเลขหาร 7 ลงตัวตัวแรกที่ > 30 ===");
+for (let i = 31; i <= 100; i++) {
+  if (i % 7 === 0) {
+    console.log(`พบ: ${i}`);
+    break; // หยุดทันทีเมื่อพบค่าที่ต้องการ
+  }
+}
+
+// continue - ข้ามรอบปัจจุบัน
+console.log("\n=== ตัวเลขคู่ 1-10 ===");
+for (let i = 1; i <= 10; i++) {
+  if (i % 2 !== 0) {
+    continue; // ข้ามตัวเลขคี่
+  }
+  console.log(i);
+}
+```

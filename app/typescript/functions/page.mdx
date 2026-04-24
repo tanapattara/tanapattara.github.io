@@ -1,0 +1,147 @@
+# ฟังก์ชัน (Functions)
+
+## การประกาศและเรียกใช้ฟังก์ชัน (Function Declaration)
+
+ฟังก์ชันคือกลุ่มคำสั่งที่ทำงานร่วมกันเพื่อทำหน้าที่ใดหน้าที่หนึ่ง ใน TypeScript ทุกฟังก์ชันควรระบุชนิดข้อมูลของ parameter และ return value เพื่อให้ตรวจสอบความถูกต้องได้
+
+```typescript
+// การประกาศฟังก์ชันพื้นฐาน
+function greet(name: string): string {
+  return `สวัสดีครับ คุณ${name}`;
+}
+
+// การเรียกใช้ฟังก์ชัน
+let message: string = greet("สมชาย");
+console.log(message); // สวัสดีครับ คุณสมชาย
+
+// ฟังก์ชันรับหลาย parameter
+function calculateBMI(weight: number, height: number): number {
+  // weight หน่วยเป็น kg, height หน่วยเป็น เมตร
+  let bmi: number = weight / (height * height);
+  return Math.round(bmi * 100) / 100; // ปัดเศษ 2 ตำแหน่ง
+}
+
+let bmi: number = calculateBMI(65, 1.70);
+console.log(`ค่า BMI: ${bmi}`); // ค่า BMI: 22.49
+```
+
+## ฟังก์ชันที่ไม่คืนค่า (void)
+
+ฟังก์ชันที่ไม่ต้องการคืนค่าใดๆ ให้ระบุ return type เป็น `void` ฟังก์ชันประเภทนี้มักใช้สำหรับแสดงผลหรือทำงานที่มีผลข้างเคียง
+
+```typescript
+// void - ฟังก์ชันที่ไม่คืนค่า
+function printStudentInfo(name: string, score: number): void {
+  console.log(`ชื่อ: ${name}`);
+  console.log(`คะแนน: ${score}`);
+  console.log(`ผลการเรียน: ${score >= 50 ? "ผ่าน" : "ไม่ผ่าน"}`);
+  console.log("------------------------");
+}
+
+printStudentInfo("วิชัย", 85);
+printStudentInfo("นุชนาฏ", 42);
+```
+
+## พารามิเตอร์เสริมและค่าเริ่มต้น (Optional & Default Parameters)
+
+พารามิเตอร์เสริม (Optional) ใช้เครื่องหมาย `?` เพื่อบอกว่าสามารถละการส่งค่าได้ ส่วนพารามิเตอร์ที่มีค่าเริ่มต้น (Default) จะใช้ค่าที่กำหนดเมื่อไม่ได้ส่งค่ามา
+
+```typescript
+// Optional parameter (?) - สามารถไม่ส่งค่าได้
+function createProfile(name: string, nickname?: string): string {
+  if (nickname) {
+    return `${name} (${nickname})`;
+  }
+  return name;
+}
+
+console.log(createProfile("สมชาย", "ชาย")); // สมชาย (ชาย)
+console.log(createProfile("สมหญิง"));        // สมหญิง
+
+// Default parameter - ใช้ค่าเริ่มต้นเมื่อไม่ส่งค่ามา
+function applyDiscount(price: number, discount: number = 10): number {
+  let discountAmount: number = price * (discount / 100);
+  return price - discountAmount;
+}
+
+console.log(applyDiscount(1000));      // 900  (ลด 10% ตามค่าเริ่มต้น)
+console.log(applyDiscount(1000, 20));  // 800  (ลด 20%)
+console.log(applyDiscount(500, 0));    // 500  (ไม่ลด)
+```
+
+## Arrow Function
+
+Arrow Function คือรูปแบบการเขียนฟังก์ชันที่กระชับกว่า Function Declaration เหมาะสำหรับฟังก์ชันสั้นๆ และมักใช้ร่วมกับ Array methods
+
+```typescript
+// Arrow Function พื้นฐาน
+const add = (a: number, b: number): number => {
+  return a + b;
+};
+
+// Arrow Function แบบย่อ (ถ้า body มีแค่ return อย่างเดียว)
+const multiply = (a: number, b: number): number => a * b;
+
+// Arrow Function ที่รับ parameter เดียว
+const square = (n: number): number => n * n;
+
+console.log(add(5, 3));       // 8
+console.log(multiply(4, 6));  // 24
+console.log(square(7));       // 49
+
+// ตัวอย่างการใช้กับ Array
+let scores: number[] = [85, 62, 91, 47, 78];
+
+let passedScores = scores.filter((s) => s >= 50);
+let doubled = scores.map((s) => s * 2);
+
+console.log(`คะแนนที่ผ่าน: ${passedScores}`);  // 85, 62, 91, 78
+console.log(`คะแนนสองเท่า: ${doubled}`);        // 170, 124, 182, 94, 156
+```
+
+## Rest Parameters
+
+Rest Parameters ใช้รับ argument จำนวนไม่จำกัดแล้วรวมเป็น Array โดยใช้เครื่องหมาย `...` นำหน้าชื่อ parameter
+
+```typescript
+// Rest Parameters - รับ argument จำนวนไม่จำกัด
+function sumAll(...numbers: number[]): number {
+  let total: number = 0;
+  for (let num of numbers) {
+    total += num;
+  }
+  return total;
+}
+
+console.log(sumAll(1, 2, 3));          // 6
+console.log(sumAll(10, 20, 30, 40));   // 100
+console.log(sumAll(5));                // 5
+
+// ผสมกับ parameter ปกติ
+function buildSentence(subject: string, ...words: string[]): string {
+  return `${subject} ${words.join(" ")}`;
+}
+
+console.log(buildSentence("นักศึกษา", "เรียน", "TypeScript", "ได้เก่ง"));
+// นักศึกษา เรียน TypeScript ได้เก่ง
+```
+
+## Function Overloading
+
+Function Overloading ช่วยให้ฟังก์ชันรับ parameter ได้หลายรูปแบบ โดยกำหนด signature หลายแบบสำหรับฟังก์ชันเดียวกัน
+
+```typescript
+// Function Overloading
+function formatValue(value: number): string;
+function formatValue(value: string): string;
+function formatValue(value: number | string): string {
+  if (typeof value === "number") {
+    return `ตัวเลข: ${value.toLocaleString()}`;
+  } else {
+    return `ข้อความ: "${value}"`;
+  }
+}
+
+console.log(formatValue(1234567));    // ตัวเลข: 1,234,567
+console.log(formatValue("สวัสดี"));  // ข้อความ: "สวัสดี"
+```

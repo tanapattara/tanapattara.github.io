@@ -1,0 +1,224 @@
+# คลาส (Classes)
+
+## การสร้างคลาสเบื้องต้น
+
+คลาสเป็นแม่แบบ (Blueprint) สำหรับสร้างออบเจกต์ ประกอบด้วย properties (ข้อมูล) และ methods (พฤติกรรม) การเขียนโปรแกรมเชิงวัตถุใน TypeScript ใช้คลาสเป็นองค์ประกอบหลัก
+
+```typescript
+class Student {
+  // Properties
+  name: string;
+  studentId: number;
+  gpa: number;
+
+  // Constructor - เรียกอัตโนมัติเมื่อสร้างออบเจกต์
+  constructor(name: string, studentId: number, gpa: number) {
+    this.name = name;
+    this.studentId = studentId;
+    this.gpa = gpa;
+  }
+
+  // Method
+  getInfo(): string {
+    return `[${this.studentId}] ${this.name} GPA: ${this.gpa}`;
+  }
+
+  isHonorRoll(): boolean {
+    return this.gpa >= 3.5;
+  }
+}
+
+// การสร้างออบเจกต์จากคลาส
+let student1 = new Student("สมชาย รักเรียน", 6501001, 3.75);
+let student2 = new Student("สมหญิง ขยันดี", 6501002, 2.80);
+
+console.log(student1.getInfo()); // [6501001] สมชาย รักเรียน GPA: 3.75
+console.log(`เกียรตินิยม: ${student1.isHonorRoll()}`); // true
+console.log(`เกียรตินิยม: ${student2.isHonorRoll()}`); // false
+```
+
+## Access Modifiers
+
+TypeScript มี Access Modifiers สำหรับควบคุมการเข้าถึง property และ method ได้แก่ `public` (เข้าถึงได้จากทุกที่) `private` (เข้าถึงได้เฉพาะภายในคลาส) และ `protected` (เข้าถึงได้ภายในคลาสและคลาสลูก)
+
+```typescript
+class BankAccount {
+  public owner: string;        // เข้าถึงได้จากภายนอก
+  private balance: number;     // เข้าถึงได้เฉพาะภายในคลาสนี้
+  protected accountType: string; // เข้าถึงได้ในคลาสนี้และคลาสลูก
+
+  constructor(owner: string, initialBalance: number) {
+    this.owner = owner;
+    this.balance = initialBalance;
+    this.accountType = "ออมทรัพย์";
+  }
+
+  // Method สำหรับฝากเงิน
+  deposit(amount: number): void {
+    if (amount > 0) {
+      this.balance += amount;
+      console.log(`ฝากเงิน ${amount.toLocaleString()} บาท`);
+    }
+  }
+
+  // Method สำหรับถอนเงิน
+  withdraw(amount: number): boolean {
+    if (amount > 0 && amount <= this.balance) {
+      this.balance -= amount;
+      console.log(`ถอนเงิน ${amount.toLocaleString()} บาท`);
+      return true;
+    }
+    console.log("ยอดเงินไม่เพียงพอ");
+    return false;
+  }
+
+  // Getter - อ่านค่า balance ผ่าน method
+  getBalance(): number {
+    return this.balance;
+  }
+}
+
+let account = new BankAccount("สมชาย", 10000);
+account.deposit(5000);
+account.withdraw(3000);
+console.log(`ยอดเงินคงเหลือ: ${account.getBalance().toLocaleString()} บาท`);
+
+// account.balance = 999999; // ❌ Error: 'balance' is private
+```
+
+## Getter และ Setter
+
+Getter และ Setter ช่วยควบคุมการอ่านและการเขียนค่า property ได้อย่างปลอดภัย โดยสามารถตรวจสอบค่าก่อนกำหนดได้
+
+```typescript
+class Temperature {
+  private _celsius: number;
+
+  constructor(celsius: number) {
+    this._celsius = celsius;
+  }
+
+  // Getter - ใช้เรียกเหมือน property ปกติ
+  get celsius(): number {
+    return this._celsius;
+  }
+
+  get fahrenheit(): number {
+    return this._celsius * 9/5 + 32;
+  }
+
+  // Setter - ตรวจสอบค่าก่อนกำหนด
+  set celsius(value: number) {
+    if (value < -273.15) {
+      throw new Error("อุณหภูมิต่ำกว่า absolute zero ไม่ได้");
+    }
+    this._celsius = value;
+  }
+}
+
+let temp = new Temperature(25);
+console.log(`${temp.celsius}°C = ${temp.fahrenheit}°F`); // 25°C = 77°F
+
+temp.celsius = 100;
+console.log(`${temp.celsius}°C = ${temp.fahrenheit}°F`); // 100°C = 212°F
+```
+
+## การสืบทอด (Inheritance)
+
+การสืบทอดช่วยให้คลาสลูกได้รับ properties และ methods จากคลาสแม่ และสามารถเพิ่มหรือปรับเปลี่ยนพฤติกรรมได้
+
+```typescript
+// คลาสแม่ (Parent Class)
+class Person {
+  name: string;
+  age: number;
+
+  constructor(name: string, age: number) {
+    this.name = name;
+    this.age = age;
+  }
+
+  introduce(): string {
+    return `สวัสดี ชื่อ${this.name} อายุ ${this.age} ปี`;
+  }
+}
+
+// คลาสลูก (Child Class) สืบทอดจาก Person
+class Teacher extends Person {
+  subject: string;
+  yearsOfExperience: number;
+
+  constructor(name: string, age: number, subject: string, years: number) {
+    super(name, age); // เรียก constructor ของคลาสแม่
+    this.subject = subject;
+    this.yearsOfExperience = years;
+  }
+
+  // Override method ของคลาสแม่
+  introduce(): string {
+    return `${super.introduce()} สอนวิชา${this.subject} ประสบการณ์ ${this.yearsOfExperience} ปี`;
+  }
+
+  teach(): void {
+    console.log(`${this.name} กำลังสอนวิชา${this.subject}`);
+  }
+}
+
+class UniversityStudent extends Person {
+  major: string;
+  gpa: number;
+
+  constructor(name: string, age: number, major: string, gpa: number) {
+    super(name, age);
+    this.major = major;
+    this.gpa = gpa;
+  }
+
+  introduce(): string {
+    return `${super.introduce()} เรียนสาขา${this.major} GPA: ${this.gpa}`;
+  }
+}
+
+let teacher = new Teacher("อ.สมศักดิ์", 45, "TypeScript", 20);
+let student = new UniversityStudent("วิชัย", 20, "วิทยาการคอมพิวเตอร์", 3.5);
+
+console.log(teacher.introduce());
+// สวัสดี ชื่ออ.สมศักดิ์ อายุ 45 ปี สอนวิชาTypeScript ประสบการณ์ 20 ปี
+
+console.log(student.introduce());
+// สวัสดี ชื่อวิชัย อายุ 20 ปี เรียนสาขาวิทยาการคอมพิวเตอร์ GPA: 3.5
+
+teacher.teach(); // อ.สมศักดิ์ กำลังสอนวิชาTypeScript
+```
+
+## Static Members
+
+Static members เป็น property หรือ method ที่เป็นของคลาสโดยตรง ไม่ใช่ของออบเจกต์แต่ละตัว ใช้เรียกผ่านชื่อคลาสได้เลยโดยไม่ต้องสร้างออบเจกต์
+
+```typescript
+class MathHelper {
+  static readonly PI: number = 3.14159;
+
+  // Static method - เรียกใช้ผ่านชื่อคลาสได้เลย
+  static circleArea(radius: number): number {
+    return MathHelper.PI * radius * radius;
+  }
+
+  static circlePerimeter(radius: number): number {
+    return 2 * MathHelper.PI * radius;
+  }
+
+  static max(a: number, b: number): number {
+    return a > b ? a : b;
+  }
+}
+
+// เรียกใช้โดยไม่ต้อง new
+console.log(`พื้นที่วงกลม: ${MathHelper.circleArea(5).toFixed(2)}`);
+// พื้นที่วงกลม: 78.54
+
+console.log(`เส้นรอบวงกลม: ${MathHelper.circlePerimeter(5).toFixed(2)}`);
+// เส้นรอบวงกลม: 31.42
+
+console.log(`ค่าสูงสุด: ${MathHelper.max(15, 27)}`); // 27
+```
