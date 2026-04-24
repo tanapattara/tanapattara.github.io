@@ -1,0 +1,155 @@
+---
+title: Navigation ใน React Native
+sidebarTitle: Navigation
+---
+
+# Navigation ใน React Native
+
+## การนำทางระหว่างหน้าจอ
+
+แอปพลิเคชันทุกตัวต้องมีการนำทาง (Navigation) ระหว่างหน้าจอต่าง ๆ React Native ไม่มี Navigation มาให้ในตัว จึงนิยมใช้ไลบรารี **React Navigation** ซึ่งเป็นมาตรฐานที่ได้รับความนิยมสูงสุดในปัจจุบัน
+
+## การติดตั้ง React Navigation
+
+ก่อนใช้งานต้องติดตั้ง Package ที่จำเป็นก่อน โดยส่วนประกอบหลักแบ่งเป็น Core Library และ Navigator แต่ละประเภท
+
+```bash
+# ติดตั้ง Core Library
+npm install @react-navigation/native
+
+# ติดตั้ง Dependencies ที่จำเป็น (สำหรับ Expo)
+npx expo install react-native-screens react-native-safe-area-context
+
+# ติดตั้ง Stack Navigator
+npm install @react-navigation/native-stack
+```
+
+## Stack Navigator
+
+Stack Navigator คือการนำทางแบบเรียงซ้อน (Stack) หน้าจอใหม่จะเปิดทับหน้าจอเดิม และมีปุ่มย้อนกลับโดยอัตโนมัติ เหมาะสำหรับการไหลแบบ Master → Detail
+
+```jsx
+import { NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { View, Text, Button, StyleSheet } from 'react-native';
+
+const Stack = createNativeStackNavigator();
+
+// หน้าจอแรก — รายการ
+function HomeScreen({ navigation }) {
+  return (
+    <View style={styles.screen}>
+      <Text style={styles.title}>หน้าหลัก</Text>
+      <Button
+        title="ไปหน้ารายละเอียด"
+        onPress={() =>
+          // navigation.navigate ใช้เปลี่ยนหน้าจอ พร้อมส่ง params
+          navigation.navigate('Detail', { itemId: 42, itemName: 'สินค้าตัวอย่าง' })
+        }
+      />
+    </View>
+  );
+}
+
+// หน้าจอที่สอง — รายละเอียด
+function DetailScreen({ route }) {
+  // route.params ใช้รับค่าที่ส่งมาจากหน้าก่อนหน้า
+  const { itemId, itemName } = route.params;
+  return (
+    <View style={styles.screen}>
+      <Text style={styles.title}>รายละเอียด</Text>
+      <Text>ID: {itemId}</Text>
+      <Text>ชื่อ: {itemName}</Text>
+    </View>
+  );
+}
+
+// Root Component — ห่อด้วย NavigationContainer
+export default function App() {
+  return (
+    <NavigationContainer>
+      <Stack.Navigator initialRouteName="Home">
+        <Stack.Screen name="Home" component={HomeScreen} options={{ title: 'หน้าหลัก' }} />
+        <Stack.Screen name="Detail" component={DetailScreen} options={{ title: 'รายละเอียด' }} />
+      </Stack.Navigator>
+    </NavigationContainer>
+  );
+}
+
+const styles = StyleSheet.create({
+  screen: { flex: 1, justifyContent: 'center', alignItems: 'center', gap: 12 },
+  title: { fontSize: 24, fontWeight: 'bold' },
+});
+```
+
+## Tab Navigator
+
+Tab Navigator แสดงแถบเมนูด้านล่างหน้าจอ (Bottom Tab Bar) เหมาะสำหรับแอปที่มีหน้าหลัก 2–5 หน้าที่ผู้ใช้สลับกันใช้งานบ่อย เช่น หน้าแรก, โปรไฟล์, การแจ้งเตือน
+
+```bash
+# ติดตั้ง Bottom Tab Navigator
+npm install @react-navigation/bottom-tabs
+```
+
+```jsx
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { NavigationContainer } from '@react-navigation/native';
+import { View, Text } from 'react-native';
+
+const Tab = createBottomTabNavigator();
+
+function HomeScreen() {
+  return <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}><Text>หน้าหลัก</Text></View>;
+}
+
+function ProfileScreen() {
+  return <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}><Text>โปรไฟล์</Text></View>;
+}
+
+function SettingsScreen() {
+  return <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}><Text>ตั้งค่า</Text></View>;
+}
+
+export default function App() {
+  return (
+    <NavigationContainer>
+      <Tab.Navigator>
+        {/* แต่ละ Screen คือแท็บหนึ่งแท็บ */}
+        <Tab.Screen name="Home" component={HomeScreen} options={{ title: 'หน้าหลัก' }} />
+        <Tab.Screen name="Profile" component={ProfileScreen} options={{ title: 'โปรไฟล์' }} />
+        <Tab.Screen name="Settings" component={SettingsScreen} options={{ title: 'ตั้งค่า' }} />
+      </Tab.Navigator>
+    </NavigationContainer>
+  );
+}
+```
+
+## การส่งข้อมูลระหว่างหน้าจอ
+
+ข้อมูลสามารถส่งระหว่างหน้าจอได้ผ่าน `navigation.navigate` โดยใส่ Object เป็น Parameter ที่สอง และรับข้อมูลผ่าน `route.params` ในหน้าปลายทาง
+
+```jsx
+// หน้าต้นทาง — ส่งข้อมูลไป
+function ProductListScreen({ navigation }) {
+  const product = { id: 1, name: 'เสื้อยืด', price: 299 };
+
+  return (
+    <Button
+      title="ดูรายละเอียดสินค้า"
+      onPress={() => navigation.navigate('ProductDetail', { product })}
+    />
+  );
+}
+
+// หน้าปลายทาง — รับข้อมูล
+function ProductDetailScreen({ route }) {
+  const { product } = route.params; // แกะข้อมูลที่ส่งมา
+
+  return (
+    <View style={{ padding: 16 }}>
+      <Text>ชื่อสินค้า: {product.name}</Text>
+      <Text>ราคา: {product.price} บาท</Text>
+    </View>
+  );
+}
+```

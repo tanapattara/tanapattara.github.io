@@ -1,0 +1,196 @@
+---
+title: Core Components ใน React Native
+sidebarTitle: Core Components
+---
+
+# Core Components ใน React Native
+
+## Component คืออะไร
+
+Component คือหน่วยพื้นฐานของ React Native เปรียบเหมือน "ชิ้นส่วน" ที่นำมาประกอบกันเป็นหน้าจอแอปพลิเคชัน React Native มี **Core Components** ที่ Built-in มาให้ใช้งานได้เลยโดยไม่ต้องติดตั้งเพิ่ม
+
+## View
+
+`View` คือ Component พื้นฐานที่ใช้เป็น Container สำหรับ Component อื่น ๆ ทำหน้าที่คล้าย `<div>` ใน HTML ทุก Layout และการจัดวาง Element จะทำผ่าน `View`
+
+```jsx
+import { View, Text } from 'react-native';
+
+export default function MyComponent() {
+  return (
+    // View ใช้เป็นกล่องห่อ Component อื่น ๆ
+    <View style={{ padding: 16, backgroundColor: '#f0f0f0' }}>
+      <Text>ข้อความแรก</Text>
+      <Text>ข้อความสอง</Text>
+    </View>
+  );
+}
+```
+
+## Text
+
+`Text` ใช้แสดงข้อความบนหน้าจอ ต่างจาก HTML ที่ข้อความสามารถใส่ตรง ๆ ใน Element ได้ แต่ใน React Native ข้อความทุกชิ้นต้องอยู่ใน `<Text>` เสมอ
+
+```jsx
+import { View, Text } from 'react-native';
+
+export default function TextDemo() {
+  return (
+    <View style={{ padding: 20 }}>
+      {/* แสดงข้อความธรรมดา */}
+      <Text>ข้อความปกติ</Text>
+
+      {/* แสดงข้อความแบบหนา */}
+      <Text style={{ fontWeight: 'bold', fontSize: 20 }}>ข้อความตัวหนา</Text>
+
+      {/* ข้อความที่ซ้อนกัน */}
+      <Text>
+        ข้อความ <Text style={{ color: 'red' }}>สีแดง</Text> ในบรรทัดเดียวกัน
+      </Text>
+    </View>
+  );
+}
+```
+
+## Image
+
+`Image` ใช้แสดงรูปภาพ รองรับทั้งรูปภาพจาก URL และรูปภาพในเครื่อง (Local Asset) โดยต้องกำหนด `style` ที่มีค่า `width` และ `height` เสมอ
+
+```jsx
+import { View, Image, Text } from 'react-native';
+
+export default function ImageDemo() {
+  return (
+    <View style={{ alignItems: 'center', padding: 16 }}>
+      {/* รูปภาพจาก URL ภายนอก */}
+      <Image
+        source={{ uri: 'https://reactnative.dev/img/tiny_logo.png' }}
+        style={{ width: 100, height: 100 }}  // ต้องกำหนดขนาดเสมอ
+      />
+      <Text>โลโก้ React Native</Text>
+
+      {/* รูปภาพจากโฟลเดอร์ assets ในโปรเจกต์ */}
+      <Image
+        source={require('../assets/images/logo.png')}
+        style={{ width: 80, height: 80 }}
+      />
+    </View>
+  );
+}
+```
+
+## TextInput
+
+`TextInput` ใช้รับข้อมูลที่ผู้ใช้พิมพ์เข้ามา เช่น ชื่อ, อีเมล, รหัสผ่าน มักใช้คู่กับ `useState` เพื่อเก็บค่าที่พิมพ์
+
+```jsx
+import { useState } from 'react';
+import { View, TextInput, Text, StyleSheet } from 'react-native';
+
+export default function InputDemo() {
+  const [name, setName] = useState(''); // เก็บค่าที่พิมพ์ไว้ใน state
+
+  return (
+    <View style={styles.container}>
+      <TextInput
+        style={styles.input}
+        placeholder="กรอกชื่อของคุณ"        // ข้อความตัวอย่าง
+        value={name}                         // ค่าที่แสดงใน input
+        onChangeText={(text) => setName(text)} // อัปเดต state เมื่อพิมพ์
+      />
+      <Text>สวัสดี, {name || 'ผู้ใช้'}</Text>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: { padding: 16 },
+  input: {
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 8,
+    padding: 10,
+    marginBottom: 12,
+    fontSize: 16,
+  },
+});
+```
+
+## Button และ TouchableOpacity
+
+`Button` คือปุ่มพื้นฐานที่มีรูปแบบตาม Platform แต่ปรับแต่งได้น้อย ส่วน `TouchableOpacity` คือ Container ที่กดได้และรองรับการตกแต่งแบบ Custom ได้อย่างอิสระ
+
+```jsx
+import { View, Button, TouchableOpacity, Text, StyleSheet, Alert } from 'react-native';
+
+export default function ButtonDemo() {
+  const handlePress = () => {
+    Alert.alert('แจ้งเตือน', 'คุณกดปุ่มแล้ว!'); // แสดง Dialog แจ้งเตือน
+  };
+
+  return (
+    <View style={styles.container}>
+      {/* Button มาตรฐาน */}
+      <Button title="กดฉัน" onPress={handlePress} color="#007AFF" />
+
+      {/* TouchableOpacity — ปรับแต่งได้อิสระ */}
+      <TouchableOpacity style={styles.customButton} onPress={handlePress}>
+        <Text style={styles.buttonText}>ปุ่ม Custom</Text>
+      </TouchableOpacity>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: { padding: 16, gap: 12 },
+  customButton: {
+    backgroundColor: '#34C759',
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  buttonText: { color: '#fff', fontWeight: 'bold', fontSize: 16 },
+});
+```
+
+## ScrollView และ FlatList
+
+`ScrollView` ใช้เมื่อต้องการให้เนื้อหาสามารถเลื่อนได้ เหมาะกับเนื้อหาที่มีจำนวนน้อยและทราบจำนวนแน่นอน ส่วน `FlatList` ใช้แสดงข้อมูลจำนวนมากแบบมีประสิทธิภาพ เช่น รายการสินค้า หรือข้อมูลจาก API
+
+```jsx
+import { FlatList, View, Text, StyleSheet } from 'react-native';
+
+const students = [
+  { id: '1', name: 'สมชาย ใจดี', score: 90 },
+  { id: '2', name: 'สมหญิง รักเรียน', score: 85 },
+  { id: '3', name: 'วิชัย มุมานะ', score: 78 },
+];
+
+export default function ListDemo() {
+  return (
+    <FlatList
+      data={students}                    // ข้อมูลที่จะแสดง
+      keyExtractor={(item) => item.id}   // key ที่ไม่ซ้ำกันสำหรับแต่ละ item
+      renderItem={({ item }) => (        // ฟังก์ชันที่วาดแต่ละแถว
+        <View style={styles.row}>
+          <Text style={styles.name}>{item.name}</Text>
+          <Text style={styles.score}>คะแนน: {item.score}</Text>
+        </View>
+      )}
+    />
+  );
+}
+
+const styles = StyleSheet.create({
+  row: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    padding: 14,
+    borderBottomWidth: 1,
+    borderColor: '#eee',
+  },
+  name: { fontSize: 16 },
+  score: { fontSize: 16, color: '#007AFF' },
+});
+```

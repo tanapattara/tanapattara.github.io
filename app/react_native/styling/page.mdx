@@ -1,0 +1,181 @@
+---
+title: การจัดรูปแบบและ Styling ใน React Native
+sidebarTitle: การจัดรูปแบบและ Styling
+---
+
+# การจัดรูปแบบและ Styling ใน React Native
+
+## StyleSheet API
+
+React Native ไม่ใช้ CSS เหมือนในเว็บ แต่ใช้ **StyleSheet API** ที่มีรูปแบบคล้าย CSS แต่เขียนเป็น JavaScript Object ชื่อ Property จะใช้รูปแบบ **camelCase** เช่น `backgroundColor` แทน `background-color`
+
+```jsx
+import { View, Text, StyleSheet } from 'react-native';
+
+export default function StyledCard() {
+  return (
+    <View style={styles.card}>
+      <Text style={styles.title}>หัวข้อการ์ด</Text>
+      <Text style={styles.body}>เนื้อหาของการ์ดอยู่ที่นี่</Text>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  card: {
+    backgroundColor: '#ffffff',
+    borderRadius: 12,          // มุมโค้งมน
+    padding: 16,               // ระยะห่างภายใน
+    margin: 12,                // ระยะห่างภายนอก
+    shadowColor: '#000',       // สีเงา (iOS)
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    elevation: 4,              // เงา (Android)
+  },
+  title: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#1a1a1a',
+    marginBottom: 6,
+  },
+  body: {
+    fontSize: 14,
+    color: '#555',
+    lineHeight: 22,            // ความสูงของบรรทัด
+  },
+});
+```
+
+## Flexbox Layout
+
+React Native ใช้ **Flexbox** เป็นระบบหลักในการจัดวาง Component ค่าเริ่มต้นของ `flexDirection` คือ `column` (แนวตั้ง) ซึ่งต่างจากเว็บที่เป็น `row`
+
+```jsx
+import { View, Text, StyleSheet } from 'react-native';
+
+export default function FlexDemo() {
+  return (
+    <View style={styles.container}>
+      {/* จัดวางแนวนอน (row) */}
+      <View style={styles.row}>
+        <View style={[styles.box, { backgroundColor: '#FF6B6B' }]}>
+          <Text style={styles.boxText}>1</Text>
+        </View>
+        <View style={[styles.box, { backgroundColor: '#4ECDC4' }]}>
+          <Text style={styles.boxText}>2</Text>
+        </View>
+        <View style={[styles.box, { backgroundColor: '#45B7D1' }]}>
+          <Text style={styles.boxText}>3</Text>
+        </View>
+      </View>
+
+      {/* ใช้ flex เพื่อแบ่งพื้นที่ */}
+      <View style={styles.row}>
+        <View style={[styles.flexBox, { flex: 2, backgroundColor: '#96CEB4' }]}>
+          <Text style={styles.boxText}>flex: 2</Text>
+        </View>
+        <View style={[styles.flexBox, { flex: 1, backgroundColor: '#FFEAA7' }]}>
+          <Text style={styles.boxText}>flex: 1</Text>
+        </View>
+      </View>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: { padding: 16, gap: 12 },
+  row: {
+    flexDirection: 'row',         // จัดเรียงแนวนอน
+    justifyContent: 'space-between', // กระจายพื้นที่ระหว่าง item
+    alignItems: 'center',         // จัดกึ่งกลางแนวตั้ง
+  },
+  box: {
+    width: 80,
+    height: 80,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 8,
+  },
+  flexBox: {
+    height: 60,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 8,
+  },
+  boxText: { color: '#fff', fontWeight: 'bold' },
+});
+```
+
+## Responsive Design ด้วย Dimensions
+
+ในการพัฒนาแอปให้รองรับหลายขนาดหน้าจอ สามารถใช้ `Dimensions` API เพื่อดึงความกว้างและความสูงของหน้าจอ แล้วนำมาคำนวณขนาด Component
+
+```jsx
+import { View, Text, StyleSheet, Dimensions } from 'react-native';
+
+// ดึงขนาดหน้าจอ
+const { width, height } = Dimensions.get('window');
+
+export default function ResponsiveDemo() {
+  return (
+    <View style={styles.container}>
+      <Text style={styles.info}>
+        ความกว้างหน้าจอ: {width} px
+      </Text>
+      <Text style={styles.info}>
+        ความสูงหน้าจอ: {height} px
+      </Text>
+
+      {/* การ์ดที่กว้าง 90% ของหน้าจอ */}
+      <View style={styles.card}>
+        <Text>การ์ดแบบ Responsive</Text>
+      </View>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: { padding: 16 },
+  info: { fontSize: 14, color: '#666', marginBottom: 8 },
+  card: {
+    width: width * 0.9,          // 90% ของความกว้างหน้าจอ
+    backgroundColor: '#e8f4fd',
+    padding: 20,
+    borderRadius: 12,
+    alignSelf: 'center',
+  },
+});
+```
+
+## Platform-Specific Styling
+
+บางครั้งต้องการ Style ที่แตกต่างกันระหว่าง iOS และ Android สามารถใช้ `Platform` API เพื่อแยกค่าตาม Platform ได้
+
+```jsx
+import { View, Text, StyleSheet, Platform } from 'react-native';
+
+export default function PlatformDemo() {
+  return (
+    <View style={styles.container}>
+      <Text style={styles.title}>
+        กำลังใช้งาน: {Platform.OS === 'ios' ? 'iPhone / iPad' : 'Android'}
+      </Text>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    padding: 16,
+    // ระยะห่างบนต่างกันระหว่าง iOS และ Android
+    paddingTop: Platform.OS === 'ios' ? 50 : 30,
+  },
+  title: {
+    fontSize: 16,
+    color: Platform.select({
+      ios: '#007AFF',      // สีฟ้าสไตล์ Apple
+      android: '#4CAF50',  // สีเขียวสไตล์ Material Design
+    }),
+  },
+});
+```

@@ -6,19 +6,40 @@ This document covers everything a developer needs to know to work on this projec
 
 ## Table of Contents
 
-- [Overview](#overview)
-- [Tech Stack](#tech-stack)
-- [Project Structure](#project-structure)
-- [Getting Started](#getting-started)
-- [Adding Content](#adding-content)
-  - [Creating a New Page](#creating-a-new-page)
-  - [Creating a New Section (Folder)](#creating-a-new-section-folder)
-  - [Controlling Sidebar Order with `_meta.js`](#controlling-sidebar-order-with-_metajs)
-- [Key Files Explained](#key-files-explained)
-- [Nextra Built-In Components](#nextra-built-in-components)
-- [Search (Pagefind)](#search-pagefind)
-- [Build & Static Export](#build--static-export)
-- [Useful References](#useful-references)
+- [Developer Documentation](#developer-documentation)
+  - [Table of Contents](#table-of-contents)
+  - [Overview](#overview)
+  - [Tech Stack](#tech-stack)
+  - [Project Structure](#project-structure)
+  - [Getting Started](#getting-started)
+    - [Prerequisites](#prerequisites)
+    - [Install Dependencies](#install-dependencies)
+    - [Run Development Server](#run-development-server)
+    - [Build for Production](#build-for-production)
+  - [Adding Content](#adding-content)
+    - [Creating a New Page](#creating-a-new-page)
+    - [Creating a New Section (Folder)](#creating-a-new-section-folder)
+    - [Content Writing Guidelines](#content-writing-guidelines)
+      - [Language](#language)
+      - [Sub-page Titles (No Numbering)](#sub-page-titles-no-numbering)
+      - [Page Structure — Explanation Before Code](#page-structure--explanation-before-code)
+    - [Controlling Sidebar Order with `_meta.js`](#controlling-sidebar-order-with-_metajs)
+  - [Key Files Explained](#key-files-explained)
+    - [`app/layout.jsx`](#applayoutjsx)
+    - [`app/_meta.js`](#app_metajs)
+    - [`next.config.mjs`](#nextconfigmjs)
+    - [`mdx-components.js`](#mdx-componentsjs)
+  - [Nextra Built-In Components](#nextra-built-in-components)
+    - [`<Callout>`](#callout)
+    - [`<Steps>`](#steps)
+    - [`<Tabs>`](#tabs)
+    - [`<Cards>`](#cards)
+    - [`<FileTree>`](#filetree)
+    - [Syntax Highlighting](#syntax-highlighting)
+  - [Search (Pagefind)](#search-pagefind)
+  - [Build \& Static Export](#build--static-export)
+    - [GitHub Pages Deployment](#github-pages-deployment)
+  - [Useful References](#useful-references)
 
 ---
 
@@ -64,7 +85,24 @@ tanapattara.github.io/
 │   ├── nextjs/
 │   │   └── page.mdx
 │   ├── react_native/
-│   │   └── page.mdx
+│   │   ├── _meta.js            # Sidebar ordering for this section
+│   │   ├── page.mdx            # React Native index page
+│   │   ├── intro/
+│   │   │   └── page.mdx
+│   │   ├── components/
+│   │   │   └── page.mdx
+│   │   ├── styling/
+│   │   │   └── page.mdx
+│   │   ├── navigation/
+│   │   │   └── page.mdx
+│   │   ├── state-management/
+│   │   │   └── page.mdx
+│   │   ├── api-networking/
+│   │   │   └── page.mdx
+│   │   ├── storage/
+│   │   │   └── page.mdx
+│   │   └── workshop/
+│   │       └── page.mdx
 │   ├── unity2d/
 │   │   └── page.mdx
 │   └── handouts/
@@ -178,6 +216,56 @@ export default {
   databases: "Databases",
 };
 ```
+
+### Content Writing Guidelines
+
+When writing content for any topic page or sub-page, follow these rules:
+
+#### Language
+All content — headings, explanations, labels, and inline comments inside code blocks — **must be written in Thai**.
+
+#### Sub-page Titles (No Numbering)
+Sub-page titles and sidebar labels must **not** include a number prefix. Use descriptive Thai names only.
+
+```js
+// ✅ Correct — app/csharp/_meta.js
+export default {
+  index: "C#",
+  array: "อาร์เรย์",
+  "control-flow": "การควบคุมการทำงาน",
+  methods: "เมธอด",
+};
+
+// ❌ Wrong — do not add numbers
+export default {
+  index: "C#",
+  array: "1. อาร์เรย์",
+  "control-flow": "2. การควบคุมการทำงาน",
+};
+```
+
+#### Page Structure — Explanation Before Code
+Every topic section must follow this order:
+
+1. **Thai heading** (`##`) for the topic
+2. **Explanation paragraph(s)** in Thai describing the concept
+3. **Code example(s)** that illustrate the explanation
+
+```mdx
+## อาร์เรย์หนึ่งมิติ (One-Dimensional Array)
+
+อาร์เรย์คือโครงสร้างข้อมูลที่ใช้เก็บข้อมูลชนิดเดียวกันหลายค่า
+แต่ละสมาชิกสามารถเข้าถึงได้ผ่าน Index ซึ่งเริ่มนับจาก 0 เสมอ
+
+​```csharp
+int[] scores = { 85, 90, 78 };
+Console.WriteLine(scores[0]); // แสดงผล: 85
+​```
+```
+
+Do **not** place a code block before the explanation paragraph.
+
+---
 
 ### Controlling Sidebar Order with `_meta.js`
 

@@ -1,0 +1,101 @@
+---
+title: การเริ่มต้นและติดตั้ง React Native
+sidebarTitle: การเริ่มต้นและติดตั้ง
+---
+
+# การเริ่มต้นและติดตั้ง React Native
+
+## เครื่องมือที่ต้องติดตั้ง
+
+ก่อนเริ่มพัฒนาแอปพลิเคชัน React Native นักศึกษาต้องติดตั้งเครื่องมือพื้นฐานดังต่อไปนี้บนเครื่องคอมพิวเตอร์
+
+- **Node.js** (เวอร์ชัน 18 LTS ขึ้นไป) — ใช้รัน JavaScript และ Package Manager
+- **npm** หรือ **yarn** — ใช้จัดการ Library
+- **Expo CLI** — เครื่องมือสำหรับสร้างและรัน React Native Project แบบง่าย
+- **Expo Go** (แอปบนมือถือ) — ใช้ทดสอบแอปบนอุปกรณ์จริงผ่าน QR Code
+
+## การติดตั้ง Expo CLI
+
+Expo เป็น Platform ที่ช่วยให้การพัฒนา React Native ง่ายขึ้น โดยไม่ต้องติดตั้ง Android Studio หรือ Xcode ในช่วงแรก เหมาะสำหรับผู้เริ่มต้น
+
+```bash
+# ติดตั้ง Expo CLI ผ่าน npm
+npm install -g expo-cli
+```
+
+## การสร้างโปรเจกต์ใหม่
+
+หลังจากติดตั้ง Expo CLI แล้ว ให้สร้างโปรเจกต์ใหม่ด้วยคำสั่งด้านล่าง โดยเลือก Template เป็น `blank` สำหรับโปรเจกต์เปล่าที่ยังไม่มีโค้ดใด ๆ
+
+```bash
+# สร้างโปรเจกต์ชื่อ MyFirstApp
+npx create-expo-app MyFirstApp --template blank
+
+# เข้าไปในโฟลเดอร์โปรเจกต์
+cd MyFirstApp
+
+# รันโปรเจกต์
+npx expo start
+```
+
+## โครงสร้างโฟลเดอร์โปรเจกต์
+
+หลังจากสร้างโปรเจกต์เสร็จแล้ว โครงสร้างไฟล์เบื้องต้นจะมีลักษณะดังนี้
+
+```
+MyFirstApp/
+├── app/                  # โฟลเดอร์หลักสำหรับหน้าจอ (Expo Router)
+│   ├── _layout.jsx       # Layout หลักของแอป
+│   └── index.jsx         # หน้าแรกของแอป
+├── assets/               # รูปภาพ, ไอคอน, ฟอนต์
+├── components/           # Reusable Components
+├── app.json              # การตั้งค่าแอป (ชื่อ, ไอคอน, ธีม)
+└── package.json          # รายการ Dependencies
+```
+
+## โปรแกรมแรก Hello World
+
+ลองแก้ไขไฟล์ `app/index.jsx` เพื่อแสดงข้อความแรกบนหน้าจอ
+
+```jsx
+import { View, Text, StyleSheet } from 'react-native';
+
+export default function HomeScreen() {
+  // ฟังก์ชันนี้คือ Component หลักของหน้าแรก
+  return (
+    <View style={styles.container}>
+      <Text style={styles.title}>สวัสดี React Native!</Text>
+      <Text style={styles.subtitle}>ยินดีต้อนรับสู่การพัฒนาแอปมือถือ</Text>
+    </View>
+  );
+}
+
+// กำหนดสไตล์ด้วย StyleSheet
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,                   // ใช้พื้นที่เต็มหน้าจอ
+    justifyContent: 'center',  // จัดกึ่งกลางแนวตั้ง
+    alignItems: 'center',      // จัดกึ่งกลางแนวนอน
+    backgroundColor: '#fff',
+  },
+  title: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: '#333',
+  },
+  subtitle: {
+    fontSize: 16,
+    color: '#666',
+    marginTop: 8,
+  },
+});
+```
+
+## การทดสอบบนอุปกรณ์จริง
+
+เมื่อรันคำสั่ง `npx expo start` แล้ว จะมี QR Code ปรากฏในหน้าต่าง Terminal ให้ทำตามขั้นตอนดังนี้
+
+1. ติดตั้งแอป **Expo Go** บนมือถือ (มีให้ดาวน์โหลดฟรีใน App Store และ Google Play)
+2. เปิดแอป Expo Go แล้วสแกน QR Code
+3. แอปของเราจะเปิดขึ้นบนมือถือทันที
+4. เมื่อแก้ไขโค้ดและบันทึก แอปจะ Reload อัตโนมัติ (Hot Reload)

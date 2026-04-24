@@ -1,0 +1,225 @@
+---
+title: API และ Networking ใน React Native
+sidebarTitle: API และ Networking
+---
+
+# API และ Networking ใน React Native
+
+## การเรียก API ด้วย fetch
+
+React Native มี `fetch` API Built-in สำหรับดึงข้อมูลจากเซิร์ฟเวอร์ผ่าน HTTP คล้ายกับที่ใช้ใน Web Browser มักใช้คู่กับ `useEffect` เพื่อดึงข้อมูลเมื่อ Component ถูกแสดงครั้งแรก
+
+```jsx
+import { useEffect, useState } from 'react';
+import { View, Text, FlatList, ActivityIndicator, StyleSheet } from 'react-native';
+
+export default function PostListScreen() {
+  const [posts, setPosts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    // useEffect จะทำงานเมื่อ Component ถูก Mount ครั้งแรก
+    fetchPosts();
+  }, []); // [] หมายความว่าทำงานแค่ครั้งเดียว
+
+  const fetchPosts = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch('https://jsonplaceholder.typicode.com/posts?_limit=10');
+
+      if (!response.ok) {
+        throw new Error(`HTTP Error: ${response.status}`); // ตรวจสอบ Status Code
+      }
+
+      const data = await response.json(); // แปลง Response เป็น JSON
+      setPosts(data);
+    } catch (err) {
+      setError(err.message); // เก็บข้อความ Error
+    } finally {
+      setLoading(false); // ปิด Loading ไม่ว่าจะสำเร็จหรือไม่
+    }
+  };
+
+  if (loading) {
+    return (
+      <View style={styles.center}>
+        <ActivityIndicator size="large" color="#007AFF" />
+        <Text>กำลังโหลดข้อมูล...</Text>
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View style={styles.center}>
+        <Text style={styles.error}>เกิดข้อผิดพลาด: {error}</Text>
+      </View>
+    );
+  }
+
+  return (
+    <FlatList
+      data={posts}
+      keyExtractor={(item) => String(item.id)}
+      renderItem={({ item }) => (
+        <View style={styles.card}>
+          <Text style={styles.title}>{item.title}</Text>
+          <Text style={styles.body} numberOfLines={2}>{item.body}</Text>
+        </View>
+      )}
+    />
+  );
+}
+
+const styles = StyleSheet.create({
+  center: { flex: 1, justifyContent: 'center', alignItems: 'center', gap: 8 },
+  error: { color: '#FF3B30', fontSize: 16 },
+  card: { padding: 16, borderBottomWidth: 1, borderColor: '#eee' },
+  title: { fontSize: 14, fontWeight: 'bold', color: '#1a1a1a', marginBottom: 4 },
+  body: { fontSize: 13, color: '#666' },
+});
+```
+
+## การส่งข้อมูลด้วย POST
+
+นอกจากการดึงข้อมูล (GET) ยังสามารถส่งข้อมูลไปยัง API ผ่าน Method POST เช่น การสร้างโพสต์ใหม่ หรือการล็อกอิน
+
+```jsx
+import { useState } from 'react';
+import { View, TextInput, Button, Text, StyleSheet, Alert } from 'react-native';
+
+export default function CreatePostScreen() {
+  const [title, setTitle] = useState('');
+  const [body, setBody] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+
+  const createPost = async () => {
+    if (!title.trim() || !body.trim()) {
+      Alert.alert('กรุณากรอกข้อมูล', 'ต้องกรอกทั้งหัวข้อและเนื้อหา');
+      return;
+    }
+
+    try {
+      setSubmitting(true);
+      const response = await fetch('https://jsonplaceholder.typicode.com/posts', {
+        method: 'POST',                         // ระบุ HTTP Method
+        headers: {
+          'Content-Type': 'application/json',   // บอกเซิร์ฟเวอร์ว่าส่ง JSON
+        },
+        body: JSON.stringify({ title, body, userId: 1 }), // แปลง Object เป็น JSON String
+      });
+
+      const data = await response.json();
+      Alert.alert('สำเร็จ', `สร้างโพสต์ ID: ${data.id} เรียบร้อยแล้ว`);
+      setTitle('');
+      setBody('');
+    } catch (err) {
+      Alert.alert('ผิดพลาด', 'ไม่สามารถสร้างโพสต์ได้');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <View style={styles.container}>
+      <Text style={styles.label}>หัวข้อ</Text>
+      <TextInput
+        style={styles.input}
+        value={title}
+        onChangeText={setTitle}
+        placeholder="กรอกหัวข้อโพสต์"
+      />
+      <Text style={styles.label}>เนื้อหา</Text>
+      <TextInput
+        style={[styles.input, styles.multiline]}
+        value={body}
+        onChangeText={setBody}
+        placeholder="กรอกเนื้อหา"
+        multiline
+        numberOfLines={4}
+      />
+      <Button
+        title={submitting ? 'กำลังส่ง...' : 'สร้างโพสต์'}
+        onPress={createPost}
+        disabled={submitting}
+      />
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: { padding: 16, gap: 8 },
+  label: { fontSize: 14, fontWeight: '600', color: '#333' },
+  input: {
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 8,
+    padding: 10,
+    fontSize: 15,
+  },
+  multiline: { height: 100, textAlignVertical: 'top' },
+});
+```
+
+## Custom Hook สำหรับ API
+
+เพื่อให้โค้ดสะอาดและนำกลับมาใช้ซ้ำได้ ควรสร้าง Custom Hook แยกออกมาจาก Component โดยตรง
+
+```jsx
+import { useEffect, useState } from 'react';
+
+// Custom Hook — useFetch ใช้ดึงข้อมูลจาก URL ใด ๆ ก็ได้
+function useFetch(url) {
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    let cancelled = false; // ป้องกัน Memory Leak เมื่อ Component ถูก Unmount
+
+    const load = async () => {
+      try {
+        setLoading(true);
+        const res = await fetch(url);
+        const json = await res.json();
+        if (!cancelled) setData(json); // อัปเดตเฉพาะเมื่อยัง Mount อยู่
+      } catch (err) {
+        if (!cancelled) setError(err.message);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    };
+
+    load();
+
+    return () => { cancelled = true; }; // Cleanup Function
+  }, [url]);
+
+  return { data, loading, error };
+}
+
+// ใช้ Custom Hook ใน Component
+import { View, Text, FlatList } from 'react-native';
+
+export default function UserListScreen() {
+  // ใช้ Hook เหมือน useState/useEffect แต่สะอาดกว่า
+  const { data: users, loading, error } = useFetch('https://jsonplaceholder.typicode.com/users');
+
+  if (loading) return <Text style={{ padding: 16 }}>กำลังโหลด...</Text>;
+  if (error) return <Text style={{ padding: 16, color: 'red' }}>{error}</Text>;
+
+  return (
+    <FlatList
+      data={users}
+      keyExtractor={(u) => String(u.id)}
+      renderItem={({ item }) => (
+        <View style={{ padding: 14, borderBottomWidth: 1, borderColor: '#eee' }}>
+          <Text style={{ fontWeight: 'bold' }}>{item.name}</Text>
+          <Text style={{ color: '#666' }}>{item.email}</Text>
+        </View>
+      )}
+    />
+  );
+}
+```

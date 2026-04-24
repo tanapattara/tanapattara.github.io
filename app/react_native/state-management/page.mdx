@@ -1,0 +1,175 @@
+---
+title: State Management ใน React Native
+sidebarTitle: State Management
+---
+
+# State Management ใน React Native
+
+## State คืออะไร
+
+State คือข้อมูลที่เก็บไว้ภายใน Component และเมื่อ State เปลี่ยนแปลง React Native จะ Re-render Component นั้นโดยอัตโนมัติ ทำให้หน้าจอแสดงผลที่อัปเดตแล้วเสมอ
+
+## useState Hook
+
+`useState` คือ Hook พื้นฐานที่ใช้บ่อยที่สุดสำหรับจัดการข้อมูลภายใน Component เดียว เหมาะสำหรับข้อมูลที่ไม่ต้องแชร์กับ Component อื่น
+
+```jsx
+import { useState } from 'react';
+import { View, Text, Button, StyleSheet } from 'react-native';
+
+export default function CounterScreen() {
+  // [ค่าปัจจุบัน, ฟังก์ชันเปลี่ยนค่า] = useState(ค่าเริ่มต้น)
+  const [count, setCount] = useState(0);
+  const [message, setMessage] = useState('');
+
+  const increment = () => {
+    setCount(count + 1);                    // เพิ่มค่า count
+    setMessage(`กดครั้งที่ ${count + 1}`);  // อัปเดตข้อความ
+  };
+
+  const reset = () => {
+    setCount(0);
+    setMessage('รีเซ็ตแล้ว');
+  };
+
+  return (
+    <View style={styles.container}>
+      <Text style={styles.counter}>{count}</Text>
+      <Text style={styles.message}>{message}</Text>
+      <View style={styles.buttons}>
+        <Button title="เพิ่ม" onPress={increment} />
+        <Button title="รีเซ็ต" onPress={reset} color="#FF3B30" />
+      </View>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: { flex: 1, justifyContent: 'center', alignItems: 'center', gap: 16 },
+  counter: { fontSize: 72, fontWeight: 'bold', color: '#007AFF' },
+  message: { fontSize: 16, color: '#666' },
+  buttons: { flexDirection: 'row', gap: 12 },
+});
+```
+
+## useReducer Hook
+
+`useReducer` เหมาะสำหรับจัดการ State ที่มีความซับซ้อน หรือมีหลาย Action ที่ส่งผลต่อ State เดียวกัน แนวคิดคล้ายกับ Redux แต่ Built-in มาใน React
+
+```jsx
+import { useReducer } from 'react';
+import { View, Text, Button, StyleSheet } from 'react-native';
+
+// กำหนด Action ที่เป็นไปได้ทั้งหมด
+const initialState = { count: 0, step: 1 };
+
+function reducer(state, action) {
+  switch (action.type) {
+    case 'INCREMENT':
+      return { ...state, count: state.count + state.step };
+    case 'DECREMENT':
+      return { ...state, count: state.count - state.step };
+    case 'SET_STEP':
+      return { ...state, step: action.payload };
+    case 'RESET':
+      return initialState;
+    default:
+      return state;
+  }
+}
+
+export default function ReducerDemo() {
+  const [state, dispatch] = useReducer(reducer, initialState);
+
+  return (
+    <View style={styles.container}>
+      <Text style={styles.counter}>{state.count}</Text>
+      <Text>Step: {state.step}</Text>
+
+      <View style={styles.row}>
+        {/* dispatch ใช้ส่ง Action ไปยัง reducer */}
+        <Button title="-" onPress={() => dispatch({ type: 'DECREMENT' })} />
+        <Button title="+" onPress={() => dispatch({ type: 'INCREMENT' })} />
+      </View>
+
+      <View style={styles.row}>
+        <Button title="Step 1" onPress={() => dispatch({ type: 'SET_STEP', payload: 1 })} />
+        <Button title="Step 5" onPress={() => dispatch({ type: 'SET_STEP', payload: 5 })} />
+        <Button title="Step 10" onPress={() => dispatch({ type: 'SET_STEP', payload: 10 })} />
+      </View>
+
+      <Button title="รีเซ็ต" onPress={() => dispatch({ type: 'RESET' })} color="#FF3B30" />
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: { flex: 1, justifyContent: 'center', alignItems: 'center', gap: 16 },
+  counter: { fontSize: 64, fontWeight: 'bold', color: '#34C759' },
+  row: { flexDirection: 'row', gap: 12 },
+});
+```
+
+## Context API
+
+Context API ใช้สำหรับแชร์ข้อมูลระหว่าง Component หลาย ๆ ตัวโดยไม่ต้องส่ง Props ผ่านทุกชั้น (Props Drilling) เหมาะสำหรับข้อมูลที่ต้องใช้ทั้งแอป เช่น ข้อมูลผู้ใช้ที่ล็อกอิน หรือธีมของแอป
+
+```jsx
+import { createContext, useContext, useState } from 'react';
+import { View, Text, Button, StyleSheet } from 'react-native';
+
+// สร้าง Context สำหรับข้อมูลผู้ใช้
+const UserContext = createContext(null);
+
+// Provider — ห่อ Component ที่ต้องการใช้ข้อมูล
+function UserProvider({ children }) {
+  const [user, setUser] = useState(null);
+
+  const login = (name) => setUser({ name, isLoggedIn: true });
+  const logout = () => setUser(null);
+
+  return (
+    // value คือข้อมูลและฟังก์ชันที่ Component ลูกสามารถเข้าถึงได้
+    <UserContext.Provider value={{ user, login, logout }}>
+      {children}
+    </UserContext.Provider>
+  );
+}
+
+// Component ที่ใช้ข้อมูลจาก Context
+function ProfileCard() {
+  const { user, logout } = useContext(UserContext); // ดึงข้อมูลจาก Context
+
+  if (!user) return <Text>ยังไม่ได้เข้าสู่ระบบ</Text>;
+
+  return (
+    <View style={styles.card}>
+      <Text style={styles.name}>สวัสดี, {user.name}</Text>
+      <Button title="ออกจากระบบ" onPress={logout} color="#FF3B30" />
+    </View>
+  );
+}
+
+function LoginButton() {
+  const { login } = useContext(UserContext);
+  return <Button title="เข้าสู่ระบบ" onPress={() => login('นักศึกษา')} />;
+}
+
+// App รวมทุกอย่าง
+export default function App() {
+  return (
+    <UserProvider>
+      <View style={styles.container}>
+        <ProfileCard />
+        <LoginButton />
+      </View>
+    </UserProvider>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: { flex: 1, justifyContent: 'center', alignItems: 'center', gap: 16 },
+  card: { padding: 20, backgroundColor: '#e8f4fd', borderRadius: 12, alignItems: 'center', gap: 12 },
+  name: { fontSize: 18, fontWeight: 'bold' },
+});
+```
