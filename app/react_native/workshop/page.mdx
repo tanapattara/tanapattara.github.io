@@ -21,29 +21,44 @@ sidebarTitle: Workshop
 ```
 TodoApp/
 ├── app/
-│   ├── _layout.jsx        # Root Layout
-│   └── index.jsx          # หน้าหลัก Todo
+│   ├── _layout.tsx        # Root Layout
+│   └── index.tsx          # หน้าหลัก Todo
 ├── components/
-│   ├── TodoItem.jsx        # Component แสดงรายการเดียว
-│   └── AddTodoInput.jsx    # Component กรอกรายการใหม่
+│   ├── TodoItem.tsx        # Component แสดงรายการเดียว
+│   └── AddTodoInput.tsx    # Component กรอกรายการใหม่
 └── hooks/
-    └── useTodos.js         # Custom Hook จัดการ Todo State + Storage
+    └── useTodos.ts         # Custom Hook จัดการ Todo State + Storage
 ```
 
 ## ขั้นตอนที่ 1 — สร้าง Custom Hook
 
 สร้างไฟล์ `hooks/useTodos.js` สำหรับจัดการ State ของ Todo ทั้งหมด รวมถึงการบันทึกและโหลดจาก AsyncStorage
 
-```jsx
-// hooks/useTodos.js
+```ts
+// hooks/useTodos.ts
 import { useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+export interface Todo {
+  id: string;
+  text: string;
+  completed: boolean;
+  createdAt: string;
+}
+
+interface UseTodosReturn {
+  todos: Todo[];
+  loading: boolean;
+  addTodo: (text: string) => void;
+  toggleTodo: (id: string) => void;
+  deleteTodo: (id: string) => void;
+}
+
 const TODOS_KEY = '@todos_list';
 
-export function useTodos() {
-  const [todos, setTodos] = useState([]);
-  const [loading, setLoading] = useState(true);
+export function useTodos(): UseTodosReturn {
+  const [todos, setTodos] = useState<Todo[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
 
   // โหลดข้อมูลจาก Storage เมื่อเปิดแอป
   useEffect(() => {
@@ -57,10 +72,10 @@ export function useTodos() {
     }
   }, [todos, loading]);
 
-  const loadTodos = async () => {
+  const loadTodos = async (): Promise<void> => {
     try {
       const json = await AsyncStorage.getItem(TODOS_KEY);
-      if (json) setTodos(JSON.parse(json));
+      if (json) setTodos(JSON.parse(json) as Todo[]);
     } catch (err) {
       console.error('โหลด todos ไม่สำเร็จ');
     } finally {
@@ -68,7 +83,7 @@ export function useTodos() {
     }
   };
 
-  const saveTodos = async (data) => {
+  const saveTodos = async (data: Todo[]): Promise<void> => {
     try {
       await AsyncStorage.setItem(TODOS_KEY, JSON.stringify(data));
     } catch (err) {
@@ -77,9 +92,9 @@ export function useTodos() {
   };
 
   // เพิ่มรายการใหม่
-  const addTodo = (text) => {
+  const addTodo = (text: string): void => {
     if (!text.trim()) return;
-    const newTodo = {
+    const newTodo: Todo = {
       id: Date.now().toString(), // ใช้ timestamp เป็น ID ที่ไม่ซ้ำ
       text: text.trim(),
       completed: false,
@@ -89,7 +104,7 @@ export function useTodos() {
   };
 
   // สลับสถานะเสร็จ/ยังไม่เสร็จ
-  const toggleTodo = (id) => {
+  const toggleTodo = (id: string): void => {
     setTodos((prev) =>
       prev.map((todo) =>
         todo.id === id ? { ...todo, completed: !todo.completed } : todo
@@ -98,7 +113,7 @@ export function useTodos() {
   };
 
   // ลบรายการ
-  const deleteTodo = (id) => {
+  const deleteTodo = (id: string): void => {
     setTodos((prev) => prev.filter((todo) => todo.id !== id));
   };
 
@@ -108,13 +123,20 @@ export function useTodos() {
 
 ## ขั้นตอนที่ 2 — สร้าง TodoItem Component
 
-สร้างไฟล์ `components/TodoItem.jsx` สำหรับแสดงรายการ Todo แต่ละรายการ
+สร้างไฟล์ `components/TodoItem.tsx` สำหรับแสดงรายการ Todo แต่ละรายการ
 
-```jsx
-// components/TodoItem.jsx
+```tsx
+// components/TodoItem.tsx
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { Todo } from '../hooks/useTodos';
 
-export default function TodoItem({ todo, onToggle, onDelete }) {
+interface TodoItemProps {
+  todo: Todo;
+  onToggle: (id: string) => void;
+  onDelete: (id: string) => void;
+}
+
+export default function TodoItem({ todo, onToggle, onDelete }: TodoItemProps): React.JSX.Element {
   return (
     <View style={styles.container}>
       {/* กดเพื่อ Toggle สถานะ */}
@@ -167,10 +189,10 @@ const styles = StyleSheet.create({
 
 ## ขั้นตอนที่ 3 — สร้างหน้าหลัก
 
-สร้างไฟล์ `app/index.jsx` ซึ่งเป็นหน้าหลักที่รวม Component และ Hook ทั้งหมดเข้าด้วยกัน
+สร้างไฟล์ `app/index.tsx` ซึ่งเป็นหน้าหลักที่รวม Component และ Hook ทั้งหมดเข้าด้วยกัน
 
-```jsx
-// app/index.jsx
+```tsx
+// app/index.tsx
 import { useState } from 'react';
 import {
   View,
@@ -187,11 +209,11 @@ import {
 import { useTodos } from '../hooks/useTodos';
 import TodoItem from '../components/TodoItem';
 
-export default function TodoScreen() {
+export default function TodoScreen(): React.JSX.Element {
   const { todos, loading, addTodo, toggleTodo, deleteTodo } = useTodos();
-  const [inputText, setInputText] = useState('');
+  const [inputText, setInputText] = useState<string>('');
 
-  const handleAdd = () => {
+  const handleAdd = (): void => {
     addTodo(inputText);
     setInputText(''); // ล้าง Input หลังจากเพิ่ม
   };

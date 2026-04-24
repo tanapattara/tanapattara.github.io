@@ -29,6 +29,7 @@ export default async function RootLayout({ children }) {
         <Layout
           navbar={navbar}
           pageMap={await getPageMap()}
+          sidebar={{ defaultMenuCollapseLevel: 1 }}
           docsRepositoryBase="https://github.com/tanapattara/tanapattara.github.io/tree/main"
           footer={footer}
         >

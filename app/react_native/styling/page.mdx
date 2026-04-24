@@ -9,10 +9,10 @@ sidebarTitle: การจัดรูปแบบและ Styling
 
 React Native ไม่ใช้ CSS เหมือนในเว็บ แต่ใช้ **StyleSheet API** ที่มีรูปแบบคล้าย CSS แต่เขียนเป็น JavaScript Object ชื่อ Property จะใช้รูปแบบ **camelCase** เช่น `backgroundColor` แทน `background-color`
 
-```jsx
+```tsx
 import { View, Text, StyleSheet } from 'react-native';
 
-export default function StyledCard() {
+export default function StyledCard(): React.JSX.Element {
   return (
     <View style={styles.card}>
       <Text style={styles.title}>หัวข้อการ์ด</Text>
@@ -50,10 +50,10 @@ const styles = StyleSheet.create({
 
 React Native ใช้ **Flexbox** เป็นระบบหลักในการจัดวาง Component ค่าเริ่มต้นของ `flexDirection` คือ `column` (แนวตั้ง) ซึ่งต่างจากเว็บที่เป็น `row`
 
-```jsx
+```tsx
 import { View, Text, StyleSheet } from 'react-native';
 
-export default function FlexDemo() {
+export default function FlexDemo(): React.JSX.Element {
   return (
     <View style={styles.container}>
       {/* จัดวางแนวนอน (row) */}
@@ -110,13 +110,13 @@ const styles = StyleSheet.create({
 
 ในการพัฒนาแอปให้รองรับหลายขนาดหน้าจอ สามารถใช้ `Dimensions` API เพื่อดึงความกว้างและความสูงของหน้าจอ แล้วนำมาคำนวณขนาด Component
 
-```jsx
+```tsx
 import { View, Text, StyleSheet, Dimensions } from 'react-native';
 
 // ดึงขนาดหน้าจอ
 const { width, height } = Dimensions.get('window');
 
-export default function ResponsiveDemo() {
+export default function ResponsiveDemo(): React.JSX.Element {
   return (
     <View style={styles.container}>
       <Text style={styles.info}>
@@ -151,10 +151,10 @@ const styles = StyleSheet.create({
 
 บางครั้งต้องการ Style ที่แตกต่างกันระหว่าง iOS และ Android สามารถใช้ `Platform` API เพื่อแยกค่าตาม Platform ได้
 
-```jsx
+```tsx
 import { View, Text, StyleSheet, Platform } from 'react-native';
 
-export default function PlatformDemo() {
+export default function PlatformDemo(): React.JSX.Element {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>

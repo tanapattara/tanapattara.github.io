@@ -25,11 +25,11 @@ npm install -g expo-cli
 
 ## การสร้างโปรเจกต์ใหม่
 
-หลังจากติดตั้ง Expo CLI แล้ว ให้สร้างโปรเจกต์ใหม่ด้วยคำสั่งด้านล่าง โดยเลือก Template เป็น `blank` สำหรับโปรเจกต์เปล่าที่ยังไม่มีโค้ดใด ๆ
+หลังจากติดตั้ง Expo CLI แล้ว ให้สร้างโปรเจกต์ใหม่ด้วยคำสั่งด้านล่าง โดยเลือก Template เป็น `blank-typescript` เพื่อตั้งค่า TypeScript ให้พร้อมใช้งานตั้งแต่ต้น
 
 ```bash
-# สร้างโปรเจกต์ชื่อ MyFirstApp
-npx create-expo-app MyFirstApp --template blank
+# สร้างโปรเจกต์ชื่อ MyFirstApp พร้อม TypeScript
+npx create-expo-app MyFirstApp --template blank-typescript
 
 # เข้าไปในโฟลเดอร์โปรเจกต์
 cd MyFirstApp
@@ -45,22 +45,23 @@ npx expo start
 ```
 MyFirstApp/
 ├── app/                  # โฟลเดอร์หลักสำหรับหน้าจอ (Expo Router)
-│   ├── _layout.jsx       # Layout หลักของแอป
-│   └── index.jsx         # หน้าแรกของแอป
+│   ├── _layout.tsx       # Layout หลักของแอป
+│   └── index.tsx         # หน้าแรกของแอป
 ├── assets/               # รูปภาพ, ไอคอน, ฟอนต์
 ├── components/           # Reusable Components
 ├── app.json              # การตั้งค่าแอป (ชื่อ, ไอคอน, ธีม)
+├── tsconfig.json         # การตั้งค่า TypeScript
 └── package.json          # รายการ Dependencies
 ```
 
 ## โปรแกรมแรก Hello World
 
-ลองแก้ไขไฟล์ `app/index.jsx` เพื่อแสดงข้อความแรกบนหน้าจอ
+ลองแก้ไขไฟล์ `app/index.tsx` เพื่อแสดงข้อความแรกบนหน้าจอ
 
-```jsx
+```tsx
 import { View, Text, StyleSheet } from 'react-native';
 
-export default function HomeScreen() {
+export default function HomeScreen(): React.JSX.Element {
   // ฟังก์ชันนี้คือ Component หลักของหน้าแรก
   return (
     <View style={styles.container}>

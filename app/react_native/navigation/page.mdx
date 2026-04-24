@@ -28,15 +28,24 @@ npm install @react-navigation/native-stack
 
 Stack Navigator คือการนำทางแบบเรียงซ้อน (Stack) หน้าจอใหม่จะเปิดทับหน้าจอเดิม และมีปุ่มย้อนกลับโดยอัตโนมัติ เหมาะสำหรับการไหลแบบ Master → Detail
 
-```jsx
+```tsx
 import { NavigationContainer } from '@react-navigation/native';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { createNativeStackNavigator, NativeStackScreenProps } from '@react-navigation/native-stack';
 import { View, Text, Button, StyleSheet } from 'react-native';
 
-const Stack = createNativeStackNavigator();
+// กำหนด Type ของแต่ละ Screen และ Params ที่รับได้
+type RootStackParamList = {
+  Home: undefined;
+  Detail: { itemId: number; itemName: string };
+};
+
+type HomeScreenProps = NativeStackScreenProps<RootStackParamList, 'Home'>;
+type DetailScreenProps = NativeStackScreenProps<RootStackParamList, 'Detail'>;
+
+const Stack = createNativeStackNavigator<RootStackParamList>();
 
 // หน้าจอแรก — รายการ
-function HomeScreen({ navigation }) {
+function HomeScreen({ navigation }: HomeScreenProps): React.JSX.Element {
   return (
     <View style={styles.screen}>
       <Text style={styles.title}>หน้าหลัก</Text>
@@ -52,7 +61,7 @@ function HomeScreen({ navigation }) {
 }
 
 // หน้าจอที่สอง — รายละเอียด
-function DetailScreen({ route }) {
+function DetailScreen({ route }: DetailScreenProps): React.JSX.Element {
   // route.params ใช้รับค่าที่ส่งมาจากหน้าก่อนหน้า
   const { itemId, itemName } = route.params;
   return (
@@ -65,7 +74,7 @@ function DetailScreen({ route }) {
 }
 
 // Root Component — ห่อด้วย NavigationContainer
-export default function App() {
+export default function App(): React.JSX.Element {
   return (
     <NavigationContainer>
       <Stack.Navigator initialRouteName="Home">
@@ -91,26 +100,32 @@ Tab Navigator แสดงแถบเมนูด้านล่างหน้
 npm install @react-navigation/bottom-tabs
 ```
 
-```jsx
+```tsx
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { NavigationContainer } from '@react-navigation/native';
 import { View, Text } from 'react-native';
 
-const Tab = createBottomTabNavigator();
+type TabParamList = {
+  Home: undefined;
+  Profile: undefined;
+  Settings: undefined;
+};
 
-function HomeScreen() {
+const Tab = createBottomTabNavigator<TabParamList>();
+
+function HomeScreen(): React.JSX.Element {
   return <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}><Text>หน้าหลัก</Text></View>;
 }
 
-function ProfileScreen() {
+function ProfileScreen(): React.JSX.Element {
   return <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}><Text>โปรไฟล์</Text></View>;
 }
 
-function SettingsScreen() {
+function SettingsScreen(): React.JSX.Element {
   return <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}><Text>ตั้งค่า</Text></View>;
 }
 
-export default function App() {
+export default function App(): React.JSX.Element {
   return (
     <NavigationContainer>
       <Tab.Navigator>
@@ -128,10 +143,27 @@ export default function App() {
 
 ข้อมูลสามารถส่งระหว่างหน้าจอได้ผ่าน `navigation.navigate` โดยใส่ Object เป็น Parameter ที่สอง และรับข้อมูลผ่าน `route.params` ในหน้าปลายทาง
 
-```jsx
+```tsx
+import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { Button, View, Text } from 'react-native';
+
+interface Product {
+  id: number;
+  name: string;
+  price: number;
+}
+
+type RootStackParamList = {
+  ProductList: undefined;
+  ProductDetail: { product: Product };
+};
+
+type ProductListScreenProps = NativeStackScreenProps<RootStackParamList, 'ProductList'>;
+type ProductDetailScreenProps = NativeStackScreenProps<RootStackParamList, 'ProductDetail'>;
+
 // หน้าต้นทาง — ส่งข้อมูลไป
-function ProductListScreen({ navigation }) {
-  const product = { id: 1, name: 'เสื้อยืด', price: 299 };
+function ProductListScreen({ navigation }: ProductListScreenProps): React.JSX.Element {
+  const product: Product = { id: 1, name: 'เสื้อยืด', price: 299 };
 
   return (
     <Button
@@ -142,7 +174,7 @@ function ProductListScreen({ navigation }) {
 }
 
 // หน้าปลายทาง — รับข้อมูล
-function ProductDetailScreen({ route }) {
+function ProductDetailScreen({ route }: ProductDetailScreenProps): React.JSX.Element {
   const { product } = route.params; // แกะข้อมูลที่ส่งมา
 
   return (
