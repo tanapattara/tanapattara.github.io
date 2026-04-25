@@ -7,18 +7,21 @@ import "nextra-theme-docs/style.css";
 export const metadata = {
   title: "Classroom Handouts",
   description: "Course materials and handouts for students",
+  other: {
+    "google-adsense-account": "ca-pub-8546645383819348",
+  },
 };
 
 const navbar = (
   <Navbar
-    logo={<b>Classroom Handouts</b>}
+    logo={<b>Tanapattara's Classroom</b>}
     projectLink="https://github.com/tanapattara/tanapattara.github.io"
   />
 );
 
 const footer = (
   <Footer>
-    © {new Date().getFullYear()} Classroom Handouts. All rights reserved.
+    © {new Date().getFullYear()} Tanapattara's Classroom. All rights reserved.
   </Footer>
 );
 
