@@ -21,7 +21,21 @@ const navbar = (
 
 const footer = (
   <Footer>
-    © {new Date().getFullYear()} Tanapattara's Classroom. All rights reserved.
+    <span>
+      © {new Date().getFullYear()} Tanapattara's Classroom. All rights reserved.
+    </span>
+    <script
+      data-name="BMC-Widget"
+      data-cfasync="false"
+      src="https://cdnjs.buymeacoffee.com/1.0.0/widget.prod.min.js"
+      data-id="tanapattara"
+      data-description="Support me on Buy me a coffee!"
+      data-message=""
+      data-color="#FF813F"
+      data-position="Right"
+      data-x_margin="18"
+      data-y_margin="18"
+    ></script>
   </Footer>
 );
 
@@ -35,19 +49,6 @@ export default async function RootLayout({ children }) {
           src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8546645383819348"
           crossOrigin="anonymous"
           strategy="afterInteractive"
-        />
-        <Script
-          src="https://cdnjs.buymeacoffee.com/1.0.0/button.prod.min.js"
-          data-name="bmc-button"
-          data-slug="tanapattara"
-          data-color="#FFDD00"
-          data-emoji=""
-          data-font="Cookie"
-          data-text="Buy me a coffee"
-          data-outline-color="#000000"
-          data-font-color="#000000"
-          data-coffee-color="#ffffff"
-          strategy="lazyOnload"
         />
         <Layout
           navbar={navbar}
