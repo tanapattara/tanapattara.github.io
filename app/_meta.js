@@ -9,6 +9,7 @@ export default {
   flutter: "Flutter",
   typescript: "TypeScript",
   nextjs: "Next.js",
+  react: "React",
   react_native: "React Native",
   unity2d: "Unity 2D",
 };

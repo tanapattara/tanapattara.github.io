@@ -1,0 +1,544 @@
+import { Callout } from "nextra/components";
+
+# React Hooks
+
+React Hooks คือฟังก์ชันพิเศษที่ช่วยให้เราสามารถใช้งาน State และฟีเจอร์อื่น ๆ ของ React ใน Function Component ได้ โดยไม่จำเป็นต้องเขียน Class Component อีกต่อไป
+
+---
+
+## useState
+
+`useState` ใช้สำหรับจัดการ State ภายใน Component เมื่อค่า State เปลี่ยนแปลง React จะ Re-render Component นั้นโดยอัตโนมัติ
+
+```tsx
+import { useState } from "react";
+
+function Counter() {
+  // ประกาศ state ชื่อ count มีค่าเริ่มต้นเป็น 0
+  const [count, setCount] = useState(0);
+
+  return (
+    <div>
+      <p>จำนวนครั้งที่กด: {count}</p>
+      <button onClick={() => setCount(count + 1)}>เพิ่ม</button>
+      <button onClick={() => setCount(count - 1)}>ลด</button>
+      <button onClick={() => setCount(0)}>รีเซ็ต</button>
+    </div>
+  );
+}
+```
+
+<Callout type="info">
+**Best Practice**
+- ใช้ Functional Update เมื่อ State ใหม่ขึ้นอยู่กับ State เดิม เช่น `setCount(prev => prev + 1)` เพื่อป้องกันปัญหา Stale Closure
+- อย่าแก้ไข State โดยตรง (Mutation) ให้สร้าง Object/Array ใหม่เสมอ
+- แยก State ออกเป็นชิ้นเล็ก ๆ ตามหน้าที่ แทนที่จะเก็บทุกอย่างใน Object เดียว
+</Callout>
+
+---
+
+## useEffect
+
+`useEffect` ใช้สำหรับจัดการ Side Effects เช่น การดึงข้อมูลจาก API, การ Subscribe Event, หรือการแก้ไข DOM โดยตรง ฟังก์ชันนี้จะถูกเรียกหลังจาก Component Render เสร็จแล้ว
+
+```tsx
+import { useState, useEffect } from "react";
+
+interface User {
+  id: number;
+  name: string;
+  email: string;
+}
+
+function UserProfile({ userId }: { userId: number }) {
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    // ดึงข้อมูลเมื่อ userId เปลี่ยน
+    setLoading(true);
+
+    fetch(`https://jsonplaceholder.typicode.com/users/${userId}`)
+      .then((res) => res.json())
+      .then((data: User) => {
+        setUser(data);
+        setLoading(false);
+      });
+
+    // Cleanup function — ทำงานก่อน Effect ถูกเรียกซ้ำ หรือตอน Unmount
+    return () => {
+      setLoading(false);
+    };
+  }, [userId]); // Dependency Array — รัน Effect ใหม่เมื่อ userId เปลี่ยน
+
+  if (loading) return <p>กำลังโหลด...</p>;
+  if (!user) return <p>ไม่พบข้อมูล</p>;
+
+  return (
+    <div>
+      <h2>{user.name}</h2>
+      <p>{user.email}</p>
+    </div>
+  );
+}
+```
+
+<Callout type="warning">
+  **Best Practice** - ระบุ Dependency Array ให้ครบถ้วนเสมอ หากไม่ใส่ `[]`
+  จะรันทุกครั้งที่ Render - เขียน Cleanup Function เพื่อป้องกัน Memory Leak
+  เมื่อ Subscribe Event หรือ Timer - หากใช้ `async/await` ให้ประกาศฟังก์ชัน
+  async ภายใน useEffect แทนการใส่ async ที่ Callback โดยตรง
+</Callout>
+
+---
+
+## useMemo
+
+`useMemo` ใช้สำหรับ Memoize ผลลัพธ์ของการคำนวณที่มีต้นทุนสูง โดยจะคำนวณใหม่ก็ต่อเมื่อ Dependency เปลี่ยนแปลงเท่านั้น ช่วยป้องกันการคำนวณซ้ำโดยไม่จำเป็นในทุก Render
+
+```tsx
+import { useState, useMemo } from "react";
+
+function PrimeNumbers({ limit }: { limit: number }) {
+  const [multiplier, setMultiplier] = useState(1);
+
+  // คำนวณเฉพาะเมื่อ limit เปลี่ยน ไม่คำนวณซ้ำเมื่อ multiplier เปลี่ยน
+  const primes = useMemo(() => {
+    console.log("กำลังคำนวณจำนวนเฉพาะ...");
+    const result: number[] = [];
+    for (let i = 2; i <= limit; i++) {
+      let isPrime = true;
+      for (let j = 2; j < i; j++) {
+        if (i % j === 0) {
+          isPrime = false;
+          break;
+        }
+      }
+      if (isPrime) result.push(i);
+    }
+    return result;
+  }, [limit]);
+
+  return (
+    <div>
+      <p>
+        จำนวนเฉพาะถึง {limit}: {primes.join(", ")}
+      </p>
+      <p>ตัวคูณ: {multiplier}</p>
+      <button onClick={() => setMultiplier((m) => m + 1)}>เพิ่มตัวคูณ</button>
+    </div>
+  );
+}
+```
+
+<Callout type="info">
+  **Best Practice** - ใช้ `useMemo` เฉพาะกับการคำนวณที่หนักจริง ๆ
+  ไม่ควรใช้กับทุก Variable เพราะ Memoization เองก็มีต้นทุน - ใช้ควบคู่กับ
+  `React.memo` เพื่อป้องกัน Child Component Re-render โดยไม่จำเป็น - อย่าพึ่งพา
+  `useMemo` เป็นกลไกรับประกัน — React อาจล้างค่า Memoized ได้ในบางสถานการณ์
+</Callout>
+
+---
+
+## useCallback
+
+`useCallback` ใช้สำหรับ Memoize ฟังก์ชัน โดยจะสร้างฟังก์ชันใหม่ก็ต่อเมื่อ Dependency เปลี่ยนแปลง มีประโยชน์เมื่อส่งฟังก์ชันเป็น Prop ให้กับ Child Component ที่ Wrap ด้วย `React.memo`
+
+```tsx
+import { useState, useCallback, memo } from "react";
+
+// Child Component ที่ Wrap ด้วย React.memo
+const TaskItem = memo(
+  ({ task, onDelete }: { task: string; onDelete: (task: string) => void }) => {
+    console.log(`Render: ${task}`);
+    return (
+      <li>
+        {task}
+        <button onClick={() => onDelete(task)}>ลบ</button>
+      </li>
+    );
+  },
+);
+
+function TaskList() {
+  const [tasks, setTasks] = useState(["ซื้อของ", "ออกกำลังกาย", "อ่านหนังสือ"]);
+  const [input, setInput] = useState("");
+
+  // ฟังก์ชันนี้จะไม่ถูกสร้างใหม่ทุก Render
+  const handleDelete = useCallback((task: string) => {
+    setTasks((prev) => prev.filter((t) => t !== task));
+  }, []); // ไม่มี Dependency เพราะใช้ Functional Update
+
+  return (
+    <div>
+      <input value={input} onChange={(e) => setInput(e.target.value)} />
+      <button
+        onClick={() => {
+          setTasks((p) => [...p, input]);
+          setInput("");
+        }}
+      >
+        เพิ่ม
+      </button>
+      <ul>
+        {tasks.map((task) => (
+          <TaskItem key={task} task={task} onDelete={handleDelete} />
+        ))}
+      </ul>
+    </div>
+  );
+}
+```
+
+<Callout type="info">
+  **Best Practice** - `useCallback` มีประโยชน์จริงเมื่อใช้ร่วมกับ `React.memo`
+  หากไม่ได้ส่งฟังก์ชันให้ Memoized Component การใช้อาจไม่มีประโยชน์ - ใช้
+  Functional Update ภายในฟังก์ชันเพื่อหลีกเลี่ยงการต้องระบุ State เป็น
+  Dependency
+</Callout>
+
+---
+
+## useRef
+
+`useRef` ใช้สำหรับสองวัตถุประสงค์หลัก คือการอ้างอิง DOM Element โดยตรง และการเก็บค่าที่ไม่ต้องการให้ Component Re-render เมื่อค่าเปลี่ยน
+
+```tsx
+import { useState, useRef, useEffect } from "react";
+
+function StopWatch() {
+  const [time, setTime] = useState(0);
+  const [running, setRunning] = useState(false);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    // Focus input อัตโนมัติเมื่อ Component โหลด
+    inputRef.current?.focus();
+  }, []);
+
+  const start = () => {
+    setRunning(true);
+    intervalRef.current = setInterval(() => {
+      setTime((t) => t + 1);
+    }, 1000);
+  };
+
+  const stop = () => {
+    setRunning(false);
+    if (intervalRef.current) clearInterval(intervalRef.current);
+  };
+
+  const reset = () => {
+    stop();
+    setTime(0);
+  };
+
+  return (
+    <div>
+      <input ref={inputRef} placeholder="ชื่อการจับเวลา" />
+      <p>เวลา: {time} วินาที</p>
+      <button onClick={start} disabled={running}>
+        เริ่ม
+      </button>
+      <button onClick={stop} disabled={!running}>
+        หยุด
+      </button>
+      <button onClick={reset}>รีเซ็ต</button>
+    </div>
+  );
+}
+```
+
+<Callout type="info">
+**Best Practice**
+- ใช้ `useRef` เก็บค่า Timer ID, Previous Value หรือค่าที่ต้องการระหว่าง Render โดยไม่ต้อง Trigger Re-render
+- อย่าอ่านหรือเขียน `ref.current` ระหว่าง Render (เช่น ใน JSX) ให้ทำใน `useEffect` หรือ Event Handler แทน
+- ใช้ Type ที่เหมาะสมเมื่อใช้กับ DOM เช่น `useRef<HTMLInputElement>(null)`
+</Callout>
+
+---
+
+## useReducer
+
+`useReducer` ใช้จัดการ State ที่มีความซับซ้อน หรือมีหลาย Action โดยแยก Logic การอัปเดต State ออกมาเป็น Reducer Function ทำให้โค้ดอ่านง่ายและทดสอบได้ง่ายขึ้น
+
+```tsx
+import { useReducer } from "react";
+
+interface CartItem {
+  id: number;
+  name: string;
+  price: number;
+  qty: number;
+}
+
+type Action =
+  | { type: "ADD"; item: CartItem }
+  | { type: "REMOVE"; id: number }
+  | { type: "INCREMENT"; id: number }
+  | { type: "DECREMENT"; id: number }
+  | { type: "CLEAR" };
+
+function cartReducer(state: CartItem[], action: Action): CartItem[] {
+  switch (action.type) {
+    case "ADD":
+      return [...state, action.item];
+    case "REMOVE":
+      return state.filter((item) => item.id !== action.id);
+    case "INCREMENT":
+      return state.map((item) =>
+        item.id === action.id ? { ...item, qty: item.qty + 1 } : item,
+      );
+    case "DECREMENT":
+      return state.map((item) =>
+        item.id === action.id
+          ? { ...item, qty: Math.max(1, item.qty - 1) }
+          : item,
+      );
+    case "CLEAR":
+      return [];
+    default:
+      return state;
+  }
+}
+
+function ShoppingCart() {
+  const [cart, dispatch] = useReducer(cartReducer, []);
+
+  const total = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
+
+  return (
+    <div>
+      <button
+        onClick={() =>
+          dispatch({
+            type: "ADD",
+            item: { id: Date.now(), name: "สินค้า", price: 100, qty: 1 },
+          })
+        }
+      >
+        เพิ่มสินค้า
+      </button>
+      {cart.map((item) => (
+        <div key={item.id}>
+          <span>
+            {item.name} x{item.qty} = {item.price * item.qty} บาท
+          </span>
+          <button onClick={() => dispatch({ type: "INCREMENT", id: item.id })}>
+            +
+          </button>
+          <button onClick={() => dispatch({ type: "DECREMENT", id: item.id })}>
+            -
+          </button>
+          <button onClick={() => dispatch({ type: "REMOVE", id: item.id })}>
+            ลบ
+          </button>
+        </div>
+      ))}
+      <p>รวม: {total} บาท</p>
+      <button onClick={() => dispatch({ type: "CLEAR" })}>ล้างตะกร้า</button>
+    </div>
+  );
+}
+```
+
+<Callout type="info">
+  **Best Practice** - ใช้ `useReducer` แทน `useState` เมื่อ State มีหลาย
+  Sub-value หรือมีการอัปเดตที่ซับซ้อน - เขียน Reducer ให้เป็น Pure Function
+  (ไม่มี Side Effect) เสมอ - ใช้ TypeScript Union Type สำหรับ Action
+  เพื่อความปลอดภัยของ Type
+</Callout>
+
+---
+
+## useContext
+
+`useContext` ใช้สำหรับอ่านค่าจาก Context โดยไม่ต้องส่ง Prop ผ่านทุกระดับ (Prop Drilling) เหมาะสำหรับข้อมูลที่ใช้ร่วมกันทั่วทั้งแอป เช่น Theme, ภาษา, หรือข้อมูลผู้ใช้
+
+```tsx
+import { createContext, useContext, useState } from "react";
+
+interface ThemeContextType {
+  theme: "light" | "dark";
+  toggleTheme: () => void;
+}
+
+// สร้าง Context
+const ThemeContext = createContext<ThemeContextType | null>(null);
+
+// Custom Hook สำหรับใช้งาน Context
+function useTheme() {
+  const ctx = useContext(ThemeContext);
+  if (!ctx) throw new Error("useTheme ต้องใช้ภายใน ThemeProvider");
+  return ctx;
+}
+
+// Provider Component
+function ThemeProvider({ children }: { children: React.ReactNode }) {
+  const [theme, setTheme] = useState<"light" | "dark">("light");
+  const toggleTheme = () => setTheme((t) => (t === "light" ? "dark" : "light"));
+
+  return (
+    <ThemeContext.Provider value={{ theme, toggleTheme }}>
+      {children}
+    </ThemeContext.Provider>
+  );
+}
+
+// Component ที่ใช้ Context
+function Header() {
+  const { theme, toggleTheme } = useTheme();
+  return (
+    <header
+      style={{
+        background: theme === "light" ? "#fff" : "#333",
+        color: theme === "light" ? "#000" : "#fff",
+      }}
+    >
+      <h1>แอปพลิเคชัน</h1>
+      <button onClick={toggleTheme}>
+        เปลี่ยนเป็น {theme === "light" ? "Dark" : "Light"} Mode
+      </button>
+    </header>
+  );
+}
+
+// การใช้งาน
+function App() {
+  return (
+    <ThemeProvider>
+      <Header />
+    </ThemeProvider>
+  );
+}
+```
+
+<Callout type="warning">
+  **Best Practice** - สร้าง Custom Hook (เช่น `useTheme`) เพื่อ Encapsulate
+  การเรียกใช้ Context และตรวจสอบว่าใช้ใน Provider - แยก Context ออกตามหน้าที่
+  อย่าใส่ข้อมูลทุกอย่างใน Context เดียว เพราะทุก Consumer จะ Re-render
+  เมื่อค่าเปลี่ยน - หากข้อมูลที่แชร์มีการอัปเดตบ่อย ให้พิจารณาใช้ State
+  Management Library แทน
+</Callout>
+
+---
+
+## useLayoutEffect
+
+`useLayoutEffect` ทำงานเหมือน `useEffect` แต่จะถูกเรียกหลัง DOM อัปเดตแล้วและ **ก่อน** ที่ Browser จะวาด (Paint) หน้าจอ เหมาะสำหรับงานที่ต้องอ่านหรือแก้ไข Layout เพื่อป้องกัน UI กระพริบ
+
+```tsx
+import { useState, useLayoutEffect, useRef } from "react";
+
+function Tooltip({
+  text,
+  children,
+}: {
+  text: string;
+  children: React.ReactNode;
+}) {
+  const [position, setPosition] = useState({ top: 0, left: 0 });
+  const tooltipRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLSpanElement>(null);
+
+  // ใช้ useLayoutEffect เพื่อคำนวณตำแหน่งก่อน Browser วาดหน้าจอ
+  // ป้องกันไม่ให้ Tooltip กระพริบจากตำแหน่งผิดก่อนย้ายไปตำแหน่งถูก
+  useLayoutEffect(() => {
+    if (tooltipRef.current && containerRef.current) {
+      const containerRect = containerRef.current.getBoundingClientRect();
+      const tooltipRect = tooltipRef.current.getBoundingClientRect();
+
+      setPosition({
+        top: containerRect.top - tooltipRect.height - 8,
+        left:
+          containerRect.left + containerRect.width / 2 - tooltipRect.width / 2,
+      });
+    }
+  }, [text]);
+
+  return (
+    <>
+      <span ref={containerRef}>{children}</span>
+      <div
+        ref={tooltipRef}
+        style={{
+          position: "fixed",
+          top: position.top,
+          left: position.left,
+          background: "#333",
+          color: "#fff",
+          padding: "4px 8px",
+          borderRadius: 4,
+          pointerEvents: "none",
+        }}
+      >
+        {text}
+      </div>
+    </>
+  );
+}
+```
+
+<Callout type="warning">
+  **Best Practice** - ใช้ `useLayoutEffect` เฉพาะเมื่อจำเป็นต้องอ่าน Layout
+  หรือป้องกัน UI กระพริบเท่านั้น - ใน Server-Side Rendering (SSR)
+  `useLayoutEffect` จะแสดง Warning ให้ใช้ `useEffect` แทนหรือตรวจสอบว่าอยู่ใน
+  Browser ก่อน - กรณีส่วนใหญ่ `useEffect` เพียงพอแล้ว ใช้ `useLayoutEffect` เป็น
+  Last Resort
+</Callout>
+
+---
+
+## useId
+
+`useId` ใช้สำหรับสร้าง ID ที่ไม่ซ้ำกันและสอดคล้องกันระหว่าง Server และ Client เหมาะสำหรับเชื่อม Label กับ Input ใน Form หรือใช้กับ ARIA Attribute
+
+```tsx
+import { useId } from "react";
+
+function FormField({ label, type = "text" }: { label: string; type?: string }) {
+  // สร้าง ID ที่ไม่ซ้ำกันอัตโนมัติ
+  const id = useId();
+
+  return (
+    <div>
+      <label htmlFor={id}>{label}</label>
+      <input id={id} type={type} />
+    </div>
+  );
+}
+
+function RegistrationForm() {
+  return (
+    <form>
+      <FormField label="ชื่อผู้ใช้" />
+      <FormField label="อีเมล" type="email" />
+      <FormField label="รหัสผ่าน" type="password" />
+      {/* แต่ละ FormField จะได้รับ ID ที่ไม่ซ้ำกัน */}
+    </form>
+  );
+}
+
+// การใช้กับ ARIA Attribute
+function PasswordInput() {
+  const id = useId();
+  const descriptionId = `${id}-description`;
+
+  return (
+    <div>
+      <label htmlFor={id}>รหัสผ่าน</label>
+      <input id={id} type="password" aria-describedby={descriptionId} />
+      <p id={descriptionId}>รหัสผ่านต้องมีความยาวอย่างน้อย 8 ตัวอักษร</p>
+    </div>
+  );
+}
+```
+
+<Callout type="info">
+  **Best Practice** - ใช้ `useId` แทนการสร้าง ID ด้วยตนเอง (เช่น
+  `Math.random()`) เพื่อให้ ID สอดคล้องกันระหว่าง SSR และ Client Hydration -
+  อย่าใช้ `useId` เป็น Key ใน List เพราะ Key ต้องมาจากข้อมูล ไม่ใช่จาก Hook -
+  สามารถต่อ Suffix เพิ่มเติมได้ เช่น `` `${id}-label` `` และ `` `${id}-input` ``
+  เพื่อ ID หลายตัวจาก Instance เดียว
+</Callout>
