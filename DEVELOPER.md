@@ -1,475 +1,292 @@
-# Developer Documentation
+# Developer guide
 
-This document covers everything a developer needs to know to work on this project.
+This guide describes how the repository works and how to safely add or change course material. It reflects the current project structure and deployment workflow.
 
----
+## Architecture at a glance
 
-## Table of Contents
+The project is a documentation-only Next.js application using the App Router. Nextra compiles MDX lesson files, builds the page map, and supplies the documentation theme. Next.js exports the result as static files, and Pagefind adds a client-side search index. GitHub Actions publishes the contents of `out/` to GitHub Pages.
 
-- [Developer Documentation](#developer-documentation)
-  - [Table of Contents](#table-of-contents)
-  - [Overview](#overview)
-  - [Tech Stack](#tech-stack)
-  - [Project Structure](#project-structure)
-  - [Getting Started](#getting-started)
-    - [Prerequisites](#prerequisites)
-    - [Install Dependencies](#install-dependencies)
-    - [Run Development Server](#run-development-server)
-    - [Build for Production](#build-for-production)
-  - [Adding Content](#adding-content)
-    - [Creating a New Page](#creating-a-new-page)
-    - [Creating a New Section (Folder)](#creating-a-new-section-folder)
-    - [Content Writing Guidelines](#content-writing-guidelines)
-      - [Language](#language)
-      - [Sub-page Titles (No Numbering)](#sub-page-titles-no-numbering)
-      - [Page Structure — Explanation Before Code](#page-structure--explanation-before-code)
-    - [Controlling Sidebar Order with `_meta.js`](#controlling-sidebar-order-with-_metajs)
-  - [Key Files Explained](#key-files-explained)
-    - [`app/layout.jsx`](#applayoutjsx)
-    - [`app/_meta.js`](#app_metajs)
-    - [`next.config.mjs`](#nextconfigmjs)
-    - [`mdx-components.js`](#mdx-componentsjs)
-  - [Nextra Built-In Components](#nextra-built-in-components)
-    - [`<Callout>`](#callout)
-    - [`<Steps>`](#steps)
-    - [`<Tabs>`](#tabs)
-    - [`<Cards>`](#cards)
-    - [`<FileTree>`](#filetree)
-    - [Syntax Highlighting](#syntax-highlighting)
-  - [Search (Pagefind)](#search-pagefind)
-  - [Build \& Static Export](#build--static-export)
-    - [GitHub Pages Deployment](#github-pages-deployment)
-  - [Useful References](#useful-references)
+| Technology | Role |
+| --- | --- |
+| Next.js 16 | App Router and static site generation |
+| React 19 | Rendering |
+| Nextra 4 | MDX processing and file-based documentation navigation |
+| `nextra-theme-docs` | Navbar, sidebar, table of contents, and search UI |
+| Pagefind | Search index for the exported HTML |
+| GitHub Actions/Pages | Production build and hosting |
 
----
+Dependency versions are defined in `package.json`; reproducible versions are locked in `package-lock.json`.
 
-## Overview
+## Prerequisites and setup
 
-This is a **Classroom Handouts** documentation site built with [Nextra 4](https://nextra.site) on top of [Next.js](https://nextjs.org). Content is written in MDX (Markdown + JSX) and the site is exported as a fully static site, suitable for hosting on GitHub Pages.
-
----
-
-## Tech Stack
-
-| Package               | Version | Role                                      |
-| --------------------- | ------- | ----------------------------------------- |
-| `next`                | ^16.2.4 | React framework / app router              |
-| `nextra`              | ^4.6.1  | MDX-based content layer on top of Next.js |
-| `nextra-theme-docs`   | ^4.6.1  | Docs UI theme (sidebar, navbar, TOC, etc) |
-| `react` / `react-dom` | ^19.2.5 | UI library                                |
-| `pagefind`            | ^1.5.2  | Static full-text search index             |
-| `typescript`          | ^6.0.3  | Type checking (dev only)                  |
-
----
-
-## Project Structure
-
-```
-tanapattara.github.io/
-├── app/                        # Next.js App Router directory
-│   ├── _meta.js                # Top-level sidebar/navbar ordering
-│   ├── layout.jsx              # Root layout (Navbar, Footer, theme setup)
-│   ├── page.mdx                # Homepage content
-│   ├── git/
-│   │   └── page.mdx
-│   ├── csharp/
-│   │   └── page.mdx
-│   ├── oop/
-│   │   └── page.mdx
-│   ├── dart/
-│   │   └── page.mdx
-│   ├── flutter/
-│   │   └── page.mdx
-│   ├── typescript/
-│   │   └── page.mdx
-│   ├── nextjs/
-│   │   └── page.mdx
-│   ├── react_native/
-│   │   ├── _meta.js            # Sidebar ordering for this section
-│   │   ├── page.mdx            # React Native index page
-│   │   ├── intro/
-│   │   │   └── page.mdx
-│   │   ├── components/
-│   │   │   └── page.mdx
-│   │   ├── styling/
-│   │   │   └── page.mdx
-│   │   ├── navigation/
-│   │   │   └── page.mdx
-│   │   ├── state-management/
-│   │   │   └── page.mdx
-│   │   ├── api-networking/
-│   │   │   └── page.mdx
-│   │   ├── storage/
-│   │   │   └── page.mdx
-│   │   └── workshop/
-│   │       └── page.mdx
-│   ├── unity2d/
-│   │   └── page.mdx
-│   └── handouts/
-│       ├── _meta.js            # Sidebar ordering for this section
-│       ├── page.mdx            # Handouts index page
-│       ├── week-1/
-│       │   └── page.mdx
-│       └── week-2/
-│           └── page.mdx
-├── public/                     # Static assets (images, files)
-├── mdx-components.js           # Custom/overridden MDX components
-├── next.config.mjs             # Next.js + Nextra configuration
-└── package.json
-```
-
----
-
-## Getting Started
-
-### Prerequisites
-
-- Node.js 18+ (LTS recommended)
-- npm (bundled with Node.js)
-
-### Install Dependencies
+Use Node.js 20.9 or later. The deployment workflow uses the current Node.js 20 release, so Node.js 20 LTS is the best version to use locally. npm is included with Node.js.
 
 ```bash
-npm install
-```
-
-### Run Development Server
-
-```bash
+git clone https://github.com/tanapattara/tanapattara.github.io.git
+cd tanapattara.github.io
+npm ci
 npm run dev
 ```
 
-The site will be available at [http://localhost:3000](http://localhost:3000).
+Open [http://localhost:3000](http://localhost:3000). Changes to MDX and layout files are reflected by the development server.
 
-> **Note:** Development mode compiles each page on demand — it is slower than production. Use `npm run build` to test the final output.
+Use `npm ci`, rather than `npm install`, for a clean checkout. It installs exactly what is recorded in the lockfile and does not rewrite it. Use `npm install <package>` only when intentionally changing dependencies, and commit both `package.json` and `package-lock.json`.
 
-### Build for Production
+## Commands
+
+| Command | What it does |
+| --- | --- |
+| `npm run dev` | Runs the Next.js development server |
+| `npm run build` | Runs `next build`; npm then runs `postbuild` automatically |
+| `npm run postbuild` | Generates Pagefind data in `out/_pagefind` from the rendered app |
+| `npm run start` | Invokes `next start`; this is not the preview path for this static-export project |
+
+The complete production check is:
 
 ```bash
 npm run build
 ```
 
-This runs `next build` and then automatically runs `pagefind` to build the search index from the generated output. The static site is written to the `out/` directory.
+The generated site is written to `out/`. If a local production-style preview is needed, use a static server that supports clean URLs, for example `npx serve out`. Search is generated during the production build and should not be expected to work in `npm run dev`.
 
----
+## Repository structure
 
-## Adding Content
-
-All content pages are `.mdx` files that support standard Markdown plus JSX components.
-
-### Creating a New Page
-
-1. Create a new folder inside `app/` for your route, e.g. `app/python/`.
-2. Add a `page.mdx` file inside it:
-
-```mdx
-# Python
-
-Introduction to Python programming...
+```text
+tanapattara.github.io/
+├── .github/workflows/nextjs.yml  # Builds and deploys main to GitHub Pages
+├── app/
+│   ├── _meta.js                  # Top-level navigation order and labels
+│   ├── layout.jsx                # Site metadata and shared Nextra layout
+│   ├── page.mdx                  # Home page and topic cards
+│   ├── csharp/                   # Topic with ordered lesson pages
+│   ├── react/                    # Topic with a Hooks lesson
+│   ├── react_native/             # Topic with ordered lesson pages
+│   ├── typescript/               # Topic with ordered lesson pages
+│   └── <other-topic>/page.mdx    # Single-page topics
+├── public/
+│   ├── .nojekyll                 # Prevents GitHub Pages from running Jekyll
+│   └── ads.txt                   # Public advertising declaration
+├── mdx-components.js             # Global MDX component mapping
+├── next.config.mjs               # Nextra wrapper and static export settings
+├── package.json                  # Scripts and direct dependencies
+└── package-lock.json             # Locked dependency tree
 ```
 
-3. Register the new page in `app/_meta.js` so it appears in the sidebar with a friendly title:
+In the App Router, folders determine URL paths:
 
-```js
-// app/_meta.js
-export default {
-  index: "Welcome",
-  git: "Git",
-  python: "Python", // ← add this
-  // ...
-};
-```
+| Source file | URL |
+| --- | --- |
+| `app/page.mdx` | `/` |
+| `app/git/page.mdx` | `/git` |
+| `app/typescript/page.mdx` | `/typescript` |
+| `app/typescript/functions/page.mdx` | `/typescript/functions` |
 
-### Creating a New Section (Folder)
+## Add or edit content
 
-To group pages under a collapsible section:
+### Add a top-level topic
 
-1. Create a folder, e.g. `app/databases/`.
-2. Add an index page `app/databases/page.mdx` with front matter:
+1. Create `app/<route>/page.mdx`.
+2. Add the route to `app/_meta.js` in the position where it should appear.
+3. Add a matching card to `app/page.mdx` so the topic is discoverable from the home page.
+4. Run the development server and check the page, navigation, and links.
+5. Run `npm run build` before submitting the change.
+
+A typical index page is:
 
 ```mdx
 ---
+title: ชื่อบทเรียน
+sidebarTitle: ชื่อเมนู
 asIndexPage: true
 ---
 
-# Databases
-
-Overview of database topics...
-```
-
-3. Add sub-pages such as `app/databases/sql/page.mdx`.
-4. Add a `_meta.js` file inside the folder to control sub-page order:
-
-```js
-// app/databases/_meta.js
-export default {
-  sql: "SQL Basics",
-  nosql: "NoSQL",
-};
-```
-
-5. Register the section in the top-level `app/_meta.js`:
-
-```js
-export default {
-  // ...
-  databases: "Databases",
-};
-```
-
-### Content Writing Guidelines
-
-When writing content for any topic page or sub-page, follow these rules:
-
-#### Language
-All content — headings, explanations, labels, and inline comments inside code blocks — **must be written in Thai**.
-
-#### Sub-page Titles (No Numbering)
-Sub-page titles and sidebar labels must **not** include a number prefix. Use descriptive Thai names only.
-
-```js
-// ✅ Correct — app/csharp/_meta.js
-export default {
-  index: "C#",
-  array: "อาร์เรย์",
-  "control-flow": "การควบคุมการทำงาน",
-  methods: "เมธอด",
-};
-
-// ❌ Wrong — do not add numbers
-export default {
-  index: "C#",
-  array: "1. อาร์เรย์",
-  "control-flow": "2. การควบคุมการทำงาน",
-};
-```
-
-#### Page Structure — Explanation Before Code
-Every topic section must follow this order:
-
-1. **Thai heading** (`##`) for the topic
-2. **Explanation paragraph(s)** in Thai describing the concept
-3. **Code example(s)** that illustrate the explanation
-
-```mdx
-## อาร์เรย์หนึ่งมิติ (One-Dimensional Array)
-
-อาร์เรย์คือโครงสร้างข้อมูลที่ใช้เก็บข้อมูลชนิดเดียวกันหลายค่า
-แต่ละสมาชิกสามารถเข้าถึงได้ผ่าน Index ซึ่งเริ่มนับจาก 0 เสมอ
-
-​```csharp
-int[] scores = { 85, 90, 78 };
-Console.WriteLine(scores[0]); // แสดงผล: 85
-​```
-```
-
-Do **not** place a code block before the explanation paragraph.
-
----
-
-### Controlling Sidebar Order with `_meta.js`
-
-Every folder can have a `_meta.js` file that controls:
-
-- **Display title** of each item in the sidebar
-- **Order** items appear (top to bottom)
-- **Type** of items (page, separator, external link, menu)
-
-```js
-// Example _meta.js
-export default {
-  index: "Home", // simple string title
-  "getting-started": "Getting Started",
-  "###": { type: "separator" }, // visual divider
-  reference: {
-    title: "Reference",
-    theme: { collapsed: true }, // collapsed by default
-  },
-  github: {
-    title: "GitHub",
-    href: "https://github.com", // external link
-  },
-};
-```
-
-> **Note:** Any pages not listed in `_meta.js` are appended at the end of the sidebar, sorted alphabetically.
-
----
-
-## Key Files Explained
-
-### `app/layout.jsx`
-
-The root layout wraps every page. It configures the **Navbar**, **Footer**, and the **Nextra Docs Theme Layout**. Modify this file to:
-
-- Change the site logo or title (`logo` prop on `<Navbar>`)
-- Update the GitHub repository link (`projectLink` on `<Navbar>` and `docsRepositoryBase` on `<Layout>`)
-- Add a site-wide banner (`<Banner>` component)
-- Change the footer text
-
-```jsx
-// Key props in <Layout>:
-<Layout
-  navbar={navbar}
-  pageMap={await getPageMap()}           // auto-generates navigation from file system
-  docsRepositoryBase="https://github.com/tanapattara/tanapattara.github.io/tree/main"
-  footer={footer}
->
-```
-
-### `app/_meta.js`
-
-Top-level navigation config. Each key maps a folder/file name to its sidebar label. The order of keys determines the order in the sidebar.
-
-### `next.config.mjs`
-
-Wraps the Next.js config with Nextra, and sets:
-
-- `output: "export"` — generates a fully static site (required for GitHub Pages)
-- `images.unoptimized: true` — required when using static export with `<Image>`
-
-### `mdx-components.js`
-
-Registers custom or overridden MDX components globally. All MDX pages automatically receive these components without needing to import them. To add a custom component site-wide:
-
-```js
-// mdx-components.js
-import { useMDXComponents as getThemeComponents } from "nextra-theme-docs";
-import MyCustomComponent from "./components/MyCustomComponent";
-
-const themeComponents = getThemeComponents();
-
-export function useMDXComponents(components) {
-  return {
-    ...themeComponents,
-    MyCustomComponent, // ← available in all .mdx files
-    ...components,
-  };
-}
-```
-
----
-
-## Nextra Built-In Components
-
-Import these in any `.mdx` file from `nextra/components`:
-
-### `<Callout>`
-
-```mdx
-import { Callout } from "nextra/components";
-
-<Callout type="info">This is an info callout.</Callout>
-<Callout type="warning">This is a warning.</Callout>
-<Callout type="error">This is an error.</Callout>
-```
-
-### `<Steps>`
-
-```mdx
-import { Steps } from "nextra/components";
-
-<Steps>
-### Step 1
-Do the first thing.
-
-### Step 2
-
-Do the second thing.
-
-</Steps>
-```
-
-### `<Tabs>`
-
-```mdx
-import { Tabs } from "nextra/components";
-
-<Tabs items={["npm", "yarn", "pnpm"]}>
-  <Tabs.Tab>**npm**: `npm install`</Tabs.Tab>
-  <Tabs.Tab>**yarn**: `yarn add`</Tabs.Tab>
-  <Tabs.Tab>**pnpm**: `pnpm add`</Tabs.Tab>
-</Tabs>
-```
-
-### `<Cards>`
-
-```mdx
 import { Cards } from "nextra/components";
 
+# ชื่อบทเรียน
+
+คำอธิบายบทเรียน...
+
 <Cards>
-  <Cards.Card title="Week 1" href="/handouts/week-1" />
-  <Cards.Card title="Week 2" href="/handouts/week-2" />
+  <Cards.Card title="หัวข้อย่อย" href="/route/lesson" />
 </Cards>
 ```
 
-### `<FileTree>`
+`asIndexPage: true` is used by the existing multi-page topic landing pages. Follow that pattern when a topic has child lessons.
 
-```mdx
-import { FileTree } from "nextra/components";
+### Add a lesson to an existing topic
 
-<FileTree>
-  <FileTree.Folder name="app" defaultOpen>
-    <FileTree.File name="layout.jsx" />
-    <FileTree.File name="page.mdx" />
-  </FileTree.Folder>
-</FileTree>
+1. Create `app/<topic>/<lesson>/page.mdx`.
+2. Add `<lesson>` and its display label to `app/<topic>/_meta.js`.
+3. If the topic landing page contains cards, add a card that links to the new route.
+4. Check the previous/next navigation and sidebar order in the browser.
+
+For example:
+
+```js
+// app/typescript/_meta.js
+export default {
+  variables: "ชนิดข้อมูลและตัวแปร",
+  functions: "ฟังก์ชัน",
+  generics: "เจเนอริก",
+};
 ```
 
-### Syntax Highlighting
+```text
+app/typescript/generics/page.mdx  ->  /typescript/generics
+```
 
-Fenced code blocks with a language tag are automatically highlighted:
+The order of keys in `_meta.js` controls the displayed lesson order. Keep every intended page in the appropriate metadata file; otherwise Nextra may append it using its filesystem-derived name and order.
+
+### MDX and component usage
+
+MDX accepts Markdown plus JSX. Import Nextra components at the top of the page that uses them:
+
+```mdx
+import { Callout, Cards, Steps, Tabs } from "nextra/components";
+
+<Callout type="info">
+  ข้อสังเกตที่สำคัญ
+</Callout>
+```
+
+Fenced code blocks should always include a language identifier for syntax highlighting:
 
 ````mdx
 ```typescript
-const greeting: string = "Hello, World!";
-console.log(greeting);
+const courseName: string = "TypeScript";
 ```
 ````
 
+`mdx-components.js` merges the docs theme's default components with page-provided components. Add a component there only when it should be available globally; page-specific components should be imported by the page.
+
+## Content conventions
+
+The audience is Thai-speaking students. Keep learner-facing explanations and code comments primarily in Thai, while retaining standard English technical terms when they improve clarity.
+
+- Start each page with one `#` heading; use `##` and `###` in order below it.
+- Explain a concept before showing its code example.
+- Use descriptive sidebar labels without numeric prefixes.
+- Keep route folder names stable because changing them breaks inbound links.
+- Use lowercase route names. Existing routes use both hyphens (`state-management`) and one underscore (`react_native`); preserve existing URLs and prefer hyphens for new multiword routes.
+- Use root-relative internal links, such as `/typescript/functions`.
+- Verify that commands and code samples are internally consistent and runnable in the environment being taught.
+- Do not place secrets, access tokens, student data, or private material in MDX or `public/`; everything in the repository and export is public.
+
+Front matter is optional. Existing multi-page indexes and React Native lessons use it to set browser/sidebar titles:
+
+```mdx
 ---
-
-## Search (Pagefind)
-
-This project uses [Pagefind](https://pagefind.app) for client-side static search. The search index is built **automatically** after `npm run build` via the `postbuild` script in `package.json`:
-
-```json
-"postbuild": "pagefind --site .next/server/app --output-path out/_pagefind"
+title: Navigation ใน React Native
+sidebarTitle: Navigation
+---
 ```
 
-- The index is generated from the rendered HTML output.
-- No additional configuration is required.
-- Search is **not available** in `npm run dev` mode — build the project to test search.
+When `_meta.js` supplies a sidebar label, keep it consistent with `sidebarTitle` if both are present.
 
----
+## Static assets
 
-## Build & Static Export
+Put downloadable files and images in `public/`. Reference them from MDX using a root-relative URL:
 
-The site is configured for fully static export (no server required):
-
-```bash
-npm run build      # outputs static files to out/
-npm run start      # serves the static export locally for preview
+```mdx
+![คำอธิบายภาพ](/images/example.png)
 ```
 
-The `out/` directory contains the complete static site ready for deployment to GitHub Pages or any static host.
+Files under `public/` are copied to the root of the exported site. Use meaningful lowercase file names, optimize large images before committing, and add useful alternative text.
 
-### GitHub Pages Deployment
+## Site-wide configuration
 
-The repository is named `tanapattara.github.io`, which means GitHub Pages serves the `main` branch root automatically. Push your changes to `main` and GitHub Pages will host the built output.
+### `app/layout.jsx`
 
-> If using GitHub Actions for automated builds, ensure the workflow runs `npm run build` and deploys the `out/` directory.
+The root layout configures:
 
----
+- page metadata and the AdSense account declaration;
+- Nextra's `Head`, `Navbar`, `Layout`, and `Footer`;
+- the repository links used by the navbar and “edit this page” feature;
+- the generated page map and default sidebar collapse level;
+- site-wide AdSense and Buy Me a Coffee scripts.
 
-## Useful References
+It is an asynchronous server component because it awaits `getPageMap()`. Preserve that behavior when modifying the layout. Also keep third-party IDs and repository URLs synchronized if ownership or deployment settings change.
 
-| Resource                           | URL                                                 |
-| ---------------------------------- | --------------------------------------------------- |
-| Nextra Documentation               | https://nextra.site/docs                            |
-| Nextra Docs Theme API              | https://nextra.site/docs/docs-theme/api             |
-| Nextra Built-In Components         | https://nextra.site/docs/built-ins                  |
-| Nextra `_meta.js` file conventions | https://nextra.site/docs/file-conventions/meta-file |
-| Next.js App Router docs            | https://nextjs.org/docs/app                         |
-| Pagefind                           | https://pagefind.app                                |
-| MDX                                | https://mdxjs.com                                   |
+### `next.config.mjs`
+
+Nextra wraps the Next.js configuration. Two settings are essential to the current hosting model:
+
+```js
+const nextConfig = {
+  output: "export",
+  images: { unoptimized: true },
+};
+```
+
+`output: "export"` creates the static `out/` directory. Unoptimized images avoid depending on the Next.js image optimization server, which is unavailable on static hosting. Do not add features that require a long-running Next.js server unless the hosting architecture is intentionally changed.
+
+## Search
+
+The `build` command has an npm lifecycle hook:
+
+```text
+next build
+  -> postbuild
+  -> pagefind --site .next/server/app --output-path out/_pagefind
+```
+
+Pagefind scans the HTML rendered during the build and writes its browser assets into the exported site. When debugging search:
+
+1. Run `npm run build`, not only the development server.
+2. Confirm that `out/_pagefind/` exists.
+3. Preview `out/` with a static server.
+4. Check that the expected page contains indexable rendered text.
+
+## Deployment
+
+`.github/workflows/nextjs.yml` is the production path. A push to `main`, or a manual workflow dispatch, performs these steps:
+
+1. Check out the repository.
+2. Set up Node.js 20 and npm caching.
+3. Run `npm ci`.
+4. Run `npm run build`, including the Pagefind `postbuild` hook.
+5. Upload `out/` as the GitHub Pages artifact.
+6. Deploy the artifact through the `github-pages` environment.
+
+The workflow uses the Pages deployment action; GitHub does not serve the source files directly from the branch. Repository settings must therefore use **GitHub Actions** as the Pages source.
+
+Before merging or pushing to `main`, review the generated build locally. After deployment, check the Actions run and spot-check the live page, navigation, and search.
+
+## Contributor checklist
+
+- [ ] Content is accurate and written for the established Thai-speaking audience.
+- [ ] The route appears in the correct `_meta.js` file and in the intended order.
+- [ ] Topic landing-page cards include any new lessons.
+- [ ] Internal links and static asset paths work.
+- [ ] Code blocks have language identifiers and explanations.
+- [ ] No secrets or private information are included.
+- [ ] `npm run build` completes and creates `out/_pagefind/`.
+- [ ] Dependency changes include both package files.
+
+## Troubleshooting
+
+### `next: command not found`
+
+Dependencies have not been installed. Run `npm ci` from the repository root.
+
+### A page is missing or ordered incorrectly
+
+Confirm that its file is named `page.mdx`, that folder names match the URL, and that the route key exists in the nearest `_meta.js` file.
+
+### Search is unavailable locally
+
+This is expected during `npm run dev`. Run a production build and serve `out/` with a static server.
+
+### The static build fails
+
+Read the first build error and check the changed MDX for malformed front matter, unclosed JSX tags, invalid component imports, or broken fenced code blocks. Also confirm that the local Node.js major version matches the workflow's Node.js 20 baseline.
+
+## References
+
+- [Nextra documentation](https://nextra.site/docs)
+- [Nextra file conventions](https://nextra.site/docs/file-conventions)
+- [Next.js App Router](https://nextjs.org/docs/app)
+- [Next.js static exports](https://nextjs.org/docs/app/guides/static-exports)
+- [MDX](https://mdxjs.com/)
+- [Pagefind](https://pagefind.app/)
+- [GitHub Pages custom workflows](https://docs.github.com/en/pages/getting-started-with-github-pages/using-custom-workflows-with-github-pages)
