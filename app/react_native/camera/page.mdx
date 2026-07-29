@@ -1,0 +1,225 @@
+---
+title: "Camera"
+sidebarTitle: "Camera"
+---
+
+# Camera
+
+สร้างโปรเจคโดยใช้แท็มแพล็ดแบบ blank-typescript เพื่อกำหนดให้ใช้ภาษา TypeScript
+
+```bash
+npx create-expo-app@latest camera-app --template blank-typescript
+```
+
+## ติดตั้ง Library ที่จำเป็น
+
+ในการเข้าถึงกล้องและคลังรูปภาพ เราจำเป็นต้องติดตั้ง Library เพิ่มเติม 2 ตัว คือ `expo-camera` และ `expo-media-library`
+
+เข้าไปยังโฟลเดอร์โปรเจคที่เราสร้างขึ้น ติดตั้งแพคเกจ
+
+```bash
+npx expo install expo-camera expo-media-library
+```
+
+การใช้ `npx expo install` จะช่วยให้เราได้เวอร์ชันของ Library ที่เข้ากันได้กับ Expo SDK ของโปรเจกต์เราโดยอัตโนมัติ
+
+## การขออนุญาตใช้งาน (Requesting Permissions)
+
+แอปพลิเคชันที่ดีจะต้องขออนุญาตผู้ใช้งานก่อนเข้าถึงฮาร์ดแวร์ส่วนตัวอย่างกล้องและพื้นที่จัดเก็บข้อมูลเสมอครับ เราจะเขียนโค้ดในไฟล์ `App.js` เพื่อจัดการส่วนนี้
+
+### การขออนุญาตใช้กล้องและคลังรูปภาพ
+
+เราจะใช้ `useState` เพื่อเก็บสถานะการอนุญาต และ `useEffect` เพื่อเรียกฟังก์ชันขออนุญาตทันทีที่แอปเปิดขึ้นมา
+
+```tsx
+import React, { useState, useEffect, useRef } from "react";
+import { StyleSheet, Text, View, Button, Image } from "react-native";
+import {
+  CameraView,
+  CameraCapturedPicture,
+  CameraType,
+  useCameraPermissions,
+} from "expo-camera";
+import * as MediaLibrary from "expo-media-library";
+
+export default function App() {
+	const [cameraPermission, requestCameraPermission] = useCameraPermissions();
+  const [hasMediaLibraryPermission, setHasMediaLibraryPermission] = useState<
+    boolean | null
+  >(null);
+  const [image, setImage] = useState<string | null>(null);
+  
+	useEffect(() => {
+    const requestPermissions = async () => {
+      const mediaLibraryStatus = await MediaLibrary.requestPermissionsAsync();
+      setHasMediaLibraryPermission(mediaLibraryStatus.status === "granted");
+    };
+    requestPermissions();
+  }, []);
+
+  if (!cameraPermission || hasMediaLibraryPermission === null) {
+    return <View />; // แสดงหน้าจอว่างเปล่าระหว่างรอการตอบกลับ permission
+  }
+  if (!cameraPermission.granted || hasMediaLibraryPermission === false) {
+    return <Text>กรุณาอนุญาตให้แอปเข้าถึงกล้องและคลังรูปภาพ</Text>;
+  }
+
+  // ... ส่วนของโค้ดอื่นๆ จะมาต่อตรงนี้
+  return (
+    <View style={styles.container}>
+      {/* โค้ดสำหรับแสดงกล้องและปุ่มถ่ายภาพ */}
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#fff',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+});
+```
+
+**คำอธิบายโค้ด:**
+
+- `Camera.requestCameraPermissionsAsync()`: เป็นฟังก์ชันสำหรับแสดงหน้าต่าง popup เพื่อขออนุญาตผู้ใช้ในการเข้าถึงกล้อง
+- `MediaLibrary.requestPermissionsAsync()`: ใช้สำหรับขออนุญาตเข้าถึงคลังรูปภาพ
+- `useState` และ `useEffect`: เป็น React Hooks พื้นฐานที่ใช้จัดการ state และ side effects ใน component
+
+## การแสดงผลกล้องและถ่ายภาพ
+
+เมื่อได้รับอนุญาตแล้ว เราจะแสดงผลภาพจากกล้องและสร้างปุ่มสำหรับถ่ายภาพ เราต้องสร้าง `reference` ไปยัง Camera component เพื่อจะสั่งให้มันถ่ายภาพได้ครับ
+
+อัปเดตโค้ดใน `App.js` ต่อจากเดิม:
+
+```tsx
+// ... (import statements และส่วนของ permission)
+
+export default function App() {
+  // ... (ส่วนของ state และ useEffect) 
+  // ... (ส่วนของ permission checks) 
+  
+  // สร้าง Ref สำหรับ Camera
+  const [cameraType, setCameraType] = useState<CameraType>("back");
+  const cameraRef = useRef<React.ComponentRef<typeof CameraView>>(null);
+ 
+  // ฟังก์ชันสำหรับถ่ายภาพ
+  const takePicture = async (): Promise<void> => {
+    if (cameraRef.current) {
+      try {
+        const options = { quality: 1, base64: true, exif: false };
+        const newPhoto: CameraCapturedPicture =
+          await cameraRef.current.takePictureAsync(options);
+        setImage(newPhoto.uri);
+      } catch (error) {
+        console.log("Error taking picture:", error);
+      }
+    }
+  };
+  
+  // ฟังก์ชันสำหรับถ่ายใหม่
+  const retakePicture = () => {
+    setImage(null);
+  };
+  
+  // ถ้ายังไม่มีรูปภาพที่ถ่าย ให้แสดงหน้าจอกล้อง
+  if (!image) {
+    return (
+      <View style={styles.container}>
+        <CameraView ref={cameraRef} style={styles.camera} facing={cameraType} />
+        <View style={styles.buttonContainer}>
+          <Button title="ถ่ายรูป" onPress={takePicture} />
+        </View>
+      </View>
+    );
+  }
+
+  // ถ้ามีรูปแล้ว ให้แสดงรูปภาพและปุ่มสำหรับบันทึกหรือถ่ายใหม่
+  return (
+    <View style={styles.container}>
+      <Image source={{ uri: image }} style={styles.previewImage} />
+      <View style={styles.buttonContainer}>
+        <Button title="ถ่ายใหม่" onPress={retakePicture} />
+      </View>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  // ... (container style)
+  camera: {
+    flex: 1,
+    width: '100%',
+  },
+  buttonContainer: {
+    backgroundColor: '#fff',
+    padding: 20,
+  },
+  previewImage: {
+    flex: 1,
+    width: '100%',
+    resizeMode: 'contain',
+  }
+});
+```
+
+**คำอธิบายโค้ด:**
+
+- `useRef`: สร้าง reference ชื่อ `cameraRef` เพื่อใช้อ้างอิงถึง Camera component
+- `takePictureAsync()`: เป็นฟังก์ชันของ Camera component ที่สั่งให้กล้องถ่ายภาพ จะ return object ที่มีข้อมูลของภาพถ่าย เช่น `uri` (ที่อยู่ชั่วคราวของไฟล์)
+- เราใช้ state `image` เพื่อสลับการแสดงผลระหว่างหน้าจอกล้องกับหน้าจอแสดงตัวอย่างรูปภาพที่เพิ่งถ่าย
+
+![1000017971.jpg](/images/classroom/react_native/camera/1000017971.jpg)
+
+## ขั้นตอนที่ 5: การบันทึกภาพลงเครื่อง (Save to Gallery)
+
+หลังจากถ่ายภาพและแสดงตัวอย่างแล้ว ขั้นตอนสุดท้ายคือการเพิ่มปุ่มเพื่อให้ผู้ใช้สามารถบันทึกภาพลงในคลังรูปภาพของเครื่อง และปุ่มสำหรับกลับไปถ่ายใหม่
+
+อัปเดตโค้ดใน `App.js` ส่วนสุดท้าย:
+
+```tsx
+// ... (import, state, useEffect, takePicture function)
+
+export default function App() {
+  // ... (ส่วนของ state และ useEffect, takePicture)
+  
+  const saveImage = async () => {
+    if (image) {
+      try {
+        await MediaLibrary.createAssetAsync(image);
+        alert('บันทึกรูปภาพเรียบร้อย!');
+        setImage(null); // กลับไปหน้ากล้อง
+      } catch (e) {
+        console.log(e);
+      }
+    }
+  };  
+  
+  // ถ้ามีรูปแล้ว
+  return (
+    <View style={styles.container}>
+      <Image source={{ uri: image }} style={styles.previewImage} />
+      <View style={styles.buttonContainer}>
+        {hasMediaLibraryPermission ? <Button title="บันทึก" onPress={saveImage} /> : undefined}
+        <Button title="ถ่ายใหม่" onPress={() => setImage(null)} />
+      </View>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  // ... (styles ทั้งหมด)
+});
+```
+
+**คำอธิบายโค้ด:**
+
+- `MediaLibrary.createAssetAsync(image)`: ฟังก์ชันนี้จะรับ URI ของไฟล์รูปภาพ แล้วคัดลอกไฟล์นั้นไปเก็บไว้ในคลังรูปภาพของอุปกรณ์
+- เมื่อบันทึกเสร็จ เราจะ `setImage(null)` เพื่อให้แอปกลับไปที่หน้าจอกล้องอีกครั้ง
+- เรามีการตรวจสอบ `hasMediaLibraryPermission` อีกครั้งก่อนแสดงปุ่ม "บันทึก" เพื่อความปลอดภัย
+
+## Source Code
+
+[https://github.com/tanapattara-classroom/expo-camera-app](https://github.com/tanapattara-classroom/expo-camera-app)

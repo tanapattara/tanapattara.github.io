@@ -1,0 +1,167 @@
+---
+title: "Enemy Attack"
+sidebarTitle: "Enemy Attack"
+---
+
+# Enemy Attack
+
+![image.png](/images/classroom/unity2d/enemy-attack/image.png)
+
+เราจะสร้างการโจมตีของตัวละคร เช่นเดียวกับที่เราสร้างวัตถุหนาม โดยให้เราสร้างวัตถุใหม่ขึ้นภายใน `EnemyRedDog` และใส่คอมโพเน้น Polygon Collider 2D เข้าไป 
+
+ปรับแต่งให้ Collider ครอบคลุมหนามที่อยู่บนตัวละคร และกำหนดเปิดใช้งาน Is Trigger
+
+สร้างไฟล์ใหม่ชื่อ `EnemyAttack` กำหนดตัวแปรพื้นฐานและตัวแปรของ `PlayerStats`
+
+```csharp
+public class EnemyAttack : MonoBehaviour
+{
+    public float damage = 10;
+    protected PlayerStats playerStats;
+
+    private void OnTriggerEnter2D(Collider2D collision)
+    {
+        if (collision.CompareTag("PlayerStats"))
+        {
+            playerStats = collision.GetComponent<PlayerStats>();
+            playerStats.TakeDamage(damage);
+
+            SpecialAttack();
+        }
+    }
+
+    public virtual void SpecialAttack()
+    {
+    }
+    
+}
+```
+
+สร้างฟังก์ชั่น `OnTriggerEnter2D` เมื่อมีการชนกันของวัตถุที่กำหนดก็จะมีการเรียกใช้งาน ภายใน ตรวจสอบว่าเป็นเเท็กที่กำหนดไว้หรือไม่ เมื่อเป็นแท็กตัวละครของเราที่เดินไปชน ก็ทำการลดพลังชีวิต ดัวยคำสั่ง `TakeDamage`
+
+สร้างฟังก์ชั่นใหม่ชื่อ `SpecialAttack()` เป็นฟังก์ชั่นแบบ `virtual` นั่นคือกำหนดให้สามารถนำไปเขียนใหม่หรือ `Override` ในคลาสอื่นที่มาสืบทอดได้
+
+เราจะทำให้การโจมตีของตัวละครนี้เมื่อโดนตัวผู้เล่น จะทำให้ผู้เล่นกระโดดถอยหลัง โดยเราจำทำการเพิ่มฟังก์ชั่นที่คลาส `PlayMoveControl`
+
+```csharp
+public class PlayerMoveControls : MonoBehaviour
+{ 
+		private bool knockBack = false;    
+    
+    private void FixedUpdate()
+    {
+        CheckStatus();
+
+        if(knockBack) return;
+
+        Move();
+        JumpPlayer();
+    }     
+   
+    public IEnumerator KnockBack(float forceX, float forceY,float duration, Transform otherObject)
+    {
+        int knockBackDirection;
+        if(transform.position.x < otherObject.position.x)
+        {
+            knockBackDirection = -1;
+        }
+        else
+        {
+            knockBackDirection = 1;
+        }
+
+        knockBack = true;
+        rigidbody2D.velocity = Vector2.zero;
+        Vector2 theForce = new Vector2(forceX * knockBackDirection, forceY);
+        rigidbody2D.AddForce(theForce, ForceMode2D.Impulse);
+
+        yield return new WaitForSeconds(duration);
+        knockBack = false;
+        rigidbody2D.velocity = Vector2.zero;
+    }
+}
+```
+
+สร้างตัวแปร `knokBack` เพื่อใช้ตรวจสอบสถานะการถอยหลังของตัวละคร เมื่อตัวละครของเราโดนโจมตีและถอยหลัง เราจะปิดไม่ให้ผู้เล่นเคลื่อไหวตัวละครโดยใส่คำสั่งที่ `FixedUpdate()`
+
+```csharp
+ private void FixedUpdate()
+    {
+        CheckStatus();
+
+        if(knokBack) return;
+
+        Move();
+        JumpPlayer();
+    }  
+```
+
+เมื่อตัวละครมีสถานะ `knockBack` ก็จะเข้าสู่คำสั่ง `return` ทำให้ไม่สามารถเรียกใช้งานคำสั่งต่อไปได้
+
+สร้างฟังก์ชั่นใหม่ สำหรับกำหนดการเคลื่อนไหวเมื่อตัวละครต้องกระโดดถอยหลัง
+
+```csharp
+public IEnumerator KnockBack(float forceX, float forceY,float duration, Transform otherObject)
+{
+    int knockBackDirection;
+    if(transform.position.x < otherObject.position.x)
+    {
+        knockBackDirection = -1;
+    }
+    else
+    {
+        knockBackDirection = 1;
+    }
+
+    knockBack = true;
+    rigidbody2D.velocity = Vector2.zero;
+    Vector2 theForce = new Vector2(forceX * knockBackDirection, forceY);
+    rigidbody2D.AddForce(theForce, ForceMode2D.Impulse);
+
+    yield return new WaitForSeconds(duration);
+    knockBack = false;
+    rigidbody2D.velocity = Vector2.zero;
+}
+```
+
+สร้างฟังก์ชั่นแบบ iEnumerator เพื่อให้สามารถเรียกใช้ผ่าน StartCoroutine เพื่อหน่วงเวลาการทำงานได้
+
+ทำการตรวจสอบทิศทาง โดยใช้ `transform.position.x < otherObject.position.x`   หาก `transform.position.x` มีค่าน้อยกว่า เราก็จะให้ตัวละครเคลื่อนไหวไปทางซ้าย ในทางตรงกันข้ามหาก `position.x` มีค่ามากกว่า ก็ให้เคลื่อนไปทางขวา
+
+เข้าสู่สถานะ `knockBack` และกำหนดการเคลื่อนที่ของเวคเตอร์ด้วยคำสั่ง 
+
+```csharp
+knockBack = true;
+rigidbody2D.velocity = Vector2.zero;
+Vector2 theForce = new Vector2(forceX * knockBackDirection, forceY);
+rigidbody2D.AddForce(theForce, ForceMode2D.Impulse);
+
+yield return new WaitForSeconds(duration);
+knockBack = false;
+rigidbody2D.velocity = Vector2.zero;
+```
+
+เมื่อหมดเวลาตามที่กำหนด เปลี่ยนสถานะ knockBack ใหม่และทำให้คัวละครหยุดเคลื่อนที่
+
+สร้างไฟล์ใหม่ชื่อ `EnemyRedDogAttack` ทำการสืบทอดคุณสมบัติจากคลาส `EnemyAttack`
+
+```csharp
+public class EnemyRedDogAttack : EnemyAttack
+{
+    PlayerMoveControls playerMoveControls;
+
+    public float forceX;
+    public float forceY;
+    public float duration;
+
+    public override void SpecialAttack()
+    {
+        base.SpecialAttack();
+        playerMoveControls = playerStats.GetComponentInParent<PlayerMoveControls>();
+        StartCoroutine(playerMoveControls.KnockBack(forceX, forceY, duration, transform));
+    }
+}
+
+```
+
+ทำการเรียกใช้ `SpecialAttack()` ที่เราสร้างไว้ที่คลาสแม่ แล้วทำการสั่งให้ตัวละครของผู้เล่นกระโดดถอยหลังตัวยคำสั่ง `KnockBack()`

@@ -1,15 +1,17 @@
-import { type } from "node:os";
-
 export default {
   index: "Welcome",
+  frontend: "Frontend Development",
+  labs: "Labs",
   git: "Git",
   csharp: "C#",
   oop: "Object-Oriented Programming",
   dart: "Dart",
   flutter: "Flutter",
+  "native-mobile": "Native Mobile",
   typescript: "TypeScript",
   nextjs: "Next.js",
   react: "React",
   react_native: "React Native",
   unity2d: "Unity 2D",
+  "it-security": "IT Security & Laws",
 };

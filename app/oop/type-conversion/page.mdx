@@ -1,0 +1,106 @@
+---
+title: "การแปลงชนิดข้อมูล"
+sidebarTitle: "การแปลงชนิดข้อมูล"
+---
+
+# การแปลงชนิดข้อมูล
+
+การแปลงชนิดข้อมูล (Type Conversion) คือ การเปลี่ยนข้อมูลจากชนิดหนึ่งไปเป็นอีกชนิดหนึ่ง เช่น การเปลี่ยนข้อมูลจาก `int` เป็น `double` หรือจาก `string` เป็น `int`
+
+**ประเภทของการแปลงชนิดข้อมูล**
+
+การแปลงชนิดข้อมูลมี 2 ประเภทหลักๆ คือ
+
+1. **การแปลงชนิดข้อมูลโดยปริยาย (Implicit Type Conversion)**:  เป็นการแปลงที่คอมไพเลอร์ดำเนินการให้เองโดยอัตโนมัติ  เกิดขึ้นเมื่อแปลงข้อมูลจากชนิดข้อมูลที่มีขนาดเล็กไปยังชนิดข้อมูลที่มีขนาดใหญ่กว่า  เช่น  `int` เป็น `double` เพราะ `double` สามารถเก็บข้อมูลได้มากกว่า `int`
+    
+    ```csharp
+    int number = 10;
+    double decimalNumber = number; // การแปลง int เป็น double โดยปริยาย
+    ```
+    
+2. **การแปลงชนิดข้อมูลโดยชัดแจ้ง (Explicit Type Conversion)**:  เป็นการแปลงที่โปรแกรมเมอร์ต้องระบุการแปลงเอง  มักใช้เมื่อแปลงข้อมูลจากชนิดข้อมูลที่มีขนาดใหญ่ไปยังชนิดข้อมูลที่มีขนาดเล็กกว่า  เช่น `double` เป็น `int`
+    
+    ```csharp
+    double decimalNumber = 10.5;
+    int number = (int)decimalNumber; // การแปลง double เป็น int โดยชัดแจ้ง
+    ```
+    
+
+**วิธีการแปลงชนิดข้อมูลโดยชัดแจ้ง**
+
+- **การใช้ () (Casting)**: เป็นวิธีที่ง่ายและใช้บ่อย เช่น `(int)decimalNumber`
+- **การใช้ Convert class**: เป็นวิธีที่มีความยืดหยุ่นสูง มีเมธอดสำหรับแปลงข้อมูลชนิดต่างๆ เช่น `Convert.ToInt32()`, `Convert.ToString()`
+- **การใช้ Parse() method**: ใช้สำหรับแปลงข้อมูลจาก `string` เป็นชนิดข้อมูลอื่นๆ เช่น `int.Parse()`, `double.Parse()`
+
+**ตัวอย่างการใช้  Convert class**
+
+```csharp
+string numberString = "123";
+int number = Convert.ToInt32(numberString);
+```
+
+**ตัวอย่างการใช้  Parse() method**
+
+```csharp
+string doubleString = "3.14";
+double pi = double.Parse(doubleString);
+```
+
+**ข้อควรระวัง**
+
+- การแปลงข้อมูลจากชนิดข้อมูลที่มีขนาดใหญ่ไปยังชนิดข้อมูลที่มีขนาดเล็กกว่า อาจทำให้ข้อมูลสูญหายได้ เช่น การแปลง `double` เป็น `int` จะทำให้ส่วนที่เป็นทศนิยมหายไป
+- การแปลงข้อมูลจาก `string` ที่ไม่ถูกต้อง เช่น "abc" ไปเป็น `int` จะทำให้เกิด runtime error
+
+ 
+
+ตัวอย่างการแปลงข้อมูลเพื่อใช้ในการคำนวณ Operand และ Operator ในภาษา C#
+
+```csharp
+// แปลงข้อมูลจาก string เป็น int
+string numberString = "10";
+int numberInt = int.Parse(numberString);
+
+// แปลงข้อมูลจาก double เป็น int
+double numberDouble = 10.5;
+int numberInt2 = (int)numberDouble; // casting
+
+// แปลงข้อมูลจาก int เป็น string
+int numberInt3 = 10;
+string numberString2 = numberInt3.ToString();
+
+// แปลงข้อมูลจาก string เป็น char
+string text = "A";
+char character = char.Parse(text);
+
+// แปลงข้อมูลจาก int เป็น char
+int asciiCode = 65;
+char character2 = (char)asciiCode; // casting
+
+// แสดงผลลัพธ์
+Console.WriteLine("แปลง string เป็น int: " + numberInt);
+Console.WriteLine("แปลง double เป็น int: " + numberInt2);
+Console.WriteLine("แปลง int เป็น string: " + numberString2);
+Console.WriteLine("แปลง string เป็น char: " + character);
+Console.WriteLine("แปลง int เป็น char: " + character2);
+```
+
+**ผลลัพธ์:**
+
+```csharp
+แปลง string เป็น int: 10
+แปลง double เป็น int: 10
+แปลง int เป็น string: 10
+แปลง string เป็น char: A
+แปลง int เป็น char: A
+```
+
+**คำอธิบาย:**
+
+- การแปลงข้อมูลเป็นสิ่งสำคัญในการคำนวณ เนื่องจาก Operand และ Operator ต้องมีชนิดข้อมูลที่เข้ากันได้
+- ในภาษา C# มีวิธีการแปลงข้อมูลหลายวิธี เช่น การใช้เมธอด `Parse()`, การใช้ `casting`, และการใช้เมธอด `ToString()`
+- การเลือกวิธีการแปลงข้อมูลขึ้นอยู่กับชนิดข้อมูลต้นทางและชนิดข้อมูลปลายทาง
+
+**ข้อควรระวัง:**
+
+- การแปลงข้อมูลที่ไม่ถูกต้องอาจทำให้เกิดข้อผิดพลาดในการทำงานของโปรแกรมได้
+- ควรตรวจสอบชนิดข้อมูลของ Operand และ Operator ก่อนทำการคำนวณเสมอ

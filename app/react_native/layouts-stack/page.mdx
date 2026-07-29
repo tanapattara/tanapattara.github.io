@@ -1,0 +1,46 @@
+---
+title: "Layouts and Stack"
+sidebarTitle: "Layouts and Stack"
+---
+
+# Layouts and Stack
+
+เราจะสร้างไฟล์ที่ระบุรายละเอียดของโครงสร้างหน้าเพจของเรา โดยจะมีคอมโพเนนท์สำหรับแสดงข้อมูลชื่อเพจและปุ่มนำทางย้อนกลับให้อัตโนมัติ เราเรียกมันว่า Stack
+
+ให้เราสร้างไฟล์ `_layout.js` ที่โฟลเดอร์ `app/_layout.js`
+
+`app/_layout.js`
+
+```jsx
+import { Stack } from "expo-router";
+
+export default function Layout() {
+  return (
+    <Stack>
+      <Stack.Screen
+        name="index"
+        options={{
+          title: "Profile",
+        }}
+      />
+      <Stack.Screen
+        name="about"
+        options={{
+          title: "About",
+        }}
+      />
+    </Stack>
+  );
+}
+
+```
+
+ทำการนำเข้า `Stack` จาก `expo-router` แล้วส่งค่ากลับไป โดยภายในเราสามารถกำหนด `Stack.Screen` เพื่อทำการกำหนดว่าแต่ละเส้นทางที่เราเลือก หรือนำทางไปยังหน้านั้น ๆ มีชื่อว่าอะไรและสามารถกำหนดรายละเอียดชื่อหรือสีได้ภายใน `Stack.Screen`
+
+ทำไมถึงชื่อว่า `Stack` นั่นเพราะการนำทางของ expo ไปยังหน้าอื่น ๆ จะใช้การทำงานตามโครงสร้างข้อมูลแบบ Stack 
+
+เมื่ออยู่ที่หน้าแรก ก็จะเก็บข้อมูลตำแหน่งหน้าแรก `index` เอาไว้
+
+เมื่อมีการเปิดหน้าถัดไป ก็จะมีการนำหน้าใหม่ เช่น `about` มาใส่ลงไปใน stack
+
+เมื่อมีการกดย้อนกลับ หรือปุ่ม back จาก about ก็จะทำการ pop ค่าของ about ออกมาเพื่อกลับไปยังหน้า index นั่นเอง

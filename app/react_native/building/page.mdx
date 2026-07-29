@@ -1,0 +1,55 @@
+---
+title: "Building with Expo EAS"
+sidebarTitle: "Building with Expo EAS"
+---
+
+# Building with Expo EAS
+
+สำหรับการสร้างไฟล์สำหรับติดตั้ง Android เราจะใช้ Expo EAS ในการสร้างไฟล์ ทำการติดตั้ง `expo/eas-cli` โดยใช้ npm
+
+https://expo.dev/eas
+
+```bash
+npm install -g eas-cli
+```
+
+หลังจากทำการติดตั้งแล้ว เราจะต้องทำการลงชื่อเข้าใช้งาน โดยมีอีเมลและพาสเวอร์สำหรับเข้าสู่ระบบของ `eas`
+
+```bash
+eas login
+```
+
+ทำการตั้งค่าโปรเจคของเราโดยใช้คำสั่ง
+
+```bash
+eas build:configure
+```
+
+`app.json` ทำการเพิ่ม `bundleIdentifier` สำหรับ ios และ `package` สำหรับแอนดรอย
+
+```bash
+{
+  "expo": { 
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.yourcompany.profileapp"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "edgeToEdgeEnabled": true,
+      "package": "com.yourcompany.profileapp"
+    },    
+  }
+}
+```
+
+build app โดยใช้คำสั่ง
+
+```bash
+eas build --platform all
+eas build --platform android
+eas build --platform ios
+```

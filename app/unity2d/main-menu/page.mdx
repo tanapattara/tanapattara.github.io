@@ -1,0 +1,49 @@
+---
+title: "Main Menu"
+sidebarTitle: "Main Menu"
+---
+
+# Main Menu
+
+เราได้ทำการสร้างฉากขึ้นมาแล้ว ที่ชื่อ MainMenu ให้เราทำการลบฉากหรือตัวละครออกไปให้หมด ให้เหลือเพียง
+
+- Main Camera
+- Virtual Camera
+- Canvas
+- Event System
+
+ที่ Canvas ให้ลบข้อมูล UI ที่เราทำไว้ เช่นเพชรที่เราเก็บได้ หรือเลือด แล้วทำการใส่ TextMeshPro เข้าไป โดยเลือกที่ UI → Text (Text Mesh Pro) แล้วทำการใส่ชื่อตัวละครของเรา หรือขนาดตัวหนังสือที่เราต้องการ
+
+ทำการเพิ่มปุ่มโดยเลือก UI → Button (TextMeshPro) เข้าไปใหม่สองปุ่ม คือปุ่ม Play และปุ่ม Quit โดยเมื่อเราสร้างปุ่มขึ้นมา โปรแกรมจะทำการสร้าง Text เป็นวัตถุลูกอยู่ภายใน
+
+จัดเรียงตำแหน่งและปรับแต่งให้สวยงาม
+
+![image.png](/images/classroom/unity2d/main-menu/image.png)
+
+สร้างไฟล์ใหม่ชื่อ `SceneManager` ขึ้น เพื่อทำการควบคุมการทำงานของปุ่มต่าง ๆ ดังนี้
+
+```csharp
+using UnityEngine.SceneManagement;
+
+public class SceneManager : MonoBehaviour
+{ 
+    public void ChangeLevel(string lvlToLoad)
+    {
+        UnityEngine.SceneManagement.SceneManager.LoadScene(lvlToLoad);
+    }
+    public void QuitGame()
+    {
+        Application.Quit();
+    }
+}
+
+```
+
+- สร้างฟังก์ชั่น `ChangeLevel()` ใช้สำหรับเปลี่ยนฉาก โดยกำหนดให้รับค่าเป็นชื่อฉากที่เราต้องการโหลด หรืออาจจะกำหนดลงไปเลยก็ได้สำหรับฉากเริ่มต้น
+- สรัางฟังก์ชั่น `QuitGame()` สำหรับออกจากเกม
+
+ที่ปุ่มของเรา เราจะทำการเรียนฟังก์ชั่นเมื่อมีการกดปุ่ม โดยเลือกวัตถุปุ่มที่เราต้องการ จากนั้นไปที่หน้าต่าง Inspector → Button → On Click() ทำการเลือกไฟล์ `SceneManager` แล้วเลือกฟังก์ชั่น `ChangeLevel()` เพื่อทำการเปลี่ยนฉาก หากฟังก์ชั่นของเราทำการรับค่าเป็นชื่อฉาก ให้เราใส่ชื่อเข้าไปด้วย
+
+ที่ปุ่ม Quit ให้เรียกใช้ฟังก์ชั่น `QuitGame()`
+
+![image.png](/images/classroom/unity2d/main-menu/image-1.png)

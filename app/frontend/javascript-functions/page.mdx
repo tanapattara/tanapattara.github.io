@@ -1,0 +1,84 @@
+---
+title: "JavaScript Function"
+sidebarTitle: "JavaScript Function"
+---
+
+# JavaScript Function
+
+การประกาศฟังก์ชั่นในภาษา JavaScript สามารถทำได้หลายรูปแบบ
+
+ใน JavaScript มี 4 วิธีหลักในการประกาศฟังก์ชัน:
+
+- Function Declaration:   การประกาศฟังก์ชันโดยใช้คีย์เวิร์ด `function` ตามด้วยชื่อของฟังก์ชันและพารามิเตอร์ภายในวงเล็บ
+
+```jsx
+function FunctionName(parameters) {
+  // คำสั่งในฟังก์ชัน
+}
+```
+
+> **หมายเหตุ**
+> 💡 Function Declaration จะถูก "hoisted" ขึ้นไปด้านบน ทำให้สามารถเรียกใช้ฟังก์ชันได้ก่อนที่จะประกาศ
+>
+
+- Function Expression:   เป็นเหมือนการประกาศตัวแปรโดยใช้ keyword `const` โดยกำหนดให้ชื่อตัวแปรนั้นมีค่าเท่ากับฟังก์ชัน
+
+```jsx
+const FunctionName = function (parameters) {
+  // คำสั่งในฟังก์ชัน
+};
+```
+
+- Arrow Function:   คล้ายกับการประกาศแบบ Function Expression โดยมีการกำหนดตัวแปรเพื่อแทนชื่อฟังก์ชันและพารามิเตอร์ที่ต้องการของฟังก์ชัน
+
+```jsx
+const FunctionName = (parameters) => {
+  // คำสั่งในฟังก์ชัน
+};
+```
+
+> **หมายเหตุ**
+> 💡 Function Expression และ Arrow Function เหมาะสำหรับการเขียนโค้ดที่กระชับ จะถูกเรียกตามลำดับบรรทัด นั่นคือ หากมีการเรียกใช้งานฟังกชั่น ก่อนการประกาศแบบ Function Expression หรือ Arrow Function จะเกิดข้อผิดพลาด ซึ่งแตกต่างจาก Function Declaration
+>
+
+- Class Method:   เป็นการประกาศฟังก์ชันไว้ในคลาสตาม concept ของ oop การประกาศฟังก์ชันใช้แบบเดียวกับ Function Declaration
+
+```jsx
+class MyClass {
+  FunctionName(parameter) {
+    // คำสั่งในฟังก์ชัน
+  }
+}
+```
+
+วิธีการเรียกใช้ฟังก์ชันภายใน class ทำได้โดยการสร้างวัตถุจากคลาสที่ต้องการก่อน หลังจากนั้นเรียกใช้วัตถุตามด้วยชื่อฟังก์ชัน
+
+```jsx
+let myObject = new MyClass();
+myObject.FunctionName(argument); 
+```
+
+ตัวอย่าง:
+
+```jsx
+// Function Declaration
+function Greetings(name) {
+  console.log("สวัสดี, " + ชื่อ + "!");
+}
+// Function Expression
+const Summarize = function (a, b) {
+  return a + b;
+};
+// Arrow Function
+const Multiple = (a, b) => a * b;
+// Class Method
+class Calculator {
+  divide(a, b) {
+    return a / b;
+  }
+}
+```
+
+> **หมายเหตุ**
+> 💡 คำสั่ง `console.log`เป็นคำสั่งที่ใช้แสดงผลค่าของตัวแปรใด ๆ ออกทาง browser ผ่าน tab คอนโซลในหน้า Developer mode
+>

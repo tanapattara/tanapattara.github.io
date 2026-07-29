@@ -1,7 +1,241 @@
 ---
-title: การเขียนโปรแกรมด้วยภาษา Dart
-sidebarTitle: Dart
-asIndexPage: true
+title: "Dart"
+sidebarTitle: "Dart"
 ---
 
-# การเขียนโปรแกรมด้วยภาษา Dart
+# Dart
+
+Dart เป็นภาษาโปรแกรมที่พัฒนาโดย Google เปิดตัวครั้งแรกในปี 2011 มีจุดประสงค์เพื่อใช้ในการพัฒนาเว็บ, เซิร์ฟเวอร์, โมบายล์แอปพลิเคชัน, และ IoT (Internet of Things)
+
+**ประวัติโดยย่อของ Dart:**
+
+- **2011:** เปิดตัว Dart 1.0 โดย Google มีจุดเด่นคือสามารถคอมไพล์เป็น JavaScript เพื่อให้สามารถทำงานบนเว็บเบราว์เซอร์ได้
+- **2013:** เปิดตัว Dart VM (Virtual Machine) ทำให้สามารถรัน Dart ได้โดยตรงโดยไม่ต้องผ่าน JavaScript
+- **2017:** เปิดตัว Flutter ซึ่งเป็นเฟรมเวิร์คสำหรับสร้าง UI (User Interface) บนมือถือโดยใช้ Dart เป็นภาษาหลัก Flutter ได้รับความนิยมอย่างรวดเร็วเนื่องจากสามารถสร้างแอปพลิเคชันที่สวยงามและทำงานได้อย่างราบรื่นบนทั้ง iOS และ Android
+- **2018:** Dart 2.0 เปิดตัว มีการปรับปรุงประสิทธิภาพและเพิ่มฟีเจอร์ใหม่ ๆ เช่น sound null safety
+- **ปัจจุบัน:** Dart ยังคงได้รับการพัฒนาอย่างต่อเนื่อง และเป็นภาษาที่ได้รับความนิยมมากขึ้นเรื่อย ๆ ในวงการพัฒนาแอปพลิเคชัน
+
+**จุดเด่นของ Dart:**
+
+- **ง่ายต่อการเรียนรู้:** มีไวยากรณ์ที่คล้ายคลึงกับภาษา C, Java, และ JavaScript ทำให้นักพัฒนาที่คุ้นเคยกับภาษาเหล่านี้สามารถเรียนรู้ Dart ได้อย่างรวดเร็ว
+- **ประสิทธิภาพสูง:** Dart สามารถคอมไพล์ได้ทั้งแบบ AOT (Ahead-of-Time) และ JIT (Just-in-Time) ทำให้สามารถทำงานได้อย่างรวดเร็วและมีประสิทธิภาพ
+- **เครื่องมือพัฒนาที่หลากหลาย:** Google ได้พัฒนาเครื่องมือสำหรับ Dart มากมาย เช่น Dart SDK, Dart DevTools, และ DartPad
+- **ชุมชนที่แข็งแกร่ง:** Dart มีชุมชนนักพัฒนาที่ใหญ่และเติบโตอย่างรวดเร็ว มีแหล่งข้อมูลและการสนับสนุนมากมายสำหรับผู้ที่ต้องการเรียนรู้และใช้ Dart
+
+**Dart เหมาะสำหรับ:**
+
+- **การพัฒนาแอปพลิเคชันมือถือ:** Flutter เป็นเฟรมเวิร์คที่ได้รับความนิยมอย่างมากในการพัฒนาแอปพลิเคชันมือถือ
+- **การพัฒนาเว็บแอปพลิเคชัน:** Dart สามารถใช้ในการสร้างเว็บแอปพลิเคชันที่ซับซ้อนและมีประสิทธิภาพ
+- **การพัฒนาเซิร์ฟเวอร์:** Dart สามารถใช้ในการสร้างเซิร์ฟเวอร์ที่มีประสิทธิภาพสูงและรองรับการทำงานแบบ asynchronous
+- **การพัฒนา IoT:** Dart สามารถใช้ในการพัฒนาแอปพลิเคชันสำหรับอุปกรณ์ IoT
+
+## ตัวแปร
+
+ใน Dart การประกาศตัวแปรสามารถทำได้หลายวิธี ขึ้นอยู่กับประเภทข้อมูลและความต้องการใช้งาน:
+
+**1. การประกาศตัวแปรแบบระบุประเภท:**
+
+```dart
+int age = 30; // ประกาศตัวแปร age ชนิด int และกำหนดค่า 30
+String name = "John"; // ประกาศตัวแปร name ชนิด String และกำหนดค่า "John"
+double price = 19.99; // ประกาศตัวแปร price ชนิด double และกำหนดค่า 19.99
+bool isActive = true; // ประกาศตัวแปร isActive ชนิด bool และกำหนดค่า true
+```
+
+**2. การประกาศตัวแปรแบบอนุมานประเภท (Type Inference):**
+
+```dart
+var age = 30; // Dart จะอนุมานประเภทของ age เป็น int
+var name = "John"; // Dart จะอนุมานประเภทของ name เป็น String
+var price = 19.99; // Dart จะอนุมานประเภทของ price เป็น double
+var isActive = true; // Dart จะอนุมานประเภทของ isActive เป็น bool
+```
+
+**3. การประกาศตัวแปรแบบ dynamic:**
+
+```dart
+dynamic value = 42; // value สามารถเก็บค่าได้ทุกประเภท
+value = "Hello"; // เปลี่ยนค่า value เป็น String
+value = true; // เปลี่ยนค่า value เป็น bool
+```
+
+**4. การประกาศตัวแปรแบบ final และ const:**
+
+```dart
+final name = "John"; // name ไม่สามารถเปลี่ยนค่าได้หลังจากกำหนดค่าครั้งแรก
+const pi = 3.14159; // pi เป็นค่าคงที่ ไม่สามารถเปลี่ยนแปลงได้
+```
+
+> **หมายเหตุ**
+> 💡 ข้อควรจำ
+>
+> - ชื่อตัวแปรต้องขึ้นต้นด้วยตัวอักษรหรือเครื่องหมาย underscore (_) และสามารถประกอบด้วยตัวอักษร, ตัวเลข, และ underscore
+> - ชื่อตัวแปรควรมีความหมายและสื่อถึงข้อมูลที่เก็บอยู่ในตัวแปร
+> - ควรเลือกใช้ประเภทตัวแปรที่เหมาะสมกับข้อมูลที่ต้องการเก็บ
+> - หากไม่แน่ใจเกี่ยวกับประเภทข้อมูล สามารถใช้ `var` เพื่อให้ Dart อนุมานประเภทให้
+> - `final` และ `const` ใช้สำหรับประกาศค่าคงที่ที่ไม่สามารถเปลี่ยนแปลงได้
+
+**ตัวอย่างเพิ่มเติม:**
+
+```dart
+List<int> numbers = [1, 2, 3]; // ประกาศ List ของ int
+Map<String, dynamic> person = {
+  'name': 'John',
+  'age': 30,
+  'city': 'New York'
+}; // ประกาศ Map
+```
+
+## ฟังก์ชั่น
+
+การสร้างฟังก์ชันในภาษา Dart มีรูปแบบที่หลากหลายและยืดหยุ่น เพื่อให้เหมาะกับการใช้งานที่แตกต่างกัน
+
+**รูปแบบพื้นฐานของฟังก์ชัน:**
+
+```dart
+returnType functionName(parameters) {
+  // function body
+  return value; // ถ้ามี returnType
+}
+```
+
+- **returnType:** ประเภทข้อมูลที่ฟังก์ชันจะส่งกลับ (ถ้าไม่มีให้ใช้ `void`)
+- **functionName:** ชื่อของฟังก์ชัน
+- **parameters:** รายการของพารามิเตอร์ที่ฟังก์ชันรับ (ถ้าไม่มีให้เว้นว่าง)
+- **function body:** ส่วนของโค้ดที่ฟังก์ชันจะทำงาน
+- **return value:** ค่าที่ฟังก์ชันจะส่งกลับ (ถ้ามี returnType)
+
+**ตัวอย่างการสร้างฟังก์ชัน:**
+
+```dart
+// ฟังก์ชันที่ไม่มีการรับค่าและไม่ส่งค่ากลับ
+void greet() {
+  print("Hello, Dart!");
+}
+
+// ฟังก์ชันที่รับค่าและส่งค่ากลับ
+int add(int a, int b) {
+  return a + b;
+}
+
+// ฟังก์ชันที่ใช้ arrow syntax (=>)
+int multiply(int a, int b) => a * b;
+```
+
+**การเรียกใช้ฟังก์ชัน:**
+
+```dart
+greet(); // เรียกใช้ฟังก์ชัน greet
+int sum = add(5, 3); // เรียกใช้ฟังก์ชัน add และเก็บค่าที่ส่งกลับ
+int product = multiply(4, 2); // เรียกใช้ฟังก์ชัน multiply
+```
+
+**รูปแบบอื่น ๆ ของฟังก์ชัน:**
+
+- **Optional parameters:** พารามิเตอร์ที่ไม่จำเป็นต้องส่งค่า
+- **Named parameters:** พารามิเตอร์ที่ระบุชื่อเมื่อส่งค่า
+- **Default parameter values:** ค่าเริ่มต้นของพารามิเตอร์
+- **Function as a parameter:** การส่งฟังก์ชันเป็นพารามิเตอร์ให้ฟังก์ชันอื่น
+- **Anonymous functions:** ฟังก์ชันที่ไม่มีชื่อ
+
+**ตัวอย่างการใช้ optional และ named parameters:**
+
+```dart
+void greetPerson({String name = "Guest", int age = 0}) {
+  print("Hello, $name! You are $age years old.");
+}
+
+greetPerson(); // Hello, Guest! You are 0 years old.
+greetPerson(name: "Alice"); // Hello, Alice! You are 0 years old.
+greetPerson(age: 25); // Hello, Guest! You are 25 years old.
+greetPerson(name: "Bob", age: 30); // Hello, Bob! You are 30 years old.
+```
+
+**ตัวอย่างการใช้ anonymous function:**
+
+```dart
+List<int> numbers = [1, 2, 3, 4, 5];
+numbers.forEach((number) {
+  print(number);
+});
+```
+
+การสร้างฟังก์ชันใน Dart มีความยืดหยุ่นและหลากหลายรูปแบบ
+
+## คลาส
+
+ในภาษา Dart, class เป็นพิมพ์เขียว (blueprint) สำหรับสร้าง object ซึ่ง object จะเป็นตัวแทนของสิ่งต่าง ๆ ในโลกแห่งความเป็นจริง (real-world entities) เช่น คน, สัตว์, รถยนต์ หรือ แม้กระทั่งแนวคิดที่เป็นนามธรรม (abstract concepts) เช่น ธุรกรรมทางการเงิน
+
+**การสร้าง class:**
+
+```dart
+class ClassName {
+  // Properties (ตัวแปร)
+  type property1;
+  type property2;
+
+  // Constructor (ฟังก์ชันพิเศษสำหรับสร้าง object)
+  ClassName(this.property1, this.property2);
+
+  // Methods (ฟังก์ชันที่ทำงานกับ object)
+  returnType methodName(parameters) {
+    // method body
+  }
+}
+```
+
+**ตัวอย่าง class `Person`:**
+
+```dart
+class Person {
+  String name;
+  int age;
+
+  Person(this.name, this.age);
+
+  void introduce() {
+    print("Hello, my name is $name and I'm $age years old.");
+  }
+}
+```
+
+**การสร้าง object จาก class:**
+
+```dart
+Person person1 = Person("Alice", 30);
+Person person2 = Person("Bob", 25);
+```
+
+**การเรียกใช้ method ของ object:**
+
+```dart
+person1.introduce(); // Hello, my name is Alice and I'm 30 years old.
+person2.introduce(); // Hello, my name is Bob and I'm 25 years old.
+```
+
+**ตัวอย่างการใช้ class ในการสร้างแอปพลิเคชัน:**
+
+```dart
+class Car {
+  String brand;
+  String model;
+  int year;
+
+  Car(this.brand, this.model, this.year);
+
+  void startEngine() {
+    print("Engine started.");
+  }
+}
+
+void main() {
+  Car myCar = Car("Toyota", "Camry", 2023);
+  myCar.startEngine(); // Engine started.
+}
+```
+
+**หลักการสำคัญของ OOP ใน Dart:**
+
+- **Encapsulation:** การรวมข้อมูลและฟังก์ชันที่เกี่ยวข้องกันไว้ใน class เดียว
+- **Inheritance:** การสร้าง class ใหม่ที่สืบทอดคุณสมบัติจาก class ที่มีอยู่
+- **Polymorphism:** การที่ object จาก class ต่าง ๆ สามารถตอบสนองต่อ method เดียวกันในรูปแบบที่แตกต่างกัน

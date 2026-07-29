@@ -1,0 +1,72 @@
+---
+title: "Enemy"
+sidebarTitle: "Enemy"
+---
+
+# Enemy
+
+สร้างวัตถุใหม่ โดยใช้ Sprite ที่เตรียมให้คือ EnemyRedDog โดยให้เราเตรียมเอนิเมชั่นการเดินให้กับตัวละครตัวนี้ของเราดัวย เราจะให้ตัวละครนี้เป็นศัตรูที่อยู่ในฉากของเรา
+
+เราจะสร้างสคริปสั่งให้ตัวละครเดิน สร้างไฟล์ขึ้นมาสองไฟล์ ไฟล์แรกคือ `Enemy.cs` และ `EnemyRedDog.cs` โดยเราจะให้คลาส `Enemy` เป็นคลาสหลัก แล้วใช้คลาสนี้ทำการส่งข้อมูลผ่านการสืบทอดคุณสมบัติของคลาสไปยังคลาสอื่น โดยรายละเอียดภายในคลาส `Enemy` ประกอบไปด้วย
+
+```csharp
+public class Enemy : MonoBehaviour
+{
+    public float helth;
+
+    protected Rigidbody2D rb;
+    protected Animator anim;
+
+    private void Awake()
+    {
+        rb = GetComponent<Rigidbody2D>();
+        anim = GetComponent<Animator>();
+    } 
+}
+
+```
+
+ในคำสั่ง เราจะสร้างตัวแปรแทนคอมโพเน้นท์ต่าง ๆ แล้วทำการอ้างอิงไปยังคอมโพเนนท์ในวัตถุ
+
+หลักจากนั้นที่ไฟล์ `EnemyRedDog.cs` เราจะทำการสืบทอดคุณสมบัติจากคลาส `Enemy` ที่เราสร้างไว้ โดยมีรายละเอียดดังนี้
+
+```csharp
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class EnemyRedDog : Enemy
+{
+    // Start is called before the first frame update
+    void Start()
+    {
+        
+    }
+
+    private void FixedUpdate()
+    { 
+        rb.velocity = new Vector2(-1, rb.velocity.y);
+    }
+}
+
+```
+
+จะเห็นได้ว่า ได้มีการเรียกใช้คำสั่งสำหรับการสืบทอดคุณสมบัติของคลาส `Enemy` ทำให้เราสามารถเรียกใช้งานตัวแปรจากคลาส `Enemy` ได้ในคลาสลูก
+
+คำสั่ง `FixedUpdate()` ทำการปรับปรุงตำแหน่งของตัวละคร ให้เปลี่ยนตำแหน่งทางแกน `x` ครั้งละ -1 คือให้ตัวละครเดินไปทางซ้าย
+
+จากนั้นที่วัตถุ `EnemyRedDog` ให้ทำการเพิ่มคอมโพเนน์ต่าง ๆ ดังนี้
+
+1. Rigibofy2D
+    1. กำหนด Constraints → Freeze Rotation → Z → `true`
+2. CapsuleColinder2D
+3. Animator สร้างเอนิเมชั่นให้กับตัวละคร ในตอนนี้ให้สร้างการเคลื่อนไหว สำหรับการเดินของตัวละคร
+4. ไฟล์ `EnemyRedDog` ที่เราสร้างขึ้น
+
+![image.png](/images/classroom/unity2d/enemy/image.png)
+
+ตรวจสอบ Layer ของตัวละครนี้ ให้อยู่ในเลย์เยอร์ใหม่ชื่อ `Enemy` และให้เช็คการตรวจสอบระหว่างเลยเยอร์ `Enemy` และ `Ground`
+
+![image.png](/images/classroom/unity2d/enemy/image-1.png)
+
+ทดสอบการทำงานของตัวละคร ตอนนี้ตัวละครจะต้องเดินไปทางด้านซ้ายมือ เนื่องจากเราตั้งค่าไว้

@@ -59,13 +59,18 @@ tanapattara.github.io/
 │   ├── layout.jsx                # Site metadata and shared Nextra layout
 │   ├── page.mdx                  # Home page and topic cards
 │   ├── csharp/                   # Topic with ordered lesson pages
+│   ├── frontend/                 # Frontend Development lessons
+│   ├── labs/                     # Practical labs grouped for quick access
 │   ├── react/                    # Topic with a Hooks lesson
 │   ├── react_native/             # Topic with ordered lesson pages
 │   ├── typescript/               # Topic with ordered lesson pages
 │   └── <other-topic>/page.mdx    # Single-page topics
 ├── public/
 │   ├── .nojekyll                 # Prevents GitHub Pages from running Jekyll
+│   ├── images/classroom/         # Imported classroom images
 │   └── ads.txt                   # Public advertising declaration
+├── scripts/
+│   └── import-notion-export.mjs  # Converts the current Notion export to MDX
 ├── mdx-components.js             # Global MDX component mapping
 ├── next.config.mjs               # Nextra wrapper and static export settings
 ├── package.json                  # Scripts and direct dependencies
@@ -82,6 +87,16 @@ In the App Router, folders determine URL paths:
 | `app/typescript/functions/page.mdx` | `/typescript/functions` |
 
 ## Add or edit content
+
+### Rebuild the imported classroom content
+
+The repository includes the route mapping used for the current Notion export. Pass the extracted directory that contains the `Classroom` folder:
+
+```bash
+node scripts/import-notion-export.mjs /path/to/extracted-export
+```
+
+The importer removes Notion-only metadata, rewrites page and image links, copies media to `public/images/classroom/`, and places pages tagged as labs under `app/labs/`. Review the generated changes and run `npm run build` before committing.
 
 ### Add a top-level topic
 

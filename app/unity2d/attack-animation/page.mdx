@@ -1,0 +1,140 @@
+---
+title: "Attack Animation"
+sidebarTitle: "Attack Animation"
+---
+
+# Attack Animation
+
+เราจะสร้างอนิเมชั่นการโจมตีของตัวละครของเราในการทดลองนี้
+
+เริ่มจากไปที่หน้า Controls (Input Actions) สร้าง Actions เพิ่มเข้าไปให้กับ Player ตั้งชื่อว่าเป็น Attack กำหนดปุ่มให้กับการเคลื่อนไหว เช่น เมาส์ซ้าย หรือปุ่มบนคีย์บอร์ด
+
+![image.png](/images/classroom/unity2d/attack-animation/image.png)
+
+เมื่อสร้างแล้ว ไปที่ไฟล์ `GatherInput.cs` ที่เราใส่ไว้ในวัตถุของตัวละคร
+
+ทำการเพิ่มตัวแปรในการกำหนดเงื่อนไขการเข้าสู่สถานะการโจมตีของตัวละคร `tryAttack` จากนั้นทำการสร้างฟังก์ชั่น `TryToAttach()`  และฟังก์ชัน `StopTryToAttack()`ในการเปลี่ยนเงื่อนไข เพื่อที่จะนำไปใช้ในการเปลี่ยนการเล่นอนิเมชั่นของตัวละคร
+
+```csharp
+public class GatherInput : MonoBehaviour
+{
+    public bool tryAttack;
+    
+    private void OnEnable()
+    {
+        //...
+        myControl.Player.Attack.performed += TryToAttach;
+        myControl.Player.Attack.canceled += StopTryToAttack;
+
+        myControl.Player.Enable();
+    } 
+
+    private void OnDisable()
+    {
+        //...
+        myControl.Player.Attack.performed -= TryToAttach;
+        myControl.Player.Attack.canceled -= StopTryToAttack;
+
+        myControl.Player.Disable(); 
+    }
+    public void DisableControls() 
+    {
+        //...
+        myControl.Player.Attack.performed -= TryToAttach;
+        myControl.Player.Attack.canceled -= StopTryToAttack;
+
+        myControl.Player.Disable();
+        valueX = 0;
+    }
+    
+    private void TryToAttach(InputAction.CallbackContext ctx)
+    {
+       tryAttack = true;
+    }
+    private void StopTryToAttack(InputAction.CallbackContext ctx)
+    {
+       tryAttack = false;
+    }
+}
+```
+
+ทำการสร้างแอนิเมชั่นใหม่ที่ชื่อว่า Player attack แล้วทำการสไปรท์ที่เตรียมไว้เข้าไปสร้างเป็นแอนิเมชั่นการโจมตี ทำการปรับแต่งความเร็วของแอนิเมชั่นให้เหมาะสม
+
+เมื่อเราสร้างแอนิเมชั่นใหม่เสร็จแล้ว ให้ไปที่ Animator เราจะเห็นสถานะ ใหม่ ของแอนิเมชั่นที่เราสร้างขึ้น ตรงนี้เราจะทำการสร้าง Transition ดังนี้
+
+- Any State → Player Attack ตรงนี้เราจะสร้าง พารามิตเตอร์ใหม่ชื่อว่า Attack เป็นชนิด bool โดยจะเปลี่ยนอนิเมชั่นก็ต่อเมื่อ Attack == true
+    
+    ![image.png](/images/classroom/unity2d/attack-animation/image-1.png)
+    
+- Player Attack → Idle ตรงนี้เราจะไม่ใช้พารามิเตอร์ในการเปลี่ยนอนิเมชั่นแต่จะทำการกำหนด ว่าเมื่อเสร็จสิ้นการเล่นแอนิเมชัน ให้เปลี่ยนสถานะกลายเป็น Idle โดยเลือก Has Exist Time ⇒ true
+    
+    ![image.png](/images/classroom/unity2d/attack-animation/image-2.png)
+    
+
+ที่วัตถุเพลย์เยอร์ทำการสร้างฝายใหม่ชื่อว่า `PlayerAttackControls.cs`
+
+ทำการสร้างตัวแปรใหม่สำหรับอ้างอิงคอมโพเน้นท์อื่น ๆ ในวัตถุ
+
+ที่ฟังกชั่นก์ `Update()` ทำการเรื่องใช้ฟังก์ชั่นก์ `Attack()` โดยกำหนดเปลี่ยนตัวแปรที่ `Animator` ที่ชื่อ `Attack` ให้เป็น `true`
+
+หลังจากนั้นให้สร้างฟังก์ชั่นก์ `ResetAttack()` เพื่อกำหนดให้หยุดการทำงานเปลี่ยค่าตัวแปร์ `Attack` ให้เป็น `false` โดยเราจะเรียกใช้ฟังก์ชั่นนี้ก็ต่อเมื่อ แอนิเมชั่นการโจมตีของตัวละครสิ้นสุดลง
+
+```csharp
+public class PlayerAttackControls : MonoBehaviour
+{
+    private PlayerMoveControls playerMoveControls;
+    private GatherInput gatherInput;
+    private Animator animator;
+
+    public bool attackStarted = false;
+    // Start is called before the first frame update
+    void Start()
+    {
+        playerMoveControls = GetComponent<PlayerMoveControls>();
+        gatherInput = GetComponent<GatherInput>();
+        animator = GetComponent<Animator>();
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+        Attack();
+    }
+
+    private void Attack() 
+    { 
+        //if player presses the attack button
+        if(gatherInput.tryAttack)
+        {
+            animator.SetBool("attack", true);
+            attackStarted = true; 
+        }
+    }
+    /// <summary>
+    /// to reset and stop the attack animation
+    /// </summary>
+    public void ResetAttack() 
+    {
+        // set the attack animation to false
+        animator.SetBool("Attack", false);
+        gatherInput.tryAttack = false;
+        attackStarted = false;
+    }
+}
+```
+
+ให้เราไปที่หน้าต่าง Animator เลือกอนิเมชั่น `Player Attack` แล้วกดปุ่ม `Add Event` จะมีหน้าต่าง Inspector ให้เราเลือกฟังก์ชั่น `ResetAttack()`
+
+![image.png](/images/classroom/unity2d/attack-animation/image-3.png)
+
+ทดสอบการทำงานของฟังก์ชั่น กดปุ่มที่กำหนดเพื่อให้ตัวละครของเราเล่นอนิเมชั่นโจมตี
+
+จะสังเกตุได้ว่า ตัวละครของเราจะโจมตีก็ต่อเมื่ออยู่บนพื้น นั่นเพราะเรายังไม่ได้เพิ่มเงื่อนไขในการเปลี่ยนสถานะ
+
+ที่ Animator การเปลี่ยนสถานะจาก Any Stage → Jump เพิ่มเงื่อนไข Attack = false จะทำให้ตัวละครของเราสามารถโจมตีได้ขณะที่กำลังกระโดด
+
+> **หมายเหตุ**
+> ☑️
+>
+> ให้ลองกำหนดเงื่อนไข หากตัวละครได้รับความเสียหาย หรือตาย จะไม่สามารถแสดงอนิเมชั่นโจมตีได้
+>

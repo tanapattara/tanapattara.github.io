@@ -1,0 +1,62 @@
+---
+title: "Change Level"
+sidebarTitle: "Change Level"
+---
+
+# Change Level
+
+เราจะทำการเปลี่ยนฉากของเราเมื่อผู้เล่นผ่านเงื่อนไขในแต่ละด่าน โดยเราจะสร้างประตูในการเปลี่ยนฉากเพื่อไปยังฉากต่อไป
+
+ก่อนอื่น ทำการบันทึกฉากปัจุบันของเรา ให้ชื่อว่า `Level1` หลังจากนั้นไปที่ Assets → Scenes เราจะเห็นฉากของเราที่ได้เปลี่ยนชื่อไป
+
+ทำการคัดลอกฉากเดิมแล้ววาง เพื่อคัดลอกฉากใหม่ขึ้นมาอีกสองฉาก โดยตั้งชื่อว่า `MainMenu` และ `Level2`
+
+ ทำการแก้ไขฉาก `Level2` ให้แตกต่างจากเดิม เพื่อที่เราจะได้เห็นความแตกต่างของฉาก
+
+เราจะเพิ่มฉากที่เราสร้างขึ้นเข้าไปในโปรแกรมของเรา โดยการไปที่ File → Build Settings ทำการลากฉากที่เรามีเข้ามาที่ช่อง Scenes in Build โดยเราจะเห็นเป็นตัวเลขอยู่ด้านท้าย คือเลขลำดับของฉากที่จะทำการสร้างขึ้นเมื่อมีการสั่งให้โปรแกรม Export เกม
+
+ทำการสร้างวัตถุโดยนำประตูมาใส่เข้าไปในฉาก level1 
+
+ทำการเพิ่มคอมโพเนนท์ให้กับประตู
+
+- Rigibody 2D ตั้งค่า Body Type → Kinematic
+- Box Collider 2D ตั้งค่า IsTrigger → true แล้วทำการปรับ Collider ให้เล็กลงมาดังภาพ
+- สร้างไฟล์ `Door.cs`
+
+![image.png](/images/classroom/unity2d/change-level/image.png)
+
+```csharp
+using UnityEngine.SceneManagement;
+
+public class Door : MonoBehaviour
+{
+    public int lvlToLoad;
+
+    private void LoadLevel() 
+    {
+        SceneManager.LoadScene(lvlToLoad);    
+    }
+    private void OnTriggerEnter2D(Collider2D other) 
+    {
+        if(other.CompareTag("Player"))
+        {
+            GetComponent<BoxCollider2D>().enabled = false;
+            other.GetComponent<GatherInput>().DisableControls();
+            LoadLevel();
+        }
+    }
+}
+
+```
+
+ทำการสร้างตัวแปร `lvlToLoad` เพื่อใช้แทนชื่อของเลเวลที่เราจะทำการเปลี่ยนฉาก
+
+สร้างฟังก์ชั่น `LoadLevel` เพื่อให้ทำการเปลี่ยนฉากไปยังฉากที่เรากำหนด
+
+สร้างฟังก์ชั่น `OnTriggerEnter2D` เมื่อมีการชนกันของตัวละครให้ทำการเรียกใช้ฟังก์ชั่นเพื่อทำการเปลี่ยนฉาก โดยเราจะทำการ ยกเลิก BoxCollider2D ของประตูเพื่อป้องกันการเปลี่ยนฉากซ้ำซ้อน และหยุการรับคำสั่งจากผู็เล่น ให้ตัวละครเคลื่อนไหว
+
+ในกรณีที่ต้องการรีเซ็ตฉาก ให้เราใช้คำสั่ง
+
+```csharp
+SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+```

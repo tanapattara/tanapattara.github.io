@@ -1,0 +1,87 @@
+---
+title: "Collect Item"
+sidebarTitle: "Collect Item"
+---
+
+# Collect Item
+
+เราจะทำให้ตัวละครของเรา เก็บไอเทมที่อยู่ในฉาก เมื่อตัวละครของเราเดินไปชนกับวัตถุแล้ว ทำให้วัตถุนั้นหายไป ให้เราใช้ Sprites Gem ที่เตรียมไว้ให้ ลากลงมาที่ฉาก
+
+เมื่อเราลาก Gem ลงมาที่ฉาก เราจะไม่เห็นเพชรของเรา เนื่องจากมันถูกกำหนดไว้ที่เลย์เยอร์ Default ให้เราเปลี่ยนระดับของเลย์เยอร์ โดยเลือกที่เพชร (Gem) ของเราก่อน หลังจากนั้นไปที่ Inspector → Layer → Add layer
+
+จะปรากฏหน้าต่างสำหรับเพิ่ม Layers เข้าไปใหม่ แต่เราจะทำการเปลี่ยนลำดับการแสดงของเลย์เยอร์แทน ที่ส่วนของ Sorting Layers ให้ทำการเปลี่ยนเลย์เยอร์ Default ที่เพชรของเราอยู่มาอยู๋ระหว่าง Middleground และ Ground
+
+![image.png](/images/classroom/unity2d/collect-item/image.png)
+
+ที่วัตถุเพชร ทำการเพิ่ม Circle Collider 2D เข้าไป ปรับขนาดของ Radius ให้พอดีกับตัวเพชร และเลือก `Is Trigger`
+
+เพิ่ม Rigidbody 2D ให้กับวัตถุเพชร เปลี่ยน Body Type → Kinematic
+
+ปรับ Project Settings กำหนด Physics 2D ตรวจสอบการชนกันระหว่าง Default กับ Player 
+
+![image.png](/images/classroom/unity2d/collect-item/image-1.png)
+
+สร้าง Script ใหม่ ตั้งชื่อ Gem.cs และทำการเชื่อมวัตถุเพชร เข้ากับ Script ที่สร้างขึ้นใหม่ เราสามารถเลือกวัตถุ แล้วทำการลากไฟล์ Gem.cs ไปวางไว้ในช่อง Inspector ได้เลย
+
+เนื่องจากเพชรของเราได้กำหนดเงื่อนไขของ Circle Collider 2D ในแบบ Trigger เราจะทำการเพิ่มคำสั่ง OnTriggerEnter2D เข้าไปแทน (ลบเมธอท Update() ออกได้เลย)
+
+```csharp
+public class Gem : MonoBehaviour
+{
+    void Start()
+    {
+        
+    }
+    private void OnTriggerEnter2D(Collider2D collision)
+    {
+        if(collision.CompareTag("Player"))
+        {
+            Destroy(gameObject);
+        }
+    }
+}
+
+```
+
+> **หมายเหตุ**
+> 💡 ตรวจสอบให้แน่ใจว่า ตัวละครหรือวัตถุ Player ถูกกำหนดให้อยู่ใน Tag ที่ชื่อ “Player”
+>
+
+ทดสอบการทำงานจะพบว่าเมื่อมีการเดินไปชนกับเพชร เพชรก็จะหายไป
+
+อีกทางหนึ่ง เราสามารถซ่อนเพชรของเราได้เมื่อมีการชนกันของตัวละคร โดยใช้คำสั่ง
+
+```csharp
+    private void OnTriggerEnter2D(Collider2D collision)
+    {
+        if(collision.CompareTag("Player"))
+        {
+            GetComponent<SpriteRenderer>().enabled = false;
+            GetComponent<Collider2D>().enabled = false;
+            ///Destroy(gameObject);
+        }
+    } 
+```
+
+คำสั่งทั้งสองจะทำให้เพชรหายไป แต่คำสั่งล่าสุดนั้น วัตถุเพชรยังคงอยู่ไม่ได้หายไปไหน
+
+## เพิ่มเสียง
+
+ที่วัตถุเพชรให้ทำการเพิ่มคอมโพเนนท์ Audio Source แล้วทำการลากไฟล์เสียงมาที่ Inspector → Audio Source → AudoClip  
+
+ปรับปรุงไฟล์ Gem.cs
+
+```csharp
+private void OnTriggerEnter2D(Collider2D collision)
+{
+    if(collision.CompareTag("Player"))
+    {
+        GetComponent<AudioSource>().Play();
+        GetComponent<SpriteRenderer>().enabled = false;
+        GetComponent<Collider2D>().enabled = false;
+        ///Destroy(gameObject);
+    }
+}
+```
+
+ทดสอบการทำงานของเกม

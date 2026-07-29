@@ -1,0 +1,319 @@
+---
+title: "Lab: JavaScript and DOM"
+sidebarTitle: "JavaScript and DOM"
+---
+
+# Lab: JavaScript and DOM
+
+[← กลับไปยัง Frontend Development](/frontend)
+
+เมื่อบราวเซอร์มีการโหลดเนื้อหาของหน้าเว็บ ที่ประกอบไปด้วย HTML element ในขณะเดียวกันเว็บบราวเซอร์จะทำการสร้าง Document Object Model (DOM) ของหน้าเว็บไซต์ขึ้นมา
+
+โตรงสร้างของ DOM เราสามารถสร้างในรูปแบบคล้ายต้นไม้ได้ดังภาพ
+
+![Untitled](/images/classroom/labs/frontend-javascript-dom/untitled.png)
+
+โมเดลเหล่านี้ JS จะสามารถเข้าถึงแต่ละอิลิเม้นต์ได้โดยการสร้าง HTML เสมือน
+
+- JavaScript สามารถเปลี่ยนอิลิเม้นท์ หรือแอททริบิวท์ HTML ทั้งหมดได้ในหน้าเว็บเพจ
+- JavaScript สามารถเปลี่ยน CSS สไตล์ได้ในหน้าเว็บเพจ
+- JavaScript สามารถลบหรือเพิ่มแอททริบิวท์ และ อิลิเม้นท์
+- JavaScript สามารถเข้าถึงและสร้าง HTML event ในหน้าเพ
+
+## การระบุอิลิเม้น
+
+ทดสอบการเรียกใช้อิลิเม้นของ JS โดยการสร้างเว็บ html อย่างง่าย พร้อมคำสั่ง
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JavaScript Lab</title>
+</head>
+<body>
+    <h1>Hello World</h1>
+    <p id="para1">This is your paragraph.</p>
+</body>
+</html>
+```
+
+ต่อไปใส่สคริปต์ลงไปในไฟล์ index.html โดยการแทรกแท็ก script ต่อจากอิลิเม้น p
+
+```html
+    <script>
+        document.getElementById("para1").innerHTML = "This paragraph come from JS";
+    </script>
+```
+
+ทดสอบการทำงาน เราจะเห็นได้ว่า ข้อความได้ถูกเปลี่ยนไป จากเดิมที่เราเขียนไว้ในอิลิเม้นท์ p ว่า This is your paragraph ได้เปลี่ยนเป็น This paragraph come from JS เพราะว่า JS ได้ทำการค้นหาอิลิเม้นที่มีไอดีว่า para1 แล้วทำการเปลี่ยนข้อความภายใน (innerHTML) เป็นตามค่าที่เราได้กำหนดในคำสั่ง JS
+
+การค้นหาและการเข้าถึงอิลิเม้นใน DOM ยังมีคำสั่งอื่น ๆ ได้ ดูจากตัวอย่างด้านล่าง ให้ทำการเพิ่มอิลิเม้นท์สำหรับทดสอบเข้าไป
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JavaScript Lab</title>
+    <style>
+        .classroom {
+           color: red;
+        }
+    </style>
+</head>
+<body>
+    <h1>Hello World</h1>
+    <p id="para1">This is your paragraph.</p>
+    <small class=”classroom”></small>
+</body>
+</html>
+
+```
+
+เพิ่มคำสั่งลงใน JS เพื่อทำการเข้าถึงอิลิเม้นท์ใน DOM ดังนี้
+
+```html
+    <script>
+        document.getElementById("para1").innerHTML = "This paragraph come from JS";
+        document.getElementByTagName(“h1”).innerHTML = “DOM Testing”;
+        document.getElementByClassName(“classroom”).innerHTML = “Web Application”;
+    </script>
+```
+
+นอกจากการเปลี่ยนแปลงข้อความข้างใน HTML แล้วเรายังสามารถทำอย่างอื่นกับกับอิลิเม้นท์ได้เช่นการเพิ่มแอททริบิวท์ หรือการใส่สไตล์
+
+```html
+    <script>
+        document.getElementById("para1").innerHTML = "This paragraph come from JS";
+        document.getElementById("para1").setAttribute("class", "classroom");
+        document.getElementByTagName(“h1”).innerHTML = “DOM Testing”;
+        document.getElementByTagName(“h1”).style.backgroundColor = "red";
+        document.getElementByClassName(“classroom”).innerHTML = “Web Application”;
+    </script>
+```
+
+## เหตุการณ์
+
+JS สามารถเรียกใช้เหตุการณ์ที่เกิดขึ้นจากผู้ใช้งานกระทำใด ๆ กับอิลิเม้นท์ได้ เช่นการกด การเปลี่ยนแปลงข้อมูลภายในอิลิเม้นท์
+
+## **onClick**
+
+เราสามารถระบุแอททริบิวท์ลงไปในแต่ละอิลิเม้นท์ได้เลยว่าจะให้เกิดอะไรขึ้นกับอิลิเม้นท์นั้น ตัวอย่างเช่น เรามี h1 เราสามารถใส่แอททริบิวท์ onclick ลงไปในอิลิเม้นท์เพื่อทำการเปลี่ยนข้อความหลังจากกดได้ เช่น
+
+```html
+<h1 onclick=”this.innerHTML = ‘Its me JavaScript’”>Hello World</h1>
+```
+
+เราสามารถใช้ JS ให้เรียกใช้งานฟังชั่นได้ โดยฟังชั่นดังกล่าวจะถูกเรียกใช้งานเมื่อมีการทำงานผ่านเหตุการณ์ที่เรากำหนดไว้ ในกรณีนี้คือการกดที่อิลิเม้นท์ h1
+
+```html
+    <h1 onclick=”changeText(this)”>Hello World</h1>
+    <script>
+      function changeText(id){
+        id.innerHTML = “It’s me JavaScript”;
+      }
+    </script>
+```
+
+จากคำสั่งข้างบน มีการใช้แอททริบิวท์ onclick ให้มีการเรียกใช้ฟังชั่น changeText(this) การเรียกใช้ดังกล่าวมีการส่งอากูเม้นท์ไปกับฟังชั่นด้วย จะเห็นได้จาก (this)
+
+เมื่อมาที่ฟังชั่น changeText(id) มีการรับข้อมูลเข้าเป็นตัวแปรที่ชื่อ id ในฟังชั่นก็เรียกใช้คำสั่งเปลี่ยนแปลงข้อความภายในเป็น “It’s me JavaScript”
+
+แน่นอนว่าเราสามารถใช้อีเว้นนี้บนอิลิเม้นท์อื่นได้ อย่างเช่น ปุ่มกด
+
+## **onChange**
+
+อีกเหตุการณ์ที่มีการใช้งานบ่อยก็คือ onChange ต่อไปทดลองสร้าง input เพื่อใช้ในการทดสอบเหตุการณ์ onChange
+
+```html
+    <input id="input1" type="number" onchange="calculate()">
+    <input id="input2" type="number" onchange="calculate()">
+    <input id="input3" type="number" disabled>
+```
+
+เราจะเห็นว่า เราสร้าง input ขึ้นมาสามตัวด้วยกัน ในรูปแบบของตัวเลข ดูได้จาก type="number" กล่องรับข้อมูลหรือ input มีแอททริบิวท์ที่ชื่อ เรียกใช้ฟังชั่น calculate() ส่วนกล่องรับข้อมูลที่สามไม่ได้กำหนดแอททริบิวท์เหตุการณ์ใดๆ แต่มีการใส่แอททริบิวท์ disabled เพื่อไม่ให้สามารถแก้ไขได้
+
+ต่อไปสร้างฟังชั่น calculate() เพื่อใส่สคริปต์สำหรับรับค่าและคำนวน
+
+```html
+<script>
+        function calculate(){
+
+        }
+</script>
+```
+
+ทำการดึงข้อมูลจาก DOM แต่ละตัว โดยใช้ getElementById และระบุ ID ที่ต้องการ เก็บใส่ตัวแปรและนำไปคำนวนและแสดงผล
+
+```html
+<script>
+        function calculate(){
+            var input1 = document.getElementById("input1").value;
+            var input2 = document.getElementById("input2").value;
+            var input3 = document.getElementById("input3");
+            // display result to third input box
+            input3.value = input1 + input2;
+        }
+</script>
+```
+
+เราจะได้หน้าเว็บดังรูปด้านล่าง
+
+![Untitled](/images/classroom/labs/frontend-javascript-dom/untitled-1.png)
+
+เมื่อมีการเปลี่ยนแปลงค่าใน input จะมีการเรียกใช้ฟังชั่นในการคำนวนและแสดงผลออกมาในช่อง input สุดท้าย แต่การคำนวนยังไม่ถูกต้อง เนื่องจาก ค่าที่ได้จากการอ่าน เป็นค่าอักขระ ทำให้การรวมกันของค่าทั้งสองเป็นการต่อจำนวนอัขระ ดังนั้น เราต้องทำการเปลี่ยนให้เป็นตัวเลขโดยใช้คำสั่ง
+
+```jsx
+input3.value = parseInt(input1) + parseInt(input2);
+```
+
+เราจะได้การคำนวนที่ถูกต้อง
+
+## ดักจับเหตุการณ์ Event listener
+
+เราสามารถใส่เหตุการณ์เข้าไปยังอิลิเม้นท์ต่าง ๆ โดยใช้ JS ได้โดยใช้คำสั่ง `addEventListener` ทดสอบการใส่เหตุการณ์ลงในอิลิเม้น button
+
+```html
+<p id=”date”></p>
+<button id=”myBtn”></button>
+```
+
+ทำการใส่เหตุการณ์ให้กับอิลิเม้นท์ที่มีไอดีว่า myBtn และทำการเพิ่มข้อความลงใน p
+
+```html
+<script>
+   document.getElementById("myBtn").addEventListener("click", displayDate);
+
+   function displayDate() {
+      document.getElementById("date").innerHTML = Date();
+   }
+</script>
+```
+
+นอกจากนี้เรายังสามารถดักจับเหตุการณ์มากกว่า 1 เหตุการณ์ลงไปในอิลิเม้นท์ได้ เช่น
+
+```jsx
+element.addEventListener("mouseover", myFunction);
+element.addEventListener("click", mySecondFunction);
+element.addEventListener("mouseout", myThirdFunction);
+```
+
+## HTML DOM element
+
+## **การเพิ่มอิลิเม้นท์**
+
+ต่อไปเราจะทำการสร้างอิลิเม้นท์ใหม่ และเพิ่มเข้าไปใน HTML หน้าเว็บของเราโดยใช้ JS
+
+สร้างอิลิเม้นท์ ul สำหรับแสดงข้อมูลรายการและกำหนดไอดีตามด้านล่
+
+```html
+<ul id="myClass">
+   <li id=”list1”>OOP</li>
+   <li id=”list2”>Web Application</li>
+   <li id=”list3”>Mobile Application</li>
+</ul>
+```
+
+ทดลองเพิ่มอิลิเม้นท์ li เข้าไปใน ul โดยใช้คำสั่ง
+
+```html
+<script>
+   let para = document.createElement("li");
+   let node = document.createTextNode("Computer Project");
+   para.appendChild(node);
+
+   let element = document.getElementById("myClass");
+   element.appendChild(para);
+</script>
+```
+
+จากคำสั่งข้างบน เราต้องการใส่อิลิเม้นท์ใหม่ li เข้าไปดังนั้นเราได้ทำการสร้างอิลิเม้นใหม่ขึ้นมาก่อนโดยอยู่ในรูปตัวแปร์ para จากคำสั่ง createElement
+
+จากนั้นเราสร้างข้อความภายในขึ้นมาใหม่โดยใช้คำสั่ง createTextNode เก็บไว้ในตัวแปร node  แล้วทำการเพิ่มข้อความที่เราสร้างขึ้นเข้าไปในอิลิเม้นท์ใหม่โดยใช้คำสั่ง appendChild
+
+ท้ายสุดทำการค้นหาอิลิเม้นท์จากไอดี id="myClass" เพื่อทำการเพิ่มอิลิเม้นท์ที่สร้างใหม่เข้าไปต่อท้าย
+
+## **การลบอิลิเม้นท์**
+
+การลบอิลิเม้นท์นั้นเราทำได้โดยใช้คำสั่ง remove(). เราสามารถลบอิลิเม้นท์ที่เราระบุได้จากไอดีได้โดยตรงโดยใช้คำสั่ง
+
+```html
+<script>
+   let elmnt = document.getElementById("list2");
+   elmnt.remove();
+</script>
+```
+
+หรือกำหนดอิลิเม้นท์แล้วเลือกลบจากอิลิเม้นท์ parent โดยใช้คำสั่ง removeChild()
+
+```html
+<script>
+   let parent = document.getElementById("myClass");
+   let child = document.getElementById("list2");
+   parent.removeChild(child);
+</script>
+```
+
+## **การแทนที่อิลิเม้นท์**
+
+ในการแทนที่อิลิเม้นนั้น เราทำได้โดยการใช้คำสั่ง `replaceChild()`
+
+```html
+<script>
+   let textnode = document.createTextNode("Research in Computer Science");
+   let item = document.getElementById("list3");
+   item.replaceChild(textnode, item);
+</script>
+
+```
+
+## Workshop
+
+ต่อไปลองสร้างแอพพลิเคชั่นโดยใช้ JavaScript และ HTML DOM สร้างแอพพลิเคชั่น TODO สำหรับจดบันทึกสิ่งที่จะทำ
+
+ออกแบบแอพพลิเคชั่น โดยแบ่งหน้าจอออกเป็นซ้ายขวา ด้านซ้ายเป็นกล่องข้อความสำหรับใส่สิ่งที่จะทำ และมีปุ่มสำหรับกดเพื่อเพิ่มเข้าไปยังรายการทางด้านขวา
+
+![Untitled](/images/classroom/labs/frontend-javascript-dom/untitled-2.png)
+
+ทางด้านซ้ายมือ สร้างกล่องสำหรับใส่ข้อมูล โดยใช้ Bootstrap CSS ช่วยในการแสดงผลดังนี้
+
+```html
+<div class="input-group mb-3">
+   <input type="text" class="form-control" id="input-todo" placeholder="" aria-label="Recipient's username" aria-describedby="button-addon2">
+   <div class="input-group-append">
+      <button class="btn btn-outline-primary" type="button" id="button-add">+</button>
+   </div>
+</div>
+```
+
+ทางด้านขวา เพิ่มอิลิเม้น `<ul>`สำหรับแสดงผลรายการที่จะทำ
+
+```html
+<ul class="list-group" id="todo-list"></ul>
+```
+
+เพิ่มคำสั่งสคริปต์ โดย
+
+- ใส่เหตุการณ์ให้กับปุ่มเมื่อกดให้ทำการเรียกใช้งานฟังชั่น
+- เมื่อเรียกใช้ฟังชั่นให้ทำการอ่านค่าที่ได้จากกล่องข้อความ
+- แล้วนำค่าที่ได้ไปเพิ่มอิลิเม่นท์ ให้กับลิสต์ทางด้านขวา
+
+```jsx
+// create li element
+let node = document.createElement("li");
+// add userinput to textnode
+Let textnode = document.createTextNode(/*Input value*/);
+// add textnode at li element
+node.appendChild(textnode);
+// append to list element
+document.getElementById("todo-list").appendChild(node);
+```
+
+ทดสอบการทำงานบนเว็บไซด์
+
+## **TODO**
+
+ให้ทำการเพิ่มเหตุการณ์ที่รายการด้านขวามือ สำหรับบอกว่ารายการนี้เสร็จแล้ว โดยให้ลบอิลิเม้นท์ที่กดออกจากรายการที่ต้องทำทางด้านขวามือ
