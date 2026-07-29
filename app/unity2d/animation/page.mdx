@@ -1,0 +1,94 @@
+---
+title: "Animation"
+sidebarTitle: "Animation"
+---
+
+# Animation
+
+เมื่อตัวละครเราได้รับความเสียหายหรือตาย เราจะทำการใส่ Animation ให้กับตัวละครของเรา ไปที่ Animation สร้างคลิปใหม่ โดยกด Create New Clip ตั้งชื่อว่า `Hurt` แล้วนำ Sprite มาใส่
+
+อีกคลิปสร้าง New Clip แล้วตั้งชื่อว่า `Death` แล้วนำ Sprite มาใส่เช่นกัน โดยกำหนดระยะเวลาการแสดงให้เหมาะสม และยกเลิก Loop time ที่ animation เพื่อให้แสดงผลแค่ครั้งเดียว
+
+ที่ Animation เราจะเห็นเอนิเมชั่นใหม่สองอันตามที่เราสร้างขึ้น ให้ทำการสร้าง Transition โดนมีรายละเอียดดังนี้
+
+- Any State → Hurt จากสถานะใดก็ได้ เมื่อได้รับความเสียหายจะเข้าสู่เอนิเมชั่น Hurt
+- Hurt → idle เมื่อได้รับความเสียหายก็จะกลับไปยังเอนิเมชั่น Idle
+- Hurt → Death เมื่อได้รับความเสียหายและไม่มีพลังชีวิตเหลือ ก็จะเข้าสู่เอนิเมชั่น Death
+
+![image.png](/images/classroom/unity2d/animation/image.png)
+
+ทำการสร้าง Parameters ขึ้นมาใหม่สองอัน
+
+- Damage เป็นค่า bool
+- Death เป็นค่า bool
+
+ที่ Transition เราจะกำหนดเงื่อนไขการเปลี่ยนเอนิเมชั่น โดยมีรายละเอียดดังนี้
+
+- Any State → Hurt
+    - Damage → true
+    - Death → false
+- Hurt → Idle
+    - Damage → false
+- Hurt → Death
+    - Death → true
+- Any State → Jump
+    - Ground → false
+    - Damage → false
+    - Death → false
+
+เนื่องจากว่า `PlayerStats` ที่เราสร้างขึ้น เป็นวัตถุลูกของ `Player` ทำให้เราสามารถเข้าถึง Player ได้ ดังนั้นให้เราไปที่ `PlayerStats.cs`
+
+```csharp
+public class PlayerStats : MonoBehaviour
+{
+    public float maxHealth;
+    public float health;
+
+    private bool canTakeDamage = true;
+
+    private Animator anim;
+
+    void Start()
+    {
+        anim = GetComponentInParent<Animator>();
+        health = maxHealth;
+    }
+    public void TakeDamage(float damage)
+    {
+        if(!canTakeDamage)
+        {
+            return;
+        }
+
+        health -= damage;
+        anim.SetBool("Damage", true);
+        if(health <= 0)
+        {
+            GetComponent<PolygonCollider2D>().enabled = false;
+            GetComponentInParent<GatherInput>().DisableControls();
+            Debug.Log("Player is dead");
+        }
+        StartCoroutine(DamagePrevention());
+    }
+    private IEnumerator DamagePrevention() 
+    {
+        canTakeDamage = false;
+        yield return new WaitForSeconds(0.15f);
+        if (health > 0)
+        {
+            canTakeDamage = true;
+            anim.SetBool("Damage", false);
+        }
+        else 
+        {
+            anim.SetBool("Death", true);
+        }
+    }
+}
+```
+
+สร้างตัวแปรชื่อ `anim` โดยทำการอ้างอิงไปที่ `ParentComponent`
+
+เมื่อเกิดความเสียหาย คำสั่ง `TakeDamage` ทำงาน เราจะกำหนดคำสั่ง `anima.SetBool()` เพื่อให้ตรงกับเงื่อนไขของเรา ที่ได้กำหนดไว้ใน Transition
+
+ทดสอบการทำงาน

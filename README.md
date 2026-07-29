@@ -1,6 +1,6 @@
 # Tanapattara's Classroom Handouts
 
-A statically generated documentation site for programming course materials. The lessons are written mainly in Thai and currently cover Git, C#, object-oriented programming, Dart, Flutter, TypeScript, Next.js, React, React Native, and Unity 2D.
+A statically generated documentation site for programming course materials. The lessons are written mainly in Thai and cover frontend development, Git and GitHub, C#, object-oriented programming, Dart, Flutter, TypeScript, Next.js, React, React Native, Unity 2D, native mobile development, and IT security and laws. Practical labs are collected under a dedicated Labs section.
 
 The site is built with Next.js, Nextra, and MDX, then deployed to GitHub Pages.
 
@@ -36,7 +36,10 @@ app/
 ├── page.mdx         # Home page
 ├── _meta.js         # Top-level navigation labels and order
 └── <topic>/         # Topic page and optional lesson sub-pages
-public/              # Files copied directly to the generated site
+public/
+└── images/classroom/ # Images imported with the classroom material
+scripts/
+└── import-notion-export.mjs # Rebuild imported pages from the Notion export
 mdx-components.js    # Components made available to MDX pages
 next.config.mjs      # Nextra and static-export configuration
 .github/workflows/   # GitHub Pages deployment workflow

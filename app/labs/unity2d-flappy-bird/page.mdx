@@ -1,0 +1,269 @@
+---
+title: "Lab: Start 2D Game Development with Flappy Bird"
+sidebarTitle: "Unity 2D: Flappy Bird"
+---
+
+# Lab: Start 2D Game Development with Flappy Bird
+
+[← กลับไปยัง 2D Game Development](/unity2d)
+
+![Untitled](/images/classroom/labs/unity2d-flappy-bird/untitled.png)
+
+Flappy Bird เป็นเกมมือถือที่โด่งดังในปี 2013 พัฒนาโดยนักพัฒนาชาวเวียดนาม เหงียน ฮา ดอง ตัวเกมมีรูปแบบการเล่นที่เรียบง่ายแต่ท้าทาย ผู้เล่นต้องควบคุมนกให้บินผ่านท่อสีเขียวโดยการแตะหน้าจอเพื่อให้กระพือปีก ความยากอยู่ที่การรักษาจังหวะการแตะเพื่อไม่ให้นกชนท่อหรือตกพื้น
+
+แม้จะถูกถอดออกจาก App Store และ Google Play Store ในปี 2014 เนื่องจากความกังวลของผู้พัฒนาเกี่ยวกับผลกระทบที่อาจเกิดขึ้นจากความนิยมอย่างล้นหลาม แต่ Flappy Bird ยังคงเป็นเกมที่อยู่ในความทรงจำของผู้คน และมีบทความและวิดีโอมากมายที่พูดถึงปรากฏการณ์ความสำเร็จของเกมนี้
+
+## เนื้อหา
+
+## โปรแกรมที่ใช้
+
+- Unity 3D
+- Visual Studio + Game Development with Unity Workload
+
+## Assets
+
+สามารถใช้งานทรัพยากร จากลิงค์เพื่อใช้ในการทดลอง
+
+[2DGameDev-Assets/Flappy bird](https://github.com/tanapattara-classroom/2DGameDev-Assets/tree/main/Flappy%20bird)
+
+## Interface
+
+![Untitled](/images/classroom/labs/unity2d-flappy-bird/untitled-1.png)
+
+Unity 3D ประกอบไปด้วย 4 ส่วนหลัก ๆ ด้วยกัน เรียงจาก ซ้ายไปขวา บนลงล่าง ดังนั้
+
+- Hierarchy แสดงข้อมูลทั้งหมดที่อยู่ใน Scene หรือหน้าปัจจุบัน ถ้าหากเราแบ่งเกมของเราเป็นฉากหรือด่าน องค์ประกอบแต่ละฉาก ก็จะแสดงในหน้าต่างนี้
+- Scene แสดงผลการทำงาน ตำแหน่งของวัตถุต่าง ๆ ในฉาก นั้น ๆ
+- Inspector ไว้สำหรับแสดง หรือกำหนดรายละเอียดของวัตถุที่เราเลือก
+- Project / console เก็บข้อมูลทุกอย่าง รูปภาพ เสียง **สคริปต์** ฟอน และอื่น ๆ จะปรากฏในหน้าต่างนี้ให้เราเลือกใช้งาน
+
+## Import Assets File
+
+นำเข้าไฟล์รูปภาพประกอบไปด้วย รูปนก และรูปท่อ เข้ามายังโปรเจคโดยการคลิ๊กขวาที่หน้าต่าง project → assets → import
+
+## Game object
+
+ที่หน้าต่าง Hierarchy คลิ๊กขวา แล้วเลือกเมนู `Create Empty` เพื่อสร้าง Game Object
+
+Game Object เป็นวัตถุในเกมที่แสดงผลทางหน้าจอ ทั้งมองเห็นได้ และมองไม่เห็น เราสามารถกำหนดตำแต่งบนหน้าจอ หมุน ปรับขนาดของวัตถุ
+
+เราสามารถนำ Game Object ไปลิงค์กับ Assets อื่น ๆ ได้ เช่น หากเรานำรูปนำมาใส่เข้าไป เราก็จะได้นก เป็นวัตถุในเกม เป็นต้น
+
+1. ให้เราเลือก GameObject ที่เราได้ทำการสร้างไป และเปลี่ยนชื่อเป็น Bird
+2. ที่หน้าต่าง Inspector กดที่ปุ่ม Add Component → Rendering → Sprite Renderer เราจะได้หน้าต่าง Sprite Renderer จะมีช่องที่ชื่อว่า Sprite ให้ทำการ ลากรูปนก ที่เราต้องการมาวางที่ตำแหน่งนี้
+
+ผลลัพท์ที่ได้ จะปรากฎรูปนกที่เราเลือก ที่หน้าจอ Scene เป็นอันเรียบร้อย
+
+![ลากรูป Sprite ไปยัง Sprite Renderer เพื่อทำการใส่รูป Sprite ไปยัง Game Object](/images/classroom/labs/unity2d-flappy-bird/untitled-2.png)
+
+ลากรูป Sprite ไปยัง Sprite Renderer เพื่อทำการใส่รูป Sprite ไปยัง Game Object
+
+1. ที่ Hierarchy เลือก Main Camera ทำการปรับสีพื้นหลัง และขนาดของกล้อง ให้อยู่ในมุมมองที่ต้องการ
+
+## Physic
+
+ที่วัตถุ Bird ให้ทำการเพิ่มคอมโพเนนท์ใหม่ชื่อ Physic 2D → Rigidbody 2D เพื่อทำการใส่คำสั่งฟิสิกส์ให้กับวัตถุ Bird ทำให้เมื่อมีการเริ่มเล่นที่ปุ่ม Play ตรงกลาง Bird ของเราก็จะเลื่อนลงมาตามแกน Y เหมือนกับมีแรงดึงดูด
+
+ต่อไปที่วัตถุ Bird ทำการใส่คอมโพเนนท์เพิ่มชื่อ Circle Collider 2D เมื่อใส่แล้ว เราจะเห็นวงกลมรอบวัตถุ Bird นั่นคือรัศมี หรือพื่นที่ของ Collider โดยเราสามารถรับขนาด Offset ตามแกน x,y หรือ ขนาดของรัศมี ให้พอดีกับขนาดของนก
+
+Collider เอาไว้ใช้สำหรับตรวจสอบการชนกันของวัตถุ ทำให้เราสามารถทราบได้ว่า วัตถุมีการชน หรือผ่าน วัตถุอะไรบ้าง
+
+ทำการใส่ Script เข้าไปที่คอมโพเนนท์ Bird โดยเลือก New Script และตั้งชื่อว่า BirdScript เมื่อสร้างคริปได้แล้ว ให้ทำการเปิดโดยการ double click เพื่อเปิด Visual Studio ขึ้นมา
+
+> **หมายเหตุ**
+> 💡 เราสามารถกำหนด Editor สำหรับ Script ได้ โดยการไปที่ Unity → Edit → Preference → External Tools → External Script Editor → Visual Studio Code โดย VS Code จำเป็นต้องติดตั้ง [Unity Extension](https://marketplace.visualstudio.com/items?itemName=visualstudiotoolsforunity.vstuc)
+>
+
+เหมือเปิดสคริปขึ้นมา เราจะพบ คลาส `BirdScript` ตามที่เราตั้งชื่อไว้ และมีเมธอท อยู่สองเมธอท
+
+1. Start() เป็นเมธอทที่เรียกใช้งานครั้งแรก ครั้งเดียว เวลาที่มีการสร้าง หรือทำงานวัตถุนี้
+2. Update() เป็นเมธอทที่มีการอัพเดทและเรียกอยู่ตลอดเวลา ในขนะที่วัตถุนี้ยังคงทำงานอยู่
+
+> **หมายเหตุ**
+> 💡 ภาษาที่ใช้ในการทำงาน Script ใช้ภาษา C# 😃
+>
+
+ทำการสร้าง Reference หรือตัวแปรที่ คลาส `BirdScript`
+
+```csharp
+public Rigidbody2D myRigibody;
+```
+
+ทำการบันทึกไฟล์และกลับไปที่ Unity 
+
+Unity จะทำการอัพเดท Script ของเรา โดยจะปรากฎ ตัวแปรใหม่ที่เราสร้างขึ้นที่คอมโพเนนท์ของวัตถุ Bird 
+
+![Untitled](/images/classroom/labs/unity2d-flappy-bird/untitled-3.png)
+
+เราได้ทำการเชื่อมตัวแปรในสคริปของเรา ไปที่ Regidbody ที่อยู่ในวัตถุ Bird แล้ว ทำให้เราสามารถปรับเปลี่ยนค่าได้จากสคริปของเรา
+
+ทำการปรับปรุงเมธอท Update() ของเราด้วยคำสั่ง
+
+```csharp
+public float jumpForce = 10f;
+void Update()
+{
+    myRigibody.linearVelocity = new Vector2(0, jumpForce * 2);
+}
+```
+
+คำสั่งนี้ จะทำให้วัตถุ Bird  ของเรา ทำการเลื่อนขึ้นไปข้างบน ด้วยการคูณ 10 ในทุก ๆ เฟรม เราจะทำการปรับปรุงโค้ดโดยการใส่เงื่อนไขเข้าไป หากมีการกดปุ่ม Spacebar ให้ทำการบินขึ้น เราจะได้คำสั่งดังนี้
+
+```csharp
+  using UnityEngine.InputSystem; 
+  
+  void Update()
+  {
+      if (Keyboard.current.spaceKey.wasPressedThisFrame)
+      {
+          myRigibody.linearVelocity = new Vector2(0, jumpForce * 2);
+      }
+  }
+```
+
+เจ้านกของเราจะบินขึ้นเมื่อกด SpaceBar
+
+## เพิ่มท่อเข้าไปในฉาก
+
+เพิ่ม GameObject เข้าไปยัง Hierarchy โดยเริ่มจากการสร้าง EmptyObject และทำการสร้าง GameObject ไว้ภายในอีกที วิธีการนี้ เราจะสามารถทำให้มีวัตถุหลาย ๆ อัน อยู่ภายในวัตถุอันเดียวได้ 
+
+เริ่มจากการสร้างวัตถุ แล้วตั้งชื่อว่า Pipe 
+
+- ต่อมาเลือก Pip แล้วให้สร้างวัตถุขึ้นมาใหม่ ชื่อ `Top Pipe` เป็นวัตถุอยู่ภายใน Pip
+- ที่ `Top Pipe` เพิ่ม
+    - Sprite Renderer แล้วทำการนำ sprite มาใส่เข้าไป
+    - Box Collider 2D สำหรับใส่ Collider เข้าไปยังท่อ
+- ทำการจัดตำแหน่งของท่อให้อยู่ด้ายบน
+- เมื่อได้ `Top Pipe` แล้ว ทำการ Duplicate แล้วเปลี่ยนชื่อเป็น `Botton Pipe` แล้วจัดตำเแหน่งใหม่ให้อยู่ด้านล่างของนก
+
+![Untitled](/images/classroom/labs/unity2d-flappy-bird/untitled-4.png)
+
+## ใส่**สคริปต์**ให้กับท่อ
+
+สร่าง**สคริปต์ใหม่ ตั้งชื่อว่า `PipeScript` ทำการสร้างตัวแปรขึ้นมาเพื่อกำหนดความเร็วให้กับการเครื่องที่ของท่อ**
+
+```csharp
+public class PipeScript : MonoBehaviour
+{
+    public float moveSpeed = 5f;
+}
+```
+
+ใส่คำสั่งสำหรับเปลี่ยนแปลงตำแหน่งของท่อที่เมธอท `Update()`
+
+```csharp
+public class PipeScript : MonoBehaviour
+{
+    public float moveSpeed = 5;
+    // Start is called before the first frame update
+    void Start() { }
+
+    // Update is called once per frame
+    void Update()
+    {
+        transform.position = transform.position + ( Vector3.left * moveSpeed) * Time.deltaTime;
+    }
+}
+```
+
+ทดสอบการทำงาน เราจะพอว่า ท่อน้ำของเราได้ทีการเคลื่อนที่แล้ว
+
+## Prefabricated GameObject
+
+ต่อไปเราจะทำการสร้างท่อใหม่ โดยใช้คำสั่งสคริปต์ ในการสร้าง โดยเราจะกำหนดให้ ท่อของเราสร้างขึ้นทางขวามือของผู้เล่น แล้วเคลื่อนที่ไปทางซ้ายมือ ให้ดูเหมือนนกกำลังเครื่องที่ไปข้างหน้า
+
+Prefabricated GameObject เรียกสั้น ๆ ว่า Prefab ทำหน้าที่เป็นเสมือนแม่แบบ สำหรับสร้างวัตถุ
+
+- ให้ทำการลาก Pipe จากหน้าต่าง Hierarchy ลงมาที่หน้าต่าง Project เราจะได้ Assets ใหม่ชนิด Prefab Assets
+- เมื่อสร้าง Prefab Assets ของ Pipe ได้แล้ว เราสามารถลบ Pipe ในหน้าต่าง Hierarchy ได้เลย
+- สร้าง GameObject ตั้งชื่อว่า `Pipe Spawner`
+- นำ Pipe Spawner ไปไว้ด้านขวา ตำแหน่งที่เราต้องการสร้างท่อ
+- สร้างสคริปต์ใหม่ของวัตถุ Pipe Spawner ตั้งชื่อว่า `PipeSpawnerScript`
+- สร้างตัวแปร GameObject เพื่อทำการนำวัตถุ Prefab ที่เราสร้างขึ้นมา เป็นวัตถุในการสร้าง
+- ที่ฟังก์ชั่น `Update()` ใส่คำสั่ง Instantiate เพื่อทำการสร้างวัตถุขึ้นมาใหม่
+
+```csharp
+public GameObject pipe;
+
+void Update()
+{
+    Instantiate(pipe, transform.position, transform.rotation);
+}
+```
+
+เมื่อทดสอบการทำงาน เราจะเห็นว่า มีการสร้าง Pipe ขึ้นมาจาก `PipeSpawner` ของเรา แต่เราจะเห็นได้ว่า มีการสร้างวัตถุขึ้นมาใหม่ทุก ๆ แฟรม ทำให้ดูเป็นท่อติดกัน เราจำเป็นต้องกำหนดระยะห่างในหารสร้างท่อ ให้เราทำการสร้างตัวแปรเพื่อกำหนดเงื่อนไขและเวลาในการสร้าง
+
+```csharp
+public GameObject pipe;
+public float spawnTime = 2;
+private float timer = 0;
+
+void Update()
+{
+    if(timer < spawnTime){
+        timer += Time.deltaTime;
+    }else{
+        Instantiate(pipe, transform.position, transform.rotation);
+        timer = 0;
+    }
+}
+```
+
+เราก็จะได้ท่อ ที่เว้นเวลาในการสร้างเป็นเวลา 2 frame แต่ท่อที่เราได้ เป็นการสร้างในตำแหน่งเดียวกัน เพื่อเป็นความท้าทาย เราจะต้องมีการกำหนดช่องระหว่างท่อให้ต่างกัน นั่นคือเราจะกำหนดตำแหน่งในการสร้างท่อใหม่
+
+เราจะทำการเลื่อนตำแหน่งท่อไปตามแกน Y เพื่อให้ท่อเลื่อนขึ้น หรือลงตามแนวตั้ง โดยเราจำเป็นต้องกำหนดจุดสูงสุด และต่ำสุดในการสร้าง เพื่อไม่ให้ท่อของเราสร้างเลยหน้าจอนั่นเอง
+
+ประกาศตัวแปรเพิ่มเพื่อคำนวนหาจุดสูงสุด และต่ำสุด
+
+```csharp
+public class PipeSpawnerScript : MonoBehaviour
+{
+    public GameObject pipe;
+    public float spawnTime = 2;
+    private float timer = 0;
+    public float heightOfSet = 10;
+
+    // Update is called once per frame
+    void Update()
+    {
+        if(timer < spawnTime){
+            timer += Time.deltaTime;
+        }else{
+            float minY = transform.position.y - heightOfSet;
+            float maxY = transform.position.y + heightOfSet;
+            Instantiate(pipe, new Vector3(transform.position.x, Random.Range(minY,maxY), 0), transform.rotation);
+            timer = 0;
+        }
+    }
+}
+```
+
+ทุกครั้งที่มีการสร้างวัตถุใหม่โดยคำสั่ง `Instantiate` ก็จะมีการกำหนดตำแหน่งในการเกิดใหม่ โดยมีการปรับเปลี่ยนแกน Y ไปตามค่าที่สุ่มได้จากคำสั่ง `Random.Range()`
+
+## Remove GameObject
+
+ท่อที่สร้างขึ้น ก็จะเคลื่อนที่ทางซ้ายมือของหน้าจอเรื่อย ๆ ยิ่งสร้างมาก ก็จะทำให้ใช้ทรัพยากรของเครื่องมากขึ้น เพราะต้องใช้หน่วยความจำในการเก็บวัตถุเพิ่มมากขึ้น ทำให้เราต้องทำการลบหรือทำลายท่อของเราทิ้ง เมื่อมีการเคลื่อนที่ออกหน้าจอไป
+
+ที่วัตถุ Pipe ให้เราทำการแก้ไขสคริปต์ โดยทำการกำหนดตำแหน่งในแกน X ลงไป หากเกินตำแหน่งนี้ให้ทำการลบ หรือทำลายตัวมันเอง
+
+```csharp
+public class PipeScript : MonoBehaviour
+{
+    public float moveSpeed = 5;
+    public float deadZone = -45;
+
+    // Update is called once per frame
+    void Update()
+    {
+        transform.position = transform.position + (Vector3.left * moveSpeed) * Time.deltaTime;
+        if(transform.position.x < deadZone)
+            Destroy(gameObject);
+    }
+}
+```
+
+## ก่อนหน้า
+
+[Introduction to 2D Game Development](/unity2d/introduction) 
+
+## ต่อไป

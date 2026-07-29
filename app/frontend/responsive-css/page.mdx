@@ -1,0 +1,120 @@
+---
+title: "CSS Responsive"
+sidebarTitle: "CSS Responsive"
+---
+
+# CSS Responsive
+
+CSS Responsive คือการออกแบบเว็บไซต์ให้สามารถปรับขนาดและรูปแบบการแสดงผลได้อัตโนมัติตามขนาดหน้าจอของอุปกรณ์ที่ผู้ใช้เข้าชม ไม่ว่าจะเป็นคอมพิวเตอร์ แท็บเล็ต หรือโทรศัพท์มือถือ ทำให้ผู้ใช้ได้รับประสบการณ์การใช้งานที่ดีที่สุดในทุกอุปกรณ์
+
+**หลักการสำคัญของ CSS Responsive**
+
+1. **Viewport Meta Tag:** กำหนด viewport ให้เว็บไซต์แสดงผลได้อย่างเหมาะสมบนอุปกรณ์ต่างๆ โดยใช้ meta tag นี้ในส่วน head ของ HTML:
+
+```html
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+```
+
+1. **Flexible Grids:** ใช้ระบบ grid ใน CSS เช่น Flexbox หรือ CSS Grid เพื่อจัดวาง layout ให้มีความยืดหยุ่น สามารถปรับขนาดตามหน้าจอได้
+2. **Relative Units:** ใช้องค์ประกอบที่มีหน่วยเป็นเปอร์เซ็นต์ (%), em, rem แทนการใช้ pixel (px) เพื่อให้ขนาดขององค์ประกอบปรับเปลี่ยนตามขนาดหน้าจอ
+3. **Media Queries:** ใช้ Media Queries ใน CSS เพื่อกำหนดรูปแบบการแสดงผลที่แตกต่างกันสำหรับขนาดหน้าจอที่แตกต่างกัน โดยกำหนด breakpoint ที่เหมาะสม
+
+```css
+@media (max-width: 768px) {
+    /* CSS styles for screens smaller than 768px */
+}
+```
+
+1. **Flexible Images:** ใช้ CSS เพื่อปรับขนาดรูปภาพให้แสดงผลได้เต็มความกว้างของ container โดยไม่เกินขนาดจริงของรูปภาพ
+
+```css
+img {
+    max-width: 100%;
+    height: auto;
+}
+```
+
+## **Flexible Grids**
+
+Flexible Grids หรือ Grid System ใน CSS เป็นเครื่องมือที่ช่วยในการจัดวางเลย์เอาต์ของเว็บไซต์ให้เป็นระเบียบและมีความยืดหยุ่นสูง โดยแบ่งพื้นที่หน้าจอออกเป็นส่วนๆ (grid) ที่สามารถกำหนดขนาดและตำแหน่งได้อย่างอิสระ
+
+### **หลักการทำงานของ Flexible Grids**
+
+1. **Grid Container:** องค์ประกอบหลักที่ห่อหุ้ม grid items ทั้งหมด โดยกำหนดคุณสมบัติ `display: grid` หรือ `display: inline-grid`
+2. **Grid Items:** องค์ประกอบย่อยภายใน grid container ที่จะถูกจัดวางตาม grid ที่กำหนด
+3. **Grid Tracks:** เส้นแนวนอน (row) และแนวตั้ง (column) ที่แบ่งพื้นที่ของ grid container
+4. **Grid Cells:** พื้นที่สี่เหลี่ยมที่เกิดจากการตัดกันของ grid tracks
+5. **Grid Areas:** พื้นที่ที่เกิดจากการรวมกันของ grid cells หลายๆ cell
+
+### **วิธีการใช้งาน Flexible Grids**
+
+1. **กำหนด Grid Container:** กำหนด element ที่ต้องการให้เป็น grid container โดยใช้คุณสมบัติ `display: grid` หรือ `display: inline-grid`
+2. **กำหนด Grid Tracks:** กำหนดจำนวนและขนาดของ grid tracks โดยใช้คุณสมบัติ `grid-template-columns` และ `grid-template-rows`
+3. **จัดวาง Grid Items:** กำหนดตำแหน่งของ grid items โดยใช้คุณสมบัติ `grid-column` และ `grid-row` หรือ `grid-area`
+
+```css
+.container {
+  display: grid;
+  grid-template-columns: 1fr 2fr 1fr; /* กำหนด 3 columns ขนาด 1:2:1 */
+  grid-template-rows: 100px 200px; /* กำหนด 2 rows ขนาด 100px และ 200px */
+  gap: 10px; /* กำหนดระยะห่างระหว่าง grid items */
+}
+
+.item1 {
+  grid-column: 1 / 3; /* กำหนด item1 ให้ครอบคลุม column 1 และ 2 */
+  grid-row: 1 / 3; /* กำหนด item1 ให้ครอบคลุม row 1 และ 2 */
+}
+
+.item2 {
+  grid-column: 3; /* กำหนด item2 ให้วางใน column 3 */
+}
+
+.item3 {
+  grid-row: 2; /* กำหนด item3 ให้วางใน row 2 */
+}
+```
+
+## **CSS Units**
+
+หน่วยในการกำหนดขนาดใน CSS มีหลายประเภท แต่ละประเภทมีลักษณะการใช้งานที่แตกต่างกันออกไป ซึ่งหน่วยที่นิยมใช้ในการทำ Responsive Web Design
+
+### หน่วยสัมพัทธ์ (Relative Units)
+
+- **เปอร์เซ็นต์ (%)**: คำนวณขนาดเทียบกับขนาดของ element แม่ เช่น กำหนด width: 50% หมายถึง element จะมีความกว้างเป็นครึ่งหนึ่งของ element แม่
+- **em**: คำนวณขนาดเทียบกับขนาดตัวอักษร (font-size) ของ element ปัจจุบัน เช่น กำหนด margin: 1em หมายถึง margin จะมีขนาดเท่ากับขนาดตัวอักษรของ element นั้น
+- **rem**: คำนวณขนาดเทียบกับขนาดตัวอักษร (font-size) ของ root element (html)
+- **vw (viewport width)**: คำนวณขนาดเทียบกับความกว้างของ viewport (หน้าจอที่มองเห็น) 1vw เท่ากับ 1% ของความกว้าง viewport
+- **vh (viewport height)**: คำนวณขนาดเทียบกับความสูงของ viewport (หน้าจอที่มองเห็น) 1vh เท่ากับ 1% ของความสูง viewport
+
+### หน่วยสัมบูรณ์ (Absolute Units)
+
+- **px (pixels)**: หน่วยที่เล็กที่สุดบนหน้าจอ แต่ไม่เหมาะกับการทำ Responsive Web Design เพราะขนาดจะไม่เปลี่ยนแปลงตามขนาดหน้าจอ
+- **pt (points)**: นิยมใช้ในงานพิมพ์ 1pt = 1/72 นิ้ว
+
+### **การเลือกใช้หน่วย**
+
+ในการทำ Responsive Web Design ควรเลือกใช้หน่วยสัมพัทธ์เป็นหลัก เพื่อให้ขนาดของ element ปรับเปลี่ยนตามขนาดหน้าจอได้อย่างเหมาะสม โดยหน่วยที่นิยมใช้มากที่สุดคือเปอร์เซ็นต์ (%) และ rem
+
+```css
+.container {
+  width: 80%; /* กำหนดความกว้าง container เป็น 80% ของ element แม่ */
+  margin: 0 auto; /* จัดกึ่งกลาง container */
+  font-size: 1.2rem; /* กำหนดขนาดตัวอักษร */
+  padding: 2rem; /* กำหนด padding */
+}
+
+@media (max-width: 768px) { /* กำหนดรูปแบบสำหรับหน้าจอขนาดเล็กกว่า 768px */
+  .container {
+    width: 95%; /* ปรับความกว้าง container */
+    padding: 1rem; /* ปรับ padding */
+  }
+}
+
+```
+
+> **หมายเหตุ**
+> 💡 **คำแนะนำ**
+>
+> - หลีกเลี่ยงการใช้ `px` ในการกำหนดขนาดของ element หลักๆ ควรใช้หน่วยสัมพัทธ์แทน
+> - ใช้ `vw` และ `vh` ในการกำหนดขนาดของ element ที่ต้องการให้เต็มหน้าจอ เช่น รูปภาพพื้นหลัง
+> - ใช้ `rem` ในการกำหนดขนาดตัวอักษร เพื่อให้ขนาดตัวอักษรปรับเปลี่ยนตามขนาดหน้าจอได้

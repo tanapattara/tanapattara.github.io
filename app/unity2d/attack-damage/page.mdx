@@ -1,0 +1,137 @@
+---
+title: "Attack and Damage"
+sidebarTitle: "Attack and Damage"
+---
+
+# Attack and Damage
+
+ที่วัตถุ Player สร้างวัตถุใหม่ขึ้นมาภายใน ตั้งชื่อว่า Player Attack หลังจากนั้นให้เพิ่มคอมโพเนนท์เข้าไปที่วัตถุใหม่ โดยใส่ Polygon Collider 2D และปรับแต่งโพลิก้อน ให้ครอบคลุมตัวละครของเรา
+
+หลังจากนั้นปรับ Polygon ให้ครอบคลุมภาพของตัวละครเมื่อโจมตี และกำหนดให้เป็น Is Trigger
+
+> **หมายเหตุ**
+> 💡
+>
+> ทีตัวละครอของเรา เราสามารถเปลี่ยน Sprites ที่หน้าต่าง Inspector ให้แสดงรูปของตัวละครที่โจมตีได้ เพื่อให้ง่ายต่อการจัดการ
+>
+
+![image.png](/images/classroom/unity2d/attack-damage/image.png)
+
+หลังจากนั้นให้ทำการปิดหรือ Disable ตัวคอมโพเนนท์ไว้ก่อน โดยเราจะทำการเปิดก็ต่อเมื่อมีการโจมตีเกิดขึ้น
+
+ที่ไฟล์ `PlayerAttackControls.cs` ทำการสร้างตัวแปร์ของคอมโพเนนท์ขึ้นมา และสร้างฟังก์ชั่นในการเปิดใช้งานชื่อ `ActivateAttack()` โดยเราจะไปเรียกใช้ที่ Animator
+
+```csharp
+public class PlayerAttackControls : MonoBehaviour
+{
+		//...
+
+    public PolygonCollider2D attackCollider;
+    
+    //...
+    public void ActivateAttack() 
+    {
+        attackCollider.enabled = true;    
+    }
+    /// <summary>
+    /// to reset and stop the attack animation
+    /// </summary>
+    public void ResetAttack() 
+    {
+			  //...  
+        attackCollider.enabled = false;
+    }
+}
+
+```
+
+ที่หน้าต่าง animator ให้เราเลือกเฟรมที่เราต้องการเปิดใช้งานให้ Polygon โจมตีของเราทำงาน เช่น เฟรมที่สอง เลือกไปที่แฟรมที่ 2 แล้วทำการสร้างเหตุการณ์โดยกดปุ่ม `Add Event` แล้วทำการเรียกใช้งานฟังก์ชั่น `ActivateAttack()`
+
+![image.png](/images/classroom/unity2d/attack-damage/image-1.png)
+
+ทำการสร้างเลย์เยอร์ให้กับ PlayerAttack ชื่อว่า `PlayerAttack` แล้วทำการกำหนด Layer Collision Matrix เพื่อกำหนดให้ `PlayerAttack` ตรวจสอบการชนกันกับเลย์เยอร์ `Enemy`
+
+![image.png](/images/classroom/unity2d/attack-damage/image-2.png)
+
+สร้างไฟล์ใหม่ชื่อ `PlayerAttack.cs` ใส่เข้าไปที่วัตถุ `PlayerAttack`
+
+ทำการสร้างตัวแปรจากเลย์เยอร์ Enemy และทำการเรียกใช้งานฟังก์ชั่นเมื่อมีการชนกันระหว่างเลย์เยอร์ 
+
+```csharp
+public class PlayerAttack : MonoBehaviour
+{
+    public float attackDamage = 10f;
+    private int enemyLayer;
+    // Start is called before the first frame update
+    void Start()
+    {
+        enemyLayer = LayerMask.NameToLayer("Enemy");
+    }
+    private void OnTriggerEnter2D(Collider2D collision)
+    {
+        if (collision.gameObject.layer == enemyLayer)
+        {
+              
+        }
+    } 
+}
+```
+
+เราจะทำการลดเลือดของตัวละครศัตรู เราจะทำการสร้างฟังก์ชั่นที่คลาส `Enemy`
+
+```csharp
+public class Enemy : MonoBehaviour
+{
+		//...
+    public void TakeDamage(float damage)
+    {
+        helth -= damage;
+        if (helth <= 0)
+        {
+            Destroy(gameObject);
+        }
+    }
+}
+```
+
+เมื่อตัวละครไม่มีพลังชีวิตเหลือ เราก็จะทำการทำลายวัตถุออกไปจากฉากด้วยคำสั่ง `Destroy`
+
+เรียกใช้งาน `TakeDamage()` ที่เราสร้างขึ้นมาใหม่
+
+```csharp
+ private void OnTriggerEnter2D(Collider2D collision)
+ {
+     if (collision.gameObject.layer == enemyLayer)
+     {
+          collision.GetComponent<Enemy>().TakeDamage(attackDamage);
+     }
+ } 
+```
+
+> **หมายเหตุ**
+> ☑️
+>
+> เรายังต้องเพิ่มเอนิเมชั่นให้กับตัวละครศัตรูเช่น เอนิเมชั่นเมื่อถูกโจมตี เอนิเมชั่นเมื่อตาย หรือการกระโดดถอยหลังเมื่อศัตรูได้รับการโจมตีอีกด้วย
+>
+> หรือเราสามารถกำหนดให้รับความเสียหายจากผู้เล่นเฉพาะด้านหลัง (เนื่องจากด้านหน้าเป็นโล่)
+>
+
+## Sound
+
+ที่วัตถุ `PlayerAttack` ทำการเพิ่มคมโพเนนท์ Audio Source แล้วนำเสียงมาใส่ กำหนดปิดการเล่นในตอนเริ่มต้นหรือ Play on awake = false
+
+เพิ่มคำสั่งที่ไฟล์ `PlayerAttackControl.cs`
+
+```csharp
+public class PlayerAttackControls : MonoBehaviour
+{
+    //...
+    public AudioSource audioSource;
+	  //...
+    public void ActivateAttack() 
+    {
+        attackCollider.enabled = true;
+        audioSource.Play();    
+    }
+}
+```

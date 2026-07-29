@@ -1,0 +1,392 @@
+---
+title: "Authentication"
+sidebarTitle: "Authentication"
+---
+
+# Authentication
+
+## โครงสร้างของโปรเจกต์
+
+ก่อนเริ่มต้น เราจะทำการสร้างโปรเจกต์ Next.js ขึ้นมาใหม่ด้วยคำสั่ง:
+
+```bash
+npx create-next-app@latest my-auth-app --typescript
+```
+
+โครงสร้างไฟล์ที่สำคัญสำหรับระบบนี้ จะประกอบไปด้วย:
+
+- `app/login/page.tsx`: หน้าสำหรับฟอร์มเข้าสู่ระบบ
+- `app/register/page.tsx`: หน้าสำหรับฟอร์มลงทะเบียน
+- `app/api/auth/[...nextauth]/route.ts`: API Route สำหรับการยืนยันตัวตน (ในตัวอย่างนี้จะใช้ NextAuth.js เพื่อความสะดวกและปลอดภัย)
+- `lib/auth.ts`: ไฟล์สำหรับตั้งค่า NextAuth.js
+- `components/LoginForm.tsx`: คอมโพเนนต์ฟอร์มสำหรับเข้าสู่ระบบ
+- `components/RegisterForm.tsx`: คอมโพเนนต์ฟอร์มสำหรับลงทะเบียน
+
+## **การสร้างฟอร์มลงทะเบียน (Register Form)**
+เริ่มต้นด้วยการสร้างคอมโพเนนต์สำหรับฟอร์มลงทะเบียน ซึ่งจะรับข้อมูลจากผู้ใช้และส่งไปยัง API
+
+**`components/RegisterForm.tsx`**
+
+TypeScript
+
+```tsx
+'use client';
+
+import { useState, FormEvent } from 'react';
+import { useRouter } from 'next/navigation';
+
+export default function RegisterForm() {
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const router = useRouter();
+
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+
+    if (!name || !email || !password) {
+      setError('กรุณากรอกข้อมูลให้ครบถ้วน');
+      return;
+    }
+
+    try {
+      const res = await fetch('/api/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name,
+          email,
+          password,
+        }),
+      });
+
+      if (res.ok) {
+        const form = e.target as HTMLFormElement;
+        form.reset();
+        router.push('/login');
+      } else {
+        const { message } = await res.json();
+        setError(message);
+      }
+    } catch (error) {
+      setError('เกิดข้อผิดพลาดในการสมัครสมาชิก');
+      console.error('Registration error:', error);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div>
+        <label
+          htmlFor="name"
+          className="block text-sm font-medium text-gray-700"
+        >
+          ชื่อ
+        </label>
+        <input
+          id="name"
+          type="text"
+          onChange={(e) => setName(e.target.value)}
+          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+          required
+        />
+      </div>
+      <div>
+        <label
+          htmlFor="email"
+          className="block text-sm font-medium text-gray-700"
+        >
+          อีเมล
+        </label>
+        <input
+          id="email"
+          type="email"
+          onChange={(e) => setEmail(e.target.value)}
+          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+          required
+        />
+      </div>
+      <div>
+        <label
+          htmlFor="password"
+          className="block text-sm font-medium text-gray-700"
+        >
+          รหัสผ่าน
+        </label>
+        <input
+          id="password"
+          type="password"
+          onChange={(e) => setPassword(e.target.value)}
+          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+          required
+        />
+      </div>
+      {error && <p className="text-red-500 text-sm">{error}</p>}
+      <button
+        type="submit"
+        className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+      >
+        ลงทะเบียน
+      </button>
+    </form>
+  );
+}
+```
+
+จากโค้ดข้างต้น จะเป็นการสร้างฟอร์มพื้นฐานที่ใช้ `useState` ในการจัดการสถานะของข้อมูลในฟอร์ม และมีฟังก์ชัน `handleSubmit` เพื่อส่งข้อมูลไปยัง API ที่ `/api/register` ด้วยเมธอด POST
+
+## **การสร้างฟอร์มเข้าสู่ระบบ (Login Form) และการจัดการ Token**
+
+สำหรับฟอร์มเข้าสู่ระบบ จะใช้ `signIn` จาก `next-auth/react` ซึ่งเป็นไลบรารีที่ช่วยจัดการการยืนยันตัวตนได้อย่างสะดวกและปลอดภัย
+
+```tsx
+'use client';
+
+import { useState, FormEvent } from 'react';
+import { signIn } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
+
+export default function LoginForm() {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const router = useRouter();
+
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+
+    try {
+      const result = await signIn('credentials', {
+        redirect: false,
+        email,
+        password,
+      });
+
+      if (result?.error) {
+        setError('อีเมลหรือรหัสผ่านไม่ถูกต้อง');
+        return;
+      }
+
+      router.replace('/dashboard'); // เปลี่ยนเส้นทางไปยังหน้า dashboard หลัง login สำเร็จ
+    } catch (error) {
+      console.error('Login error:', error);
+      setError('เกิดข้อผิดพลาดในการเข้าสู่ระบบ');
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div>
+        <label
+          htmlFor="email"
+          className="block text-sm font-medium text-gray-700"
+        >
+          อีเมล
+        </label>
+        <input
+          id="email"
+          type="email"
+          onChange={(e) => setEmail(e.target.value)}
+          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+          required
+        />
+      </div>
+      <div>
+        <label
+          htmlFor="password"
+          className="block text-sm font-medium text-gray-700"
+        >
+          รหัสผ่าน
+        </label>
+        <input
+          id="password"
+          type="password"
+          onChange={(e) => setPassword(e.target.value)}
+          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+          required
+        />
+      </div>
+      {error && <p className="text-red-500 text-sm">{error}</p>}
+      <button
+        type="submit"
+        className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+      >
+        เข้าสู่ระบบ
+      </button>
+    </form>
+  );
+}
+```
+
+เมื่อผู้ใช้กรอกข้อมูลและกดปุ่ม "เข้าสู่ระบบ" ฟังก์ชัน `signIn` จะถูกเรียกใช้งาน โดยระบุ `provider` เป็น `'credentials'` ซึ่งเราจะต้องไปตั้งค่าต่อในส่วนของ NextAuth.js
+
+## **การตั้งค่า API และการจัดการ Token ด้วย NextAuth.js**
+
+NextAuth.js จะช่วยลดความซับซ้อนในการจัดการ Session และ Token โดยอัตโนมัติ
+**ติดตั้ง `next-auth`**:
+
+```bash
+npm install next-auth
+```
+
+**สร้างไฟล์ `app/api/auth/[...nextauth]/route.ts`**:
+
+```tsx
+import NextAuth from 'next-auth';
+import { authOptions } from '@/lib/auth';
+
+const handler = NextAuth(authOptions);
+
+export { handler as GET, handler as POST };
+```
+
+**สร้างไฟล์ `lib/auth.ts` สำหรับตั้งค่า**:
+
+```tsx
+import { NextAuthOptions } from 'next-auth';
+import CredentialsProvider from 'next-auth/providers/credentials';
+import bcrypt from 'bcryptjs';
+import { PrismaClient } from '@prisma/client'; // ตัวอย่างการใช้ Prisma
+
+const prisma = new PrismaClient();
+
+export const authOptions: NextAuthOptions = {
+  providers: [
+    CredentialsProvider({
+      name: 'credentials',
+      credentials: {
+        email: { label: 'Email', type: 'text' },
+        password: { label: 'Password', type: 'password' },
+      },
+      async authorize(credentials) {
+        if (!credentials?.email || !credentials?.password) {
+          throw new Error('กรุณากรอกอีเมลและรหัสผ่าน');
+        }
+
+        const user = await prisma.user.findUnique({
+          where: { email: credentials.email },
+        });
+
+        if (!user || !user.hashedPassword) {
+          throw new Error('ไม่พบผู้ใช้งานนี้');
+        }
+
+        const isPasswordCorrect = await bcrypt.compare(
+          credentials.password,
+          user.hashedPassword
+        );
+
+        if (!isPasswordCorrect) {
+          throw new Error('รหัสผ่านไม่ถูกต้อง');
+        }
+
+        return user;
+      },
+    }),
+  ],
+  session: {
+    strategy: 'jwt',
+  },
+  callbacks: {
+    async jwt({ token, user }) {
+      if (user) {
+        token.id = user.id;
+      }
+      return token;
+    },
+    async session({ session, token }) {
+      if (session.user) {
+        session.user.id = token.id as string;
+      }
+      return session;
+    },
+  },
+  pages: {
+    signIn: '/login',
+  },
+  secret: process.env.NEXTAUTH_SECRET,
+};
+```
+
+**คำอธิบายโค้ด `lib/auth.ts`:**
+
+- `CredentialsProvider`: ใช้สำหรับยืนยันตัวตนด้วยอีเมลและรหัสผ่าน
+- `authorize`: ฟังก์ชันที่จะถูกเรียกเมื่อมีการ `signIn` เข้ามา โดยจะทำการตรวจสอบข้อมูลกับฐานข้อมูล (ในตัวอย่างนี้ใช้ Prisma)
+- `session: { strategy: 'jwt' }`: กำหนดให้ NextAuth.js ใช้ JSON Web Tokens (JWT) ในการจัดการ Session
+- `callbacks`:
+    - `jwt`: เมื่อมีการสร้างหรืออัปเดต JWT เราสามารถเพิ่มข้อมูลของผู้ใช้ (เช่น `user.id`) เข้าไปใน Token ได้
+    - `session`: เมื่อมีการเรียกดู Session เราสามารถนำข้อมูลจาก Token มาใส่ใน `session.user` เพื่อให้สามารถนำไปใช้ในฝั่ง Client ได้
+- `secret`: คือค่าลับที่ใช้ในการเข้ารหัส JWT ควรเก็บไว้ใน Environment Variables (`.env.local`)
+
+## **การนำ Token ไปใช้ในการส่ง API ครั้งถัดไป**
+
+หลังจากที่ผู้ใช้เข้าสู่ระบบสำเร็จ NextAuth.js จะจัดเก็บ Token ไว้ใน Cookie ที่เป็น `httpOnly` ซึ่งหมายความว่า JavaScript ฝั่ง Client จะไม่สามารถเข้าถึงได้โดยตรงเพื่อความปลอดภัย
+
+เมื่อเราต้องการเรียก API ที่ต้องมีการยืนยันตัวตน เราสามารถทำได้จาก Server Component หรือ API Route โดยใช้ `getServerSession` จาก `next-auth`
+
+**ตัวอย่างการดึงข้อมูลผู้ใช้ใน Server Component:**
+
+```tsx
+// app/dashboard/page.tsx
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
+
+export default async function DashboardPage() {
+  const session = await getServerSession(authOptions);
+
+  if (!session) {
+    // จัดการกรณีที่ยังไม่ได้ login
+    return <p>กรุณาเข้าสู่ระบบ</p>;
+  }
+
+  // เราสามารถใช้ session.user.id ในการ query ข้อมูลจากฐานข้อมูล
+  // หรือส่งต่อไปยัง API อื่นๆ ได้
+  return (
+    <div>
+      <h1>ยินดีต้อนรับ, {session.user?.name}</h1>
+      <p>ID ของคุณคือ: {session.user?.id}</p>
+    </div>
+  );
+}
+```
+
+ในกรณีที่ต้องการเรียก API จากฝั่ง Client (เช่น การใช้ `useEffect` ใน Client Component) เราสามารถใช้ `useSession` hook เพื่อเข้าถึงข้อมูล Session ปัจจุบันได้
+
+```tsx
+'use client';
+
+import { useSession } from 'next-auth/react';
+import { useEffect, useState } from 'react';
+
+export default function Profile() {
+  const { data: session, status } = useSession();
+  const [data, setData] = useState(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      if (status === 'authenticated') {
+        const res = await fetch('/api/protected-data'); // NextAuth จะแนบ token ไปกับ request นี้โดยอัตโนมัติ
+        const result = await res.json();
+        setData(result);
+      }
+    };
+
+    fetchData();
+  }, [status]);
+
+  if (status === 'loading') {
+    return <p>กำลังโหลด...</p>;
+  }
+
+  if (status === 'unauthenticated') {
+    return <p>กรุณาเข้าสู่ระบบเพื่อดูข้อมูล</p>;
+  }
+
+  return <div>{/* แสดงผลข้อมูลที่ได้รับ */}</div>;
+}
+```
+
+เมื่อมีการเรียก `fetch` ไปยัง API Route ภายในโปรเจกต์ Next.js (เช่น `/api/protected-data`) NextAuth.js จะทำการตรวจสอบ Token ที่อยู่ใน Cookie และแนบข้อมูล Session ไปกับ Request โดยอัตโนมัติ ทำให้เราสามารถมั่นใจได้ว่าผู้ที่เรียก API นี้คือผู้ใช้ที่ผ่านการยืนยันตัวตนแล้ว

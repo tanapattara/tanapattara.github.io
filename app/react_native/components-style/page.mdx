@@ -1,0 +1,108 @@
+---
+title: "Components and Style with Expo"
+sidebarTitle: "Components and Style with Expo"
+---
+
+# Components and Style with Expo
+
+เราได้ทำการสร้างแอพ โดยสร้างหน้าแรกพร้อมกับใช้งาน expo-route เพื่อเปลี่ยนตำแหน่งไฟล์และเพิ่มโครงสร้างแอพใหม่
+
+ในหน้า `index.jsx` เราได้ทำการเรียกใช้ component ของ react-native คือ `text` และ `view` ซึ่งแสดงให้เราเห็นเป็นข้อความไปแล้ว
+
+เราจะทำการเพิ่ม component ใหม่ชื่อ `StyleSheet` เพื่อทำการใส่สไตล์แบบเดียวกับการใส่ `css` เข้าไปที่หน้าเว็บ react แบบเดียวกัน
+
+```jsx
+import { StyleSheet, Text, View } from "react-native";
+
+const Home = () => {
+  return (
+    <View>
+      <Text>Tanapattara Wongkhamchan</Text>
+      <Text>Computer and Information Science</Text>
+      <Text>Khon Kaen University</Text>
+    </View>
+  );
+}; 
+
+const styles = StyleSheet.create({ });
+
+ export default Home;
+```
+
+ปรับเปลี่ยนเนื่อหาเล็กน้อย โดยใส่ชื่อและรายละเอียดของเราลงไป
+
+ที่ตัวแปร styles เราสร้างวัตถุจาก StyleSheet ขึ้นมา ตอนนี้ยังเป็นวัตถุเปล่าอยู่ `{ }` เราจะทำการเพิ่มวัตถุเข้าไป โดยทำเหมือนกับการใส่ css เข้าไปในเว็บ ใช้คีย์แบบเดียวกัน
+
+```jsx
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,  
+    backgroundColor: "#fff",  
+    alignItems: "center",  
+    justifyContent: "center",  
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: "bold",
+    marginBottom: 10,
+  },
+  subtitle: {
+    fontSize: 16,
+    color: "#666",
+  },
+  text: {
+    fontSize: 18,
+    color: "#333",
+  },
+});
+```
+
+แต่ละพร้อพเพอตี้ของวัตถุที่เราสร้างขึ้น เราจะนำไปใช้สำหรับคอมโพเนนท์แต่ละตัว
+
+```jsx
+const Home = () => {
+  return (
+    <View style={styles.container}>
+      <Text style={styles.title}>Tanapattara Wongkhamchan</Text>
+      <Text style={styles.subtitle}>Computer and Information Science</Text>
+      <Text style={styles.text}>Khon Kaen University</Text>
+    </View>
+  );
+};
+```
+
+เราสามารถแทรก style เข้าไปที่คอมโพเนนท์ได้โดยตรง โดยทำการเปลี่ยนเป็นอาร์เรยและเพิ่มวัตถุเข้าไป เช่น
+
+```jsx
+<Text style={[styles.text, { marginTop: 10 }]}>Khon Kaen University</Text>
+```
+
+หรือหากจะใส่ style เข้าไปโดยตรง โดยเราจะทำเป็นวัตถุ
+
+```jsx
+<Text style={{fontSize: 16}}>Computer and Information Science</Text>
+```
+
+## Image
+
+ทำการเพิ่มคอมโพเนนท์ใหม่ `Image` แล้วทำการเพิ่มลงไปภายในวิว
+
+```jsx
+import { StyleSheet, Text, View, Image } from "react-native";
+
+const Home = () => {
+  return (
+    <View style={styles.container}>
+      <Image
+        source={require("../assets/images/profile.png")}
+        style={styles.profile}
+      />
+      <Text style={styles.title}>Tanapattara Wongkhamchan</Text>
+      <Text style={styles.subtitle}>Computer and Information Science</Text>
+      <Text style={[styles.text, { marginTop: 10 }]}>Khon Kaen University</Text>
+    </View>
+  );
+};
+```
+
+ปรับแต่ง style ให้เรียบร้อย

@@ -1,0 +1,84 @@
+---
+title: "Display and Update UI"
+sidebarTitle: "Display and Update UI"
+---
+
+# Display and Update UI
+
+เราจะสร้างส่วนติดต่อผู้ใช้ สำหรับแสดงข้อมูลคะแนนของผู้เล่น เริ่มจากเพิ่มวัตถุใหม่ เข้าไปยังโปรเจค คลิ๊กขวาเลือก Canvas เป็นการสร้างวัตถุเพื่อนำเอา UI ที่เราจะสร้างขึ้นใส่ลงไป
+
+เราจะเห็นว่า Canvas ที่สร้างขึ้นมา จะมีขนาดใหญ่กว่าฉากมาก ใหม่เราไปที่ Canvas เพื่อทำการปรับขนาดก่อน โดยไปที่ Inspector → Canvas → Render Mode → Screen Space - Camera แล้วนำเอา Main camera ของเรามาใส่ลงไป
+
+ต่อไปสร้างวัตถุใหม่ขึ้นมาใน Canvas โดยเลือก UI → Image แล้วทำการเปลี่ยนชื่อใหม่เป็น Gem นำภาพ Gem มาใส่ลงไป
+
+ให้เราเลื่อนรูปเพชรของเรามาที่มุมที่เราต้องการ เช่น ซ้ายบน ทดสอบการแสดงผลโดยเริ่มเกม
+
+![image.png](/images/classroom/unity2d/display-update-ui/image.png)
+
+เมื่อเราสั่งให้ตัวละครเดิน เราจะเห็นว่าเพชรของเราเคลื่อนไหวไปตามกล้องของเรา การทำงานของ UI อาจจะมีปัญหาที่เกิดขึ้นได้ สองกรณี
+
+- ปัญหาการแสดงผลของเพชรถูกบัง เนื่องจากส่วน UI ถูกจัดให้อยู่ใน Layer โดยปรกติ และเราได้ทำการสร้างฉากของเราให้อยู่ใน Layer Ground ให้เราทำการปรับ Layer Default ให้มาอยู่ด้านบนสุด หรือปรับให้ Ground อยู่ด้านล่างของ Layer UI
+
+![image.png](/images/classroom/unity2d/display-update-ui/image-1.png)
+
+- ปัญหาการแสดงผลจากการปรับหน้าจอ หากเราลองเล่นเกมและลองปรับขนาดหน้าจอขนาดต่าง ๆ จะเห็นว่า UI ของเรา ยังอยู่ตำแหน่งเดิม หากแสดงผลที่หน้าจอกว้างกว่าเดิม UI ก็จะไม่ปรับไปตามขนาดของหน้าจอ เป็นเพราะ การกำหนดมุมของ UI ได้มีการกำหนดให้ยึดมุมหรือมุม Anchor point ที่จุดศูนย์กลางเป็นค่าเริ่มต้น ให้เราเลือกที่วัตถุเพชร แล้วทำการเปลี่ยน Rect Transform แต่เดิม เป็น center center ให้เเป็น Top Left เพื่อจะให้ UI ของเรายึดมุมซ้ายบนเป็นหลัก
+
+![image.png](/images/classroom/unity2d/display-update-ui/image-2.png)
+
+ที่วัตถุ Gem ให้สร้างวัตถุใหม่ชนิด UI → Text โดยวัตถุนี้จะต้องเป็นวัตถุลูก คืออยู่ภายในวัตถุ Gem
+
+ที่ Text เปลี่ยนชื่อวัตถุเป็น `NumberOfGem` แล้วทำการเปลี่ยนมุม Anchor point เป็น กลาง ขวา เพื่อให้ยึดกับเพชรซึ่งเป็นวัตถุพ่อแม่ ทำการเปลี่ยนและปรับขนาดฟอนต์ตามต้องการ
+
+![image.png](/images/classroom/unity2d/display-update-ui/image-3.png)
+
+สร้างไฟล์ใหม่ชื่อ `PlayCollectibles.cs` 
+
+- สร้างตัวแปร `textComponent` สำหรับแทน UI Text ที่เราสร้างขึ้น
+- สร้างตัวแปร `gemNumber` ให้เก็บค่าคะแนนของผู้เล่น
+- ทำการสร้างเมธอท `UpdateText()` เพื่อนำค่ามาแสดงผล
+
+```csharp
+
+using UnityEngine.UI;
+
+public class PlayCollectibles : MonoBehaviour
+{
+    public Text textComponent;
+    public int gemNumber = 0;
+     void Start()
+    {
+        UpdateText();
+    }
+
+    private void UpdateText() 
+    {
+        textComponent.text = gemNumber.ToString();
+    }
+}
+```
+
+ในกรณีที่ตัวละครได้ทำการเก็บเพชรแล้ว เราจะต้องมีการเรียกใช้งานฟังก์ชั่นเพื่อให้มีการเพิ่มค่าให้กับ `gemNumber` ดังนั้นเราจะสร้างฟังก์ชั่นขึ้นมาเพื่อให้สามารถเรียกใช้งานได้จากคลาสอื่น
+
+```csharp
+    public void GemCollected() 
+    { 
+        gemNumber++;
+        UpdateText();
+    }
+```
+
+ไปที่ไฟล์ `Gem.cs` เมื่อตรวจสอบการชนกันของตัวละครกับวัตถุ ตามเงื่อนไข เราก็จะมีการเรียกใช้ฟังก์ชั่น `GemCollected()` พร้อม ๆ กับการเล่นเสียงและลบไอเท็มออกจากฉาก
+
+```csharp
+ private void OnTriggerEnter2D(Collider2D collision)
+ { 
+     if(collision.CompareTag("Player"))
+     {
+         collision.GetComponent<PlayCollectibles>().GemCollected();
+
+         GetComponent<AudioSource>().Play();
+         GetComponent<SpriteRenderer>().enabled = false;
+         GetComponent<Collider2D>().enabled = false; 
+     }
+ }
+```

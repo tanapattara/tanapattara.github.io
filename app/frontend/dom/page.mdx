@@ -1,0 +1,42 @@
+---
+title: "DOM"
+sidebarTitle: "DOM"
+---
+
+# DOM
+
+DOM หรือ Document Object Model คือโครงสร้างแบบ tree ที่แสดงถึงองค์ประกอบต่างๆ ของเว็บเพจ (HTML elements, text, comments) ซึ่ง JavaScript สามารถเข้าถึงและจัดการได้ เพื่อเปลี่ยนแปลงเนื้อหา, โครงสร้าง, หรือรูปแบบของเว็บเพจแบบไดนามิก
+
+```html
+<!DOCTYPE html>
+<html>
+  <body>
+    <h1>Hello World!</h1>
+    <p id="demo">This is a paragraph.</p>
+    <script>
+      const para = document.getElementById("demo");
+      para.innerHTML = "Hello from JavaScript!";
+    </script>
+  </body>
+</html>
+```
+
+ในตัวอย่างนี้: 
+
+- `document.getElementById("demo")` คือการเข้าถึง element ที่มี id="demo" (ซึ่งก็คือ `<p>`) เก็บอิลิเม้นที่กำหนดลงตัวแปรที่ชื่อว่า para
+- `para.innerHTML = "Hello from JavaScript!";` คือการเปลี่ยนแปลงเนื้อหาภายใน element นั้น โดยการเปลี่ยนข้อความข้างในเป็นคำที่กำหนด
+- ผลลัพธ์ที่ได้ เมื่อทีการทำงานของสคริปต์ JS ก็จะแสดงของความ `Hello from JavaScript!”` แทน
+
+คำสั่งอื่น ๆ ที่นิยมใช้บ่อย ๆ 
+
+- `document.getElementById(id)`: เลือก element ตาม id
+- `document.getElementsByTagName(name)`: เลือก elements ตาม tag name
+- `document.querySelector(selector)`: เลือก element แรกที่ตรงกับ CSS selector
+- `document.querySelectorAll(selector)`: เลือก elements ทั้งหมดที่ตรงกับ CSS selector
+- `element.innerHTML`: เข้าถึง/เปลี่ยนแปลงเนื้อหา HTML ภายใน element
+- `element.style`: เข้าถึง/เปลี่ยนแปลง CSS styles ของ element
+- `element.setAttribute(name, value)`: กำหนด attribute ให้ element
+- `element.getAttribute(name)`: อ่านค่า attribute ของ element
+- `element.appendChild(child)`: เพิ่ม child node ใน element
+- `element.removeChild(child)`: ลบ child node ออกจาก element
+- `element.addEventListener(event, function)`: เพิ่ม event listener ให้ element

@@ -1,0 +1,487 @@
+---
+title: "Player Animation and Controls"
+sidebarTitle: "Player Animation and Controls"
+---
+
+# Player Animation and Controls
+
+นำตัวละครที่เตรียมไว้มาเข้าสู่ฉากของเรา โดย Sprite ที่เตรียมไว้ ให้ทำการแบ่งให้เรียบร้อย เหมือนขั้นตอนที่แล้วหลังจากให้ให้นำเข้าสู่ฉาก
+
+เมื่อเลือกที่วัตถุตัวละคร ให้เราทำการเพิ่ม Layer ใหม่เข้าไป ชื่อว่า Player โดยกำหนดให้อยู่บนสูด เพื่อจะได้ไม่โดนเลเยอร์อื่นบัง
+
+> **หมายเหตุ**
+> 💡 sorting layer เป็นการแบ่งระดับการแสดงผล โดยเลเยอร์ที่อยู่ล่างสุดจะอยู่บนสุดเลเยอร์อื่น ๆ
+>
+
+## เพิ่ม Collider
+
+เลือกที่ตัวละครของเรา ให้เราทำการใส่ Rigidbody 2D และเพิ่ม Collider 2D เข้าไปให้กับวัตถุ โดย Collider จะใช้เป็น Capsule Collider 2D เพื่อแก้ปัญหาการชนกันของ Collider กรณีที่มีมุมของ Pixel ที่มองไม่เห็น และให้ปรับขนาดของ Collider ตัวละครของเรา
+
+ที่ Rigibody 2d ให้ทำการปรับ Constraints โดยกำหนด Freeze Rotation
+
+![Untitled](/images/classroom/unity2d/player-animation-controls/untitled.png)
+
+ทดสอบเกมของเรา โดยตัวละครของเราจะต้องตกลงมายืนอยู่บนพื้นของเราได้ เนื่องจาก Rigibody ที่เราได้สร้างขึ้นทั้ง `Ground` และ `Player`
+
+## Input System
+
+ที่ Unity เปิด Package Manager และทำการติดตั้ง Input System 
+
+สร้างไฟล์ใหม่ ที่ Assets โดยทำการคลิ๊กขวา เลือก Create→ Input Actions ตั้งชื่อว่า Controls
+
+กดเปิดไฟล์ทีสร้างขึ้น โปรแกรมจะเปิดหน้าต่างใหม่ให้เรา ลักษณะเป็นสามคอลัมน์
+
+- Action Maps สำหรับกำหนดว่า อะไรจะใช้ Controles
+- Action
+- Properties
+
+ที่ Action สร้าง Action ใหม่ โดยกดปุ่ม + แล้วตั้งชื่อว่า Player จะปรากฏ Actions ใหม่ขึ้นมาที่หน้าคอลัมน์ Actions ตั้งชื่อว่า Jump
+
+ที่ด้านล่างของ Actions กดเลือกเพื่อทำการ Binding หรือการผูกคำสั่งนี้กับปุ่มที่เราต้องการ กดเลือก  Binding Path ให้เป็น Space และ ปุ่มเครื่องหมาย ขึ้น
+
+สร้าง Actions ใหม่ชื่อ Move กำหนด Action Type เป็น Value และ Control Type เป็น Any
+
+- ทำการเพิ่ม Negative/Positive Binding ให้กับ  Move ตั้งชื่อว่า LeftRight
+- ที่ด้านล่างของ Move จะมี Negative และ Positive ทำการ Binding คีย์ของปุ่ม โดย Negative เป็นปุ่ม `A` และ Positive เป็นปุ่ม `D`
+
+บันทึกการตั้งค่าที่ด้านบน `Save Asset`
+
+![Untitled](/images/classroom/unity2d/player-animation-controls/untitled-1.png)
+
+กดเลือกไฟล์ Controls ที่ได้สร้างขึ้น ที่หน้าต่าง Inspector กดเลือก `Generate C# Class` และกด `Apply` Unity จะสร้างไฟล์ Script ให้กับเราตามที่เราได้กำหนดไว้ใน Input Controls
+
+> **หมายเหตุ**
+> 💡 หากเรามีการแก้ไข Controls ใหม่ เช่นเพิ่มคำสั่ง หรือเพิ่มปุ่ม เราแค่กดบันทึก Unity จะทำการอัพเดทไฟล์ให้เราอัตโนมัติ
+>
+
+เลือกวัตถุ Player และทำการเพิ่ม Components → Player Input เมื่อเพิ่มแล้วที่หน้าต่าง Inspector ทำการลากไฟล์ `Controls` มาที่ช่อง Action
+
+ที่วัตถุ Player ทำการเพิ่ม Components → Gather Input (Script) และทำการสร้างสคริปใหม่ชื่อ `GatherInput.cs` สำหรับการรับข้อมูล Input จากผู้ใช้งาน แล้วทำการลากไฟล์ที่สร้างขึ้น มาที่ช่อง Script ของ (Gather Input Script) ที่สร้างขึ้น
+
+ไฟล์ `GatherInput.cs` สร้างขึ้นมาสำหรับกำหนดการรับข้อมูลจาก Input ผู้ใช้ โดยทำการผูกเหตุการณ์ต่าง ๆ และกำหนดฟังก์ชั่นในการรับคำสั่ง
+
+```csharp
+using UnityEngine.InputSystem;
+
+public class GatherInput : MonoBehaviour
+{
+    private Controls myControl;
+    public float valueX;
+
+    public void Awake()
+    {
+        myControl = new Controls();
+    }
+    private void OnEnable()
+    {
+        myControl.Player.Move.performed += StartMove;
+        myControl.Player.Move.canceled += StopMove;
+        myControl.Player.Enable();
+    }
+    private void OnDisable()
+    {
+        myControl.Player.Move.performed -= StartMove;
+        myControl.Player.Move.canceled -= StopMove;
+        myControl.Player.Disable();
+        //myControl.Disable();
+    }
+    private void StartMove(InputAction.CallbackContext ctx) {
+        valueX = ctx.ReadValue<float>();
+    }
+    private void StopMove(InputAction.CallbackContext ctx) {
+        valueX = 0;
+    }
+}
+```
+
+- เมื่อมีการรับข้อมูลจากผู็ใช้งาน คำสั่ง `OnEnable()` จะทำการเรียกใช้งานและกำหนดเหตุการณ์ที่เกิดขึ้น
+    - `performed` เมื่อผู้ใช้มีการกดปุ่ม
+    - `canceled` เมื่อผู้ใช้ปล่อยปุ่ม
+    
+    โดยจะทำการผู้เหตุการณ์ที่ที่เกิดขึ้นทั้งสอง ไว้กับฟังก์ชั่นตามที่กำหนด
+    
+- `OnDisable()` เมื่อหยุดการรับคำสั่งจาก Input ก็จะเรียกใช้งาน ตามคำสั่งก็จะทำการลบเหตุการณ์ที่เราได้ผูกไว้ออก ทำให้เมื่อผู้ใช้ไม่กดปุ่มใด ๆ ตัวละครก็จะหยุดการเคลื่อนไหว เนื่องจากได้มีการนำเหตุการณ์ออกไปแล้ว
+- `StartMove()` และ `StopMove()` เป็นการกำหนดค่าการเคลื่อนที่ในแกน X เมื่อเกิดเหตุการณ์ในการเครื่อนที่
+
+สร้างไฟล์ Script ใหม่ชื่อ `PlayerMoveControls.cs` และทำการเพิ่ม Components → Player Move Control (Script) ใหม่ให้กับวัตถุ Player
+
+ไฟล์`PlayerMoveControls.cs`  สำหรับใช้ทำการกำหนดการเคลื่อนไหวตัวละคร โดยทำการรับค่าจากไฟล์ `GatherInput.cs`
+
+```csharp
+public class PlayerMoveControls : MonoBehaviour
+{
+    public float speed = 5f;
+    private GatherInput gatherInput;
+    private Rigidbody2D rigidbody2D;
+    // Start is called before the first frame update
+    void Start()
+    {
+        gatherInput = GetComponent<GatherInput>();
+        rigidbody2D = GetComponent<Rigidbody2D>();
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+        rigidbody2D.velocity = new Vector2(speed * gatherInput.valueX, rigidbody2D.velocity.y);
+    }
+
+```
+
+## การเปลี่ยนทิศทางของตัวละคร
+
+ตอนนี้ตัวละครของเราสามารถเคลื่อนที่ไปทางซ้ายและขวาได้แล้ว แต่ตัวละครของเรายังคงหันไปด้านขวามือของเราอยู่ตลอดเวลา เราต้องการให้ตัวละครหันไปยังทิศทางที่ตัวละครเคลื่อนที่ ทำให้เราต้องมีการปรับเปลี่ยนการทำงานของโปรแกรมของเรา
+
+ที่ไฟล์ `PlayerMoveControls.cs`
+
+```csharp
+public class PlayerMoveControls : MonoBehaviour
+{
+		//...
+    private int direction = 1; // to right-hand side
+    //...
+    void FixedUpdate()
+    {
+        Flip();
+        rigidbody2D.velocity = new Vector2(speed * gatherInput.valueX, rigidbody2D.velocity.y);
+    }
+    private void Flip() 
+    { 
+        if(gatherInput.valueX * direction < 0) 
+        {
+            transform.localScale = new Vector3(-transform.localScale.x, 1, 1);
+            direction *= -1;
+        }
+    }
+}
+```
+
+- กำหนดตัวแปรที่ชื่อ `direction` โดยเราจะกำหนดให้ค่าที่เป็น + หมายถึงตัวละครหันไปทางขวามือของเรา นั่นคือภาพปรกติของ Sprite ของตัวละคร ในทางตรงกันข้าม ถ้าค่าเป็นลบ ตัวละครก็จะหันไปทิศทางตรงกันข้าม
+- สร้างฟังก์ชั่นใหม่ชื่อ `Flip()` โดยฟังก์ชั่นนี้จะมีการตรวจสอบค่าที่ได้รับจากผู้ใช้งาน รวมกับทิศทางที่เรากำหนดไว้ในตัวแปรว่ามีค่าน้อยกว่า 0 หรือเป็นลบหรือไม่ ถ้าหากเข้าเงื่อนไข ก็จะมีการเปลี่ยนค่าของวัตถุตัวละคร โดยการเปลี่ยนขนาดของตัวละครโดยใช้คำสั่ง `localScale` เปลี่ยนเฉพาะแกน X ให้มีค่าเป็นลบ ก็จะเป็นการสลับด้านของตัวละครไปอีกทิศทางหนึ่ง
+- ทำการเรียกใช้ผ่านฟังก์ชั่น `Update()` จากที่เราทราบแล้วว่า ฟังก์ชั่นนี้จะมีการเรียกใช้ทุกครั้งในทุก ๆ แฟรมที่มีการสร้างขึ้นในขณะที่เกมกำลังทำงาน
+
+เราจะปรับเปลี่ยนการทำงานของฟังก์ชั่นภายในของโปรแกรมโดยทำการสร้างฟังก์ชั่น `Move()` ขึ้นมา เพื่อให้ง่ายต่อการเรียกใช้และจัดการ
+
+```csharp
+public class PlayerMoveControls : MonoBehaviour
+{
+		//...
+    private int direction = 1; // to right-hand side
+    //...
+    private void FixedUpdate()
+    {
+        Move();
+    }    
+    private void Move() 
+    {
+        Flip();
+        rigidbody2D.velocity = new Vector2(speed * gatherInput.valueX, rigidbody2D.velocity.y);
+    }
+    private void Flip() 
+    { 
+        if(gatherInput.valueX * direction < 0) 
+        {
+            transform.localScale = new Vector3(-transform.localScale.x, 1, 1);
+            direction *= -1;
+        }
+    }
+}
+```
+
+## ภาพเคลื่อนไหวของตัวละคร
+
+ไปที่เมนู Window → Animation → Animation เพื่อเปิดหน้าต่าง Animation ขึ้นมา หลังจากนั้นเลือกวัตถุของตัวละครของเรา แล้วเลือก Create ในหน้าต่าง Animation 
+
+สร้างโฟลเดอร์ใหม่ตั้งชื่อว่า Animation หลังจากนั้นสร้างไฟล์ที่ชื่อ idle เอาไว้ในโฟรเดอร์ที่พึ่งสร้างขึ้นใหม่
+
+ที่วัตถุ Player จะมีคอมโพเนนท์ใหม่ที่หน้าต่าง Inspector ชื่อว่า Animator ให้เลือกที่ Controller เราจะเห็นว่าโปรแกรม Unity จะมี idle ที่เราสร้างขึ้นและ Player ให้เรา แสดงที่หน้าต่าง Project
+
+ให้เราเลือกวัตถุ Player แล้วทำการลาก Sprite ที่เราได้เตรียมไว้ ลากขึ้นไปที่หน้าต่าง Animator จะทำให้เราทำการใส่แอนิเมชั่นให้กับวัตถุ Player เมื่อเราลากไปใส่ เราจะได้ Sprite ต่อหนึ่งคีย์แฟรม
+
+> **หมายเหตุ**
+> 💡 ที่หน้าต่าง Animation จะมีปุ่ม Play สำหรับแสดงผลการทำงานของแอนิเมชั่นแยกต่างหาก
+>
+
+ในตอนนี้การแสดงผลต่าแฟรมยังเร็วเกินไป ให้เราขยายการแสดงผลแต่ละคีย์แฟรมออก โดยการลากขยายช่วง TimeLine ออกไป โดยให้เราทดสอบและกำหนดตามความเหมาะสม
+
+![Untitled](/images/classroom/unity2d/player-animation-controls/untitled-2.png)
+
+เมื่อทดสอบจะเห็นว่าตัวละครของเราขยับตัวตามเอนิเมชั่นที่เราใส่เข้าไป เมื่อเรากดให้ตัวละครเราเดิน ก็ยังคงแสดงเอนิเมชั่นอยู่ เราต้องปรับการแสดงเอนิเมชั่นให้เข้ากับการเคลื่อนที่ เมื่อตัวละครเราเดิน เราก็จะใช้เอนิเมชั่นเดิน
+
+ให้เราสร้างคลิปใหม่ ที่หน้าต่าง Animation ด้านล่างของปุ่มควบคุมการแสดงผลของ Key Frame หรือปุ่มเล่นเอนิเมชั่น จะมีดรอปดาว์นอยู่ให้เราเลือก Create New Clip และตั้งชื่อใหม่ว่า Move และนำ Sprite Move มาใส่ใน Key Frame พร้อมทั้งปรับความเร็วของการแสดงเอนิเมชั่นให้เรียบร้อย
+
+## Animation Transition
+
+ในการเปลี่ยนเอนิเมชั่น จากการยืน ไปเป็นการเดินของตัวละครนั่น เราจะใช้เครื่องมือในเมนู Window → Animation → Animator
+
+![Untitled](/images/classroom/unity2d/player-animation-controls/untitled-3.png)
+
+เลือกวัตถุ Player เราจะพอ Animator ตามที่เราได้สร้างขึ้น นั่นคือ idle และ move idle แสดงเป็นสีส้ม หมายถึง เป็น Default ของการแสดงเอนิเมชั่น
+
+ให้เราทำการคลิ๊กขวาที่ idle แล้วเลือก Make Transition แล้วทำการคลิ๊กซ้ายที่ move จะเกิดลูกศรจาก idle มายัง move
+
+หลังจากนั้นให้สร้าง Transition จาก move กลับไปที่ idle ด้วยเช่นกัน
+
+![Untitled](/images/classroom/unity2d/player-animation-controls/untitled-4.png)
+
+คลิ๊กเลือกเส้นจาก idle มายัง move ที่หน้าต่าง Inspector ให้ทำการปรับรายละเอียดดังนี้
+
+- Has Exit Transition → false เป็นการกำหนดระยะเวลาที่จะเปลี่ยนจากเอนิเมชั่นหนึ่ง ไปยังอีกเอนิเมชั่นหนึ่ง แต่ในกรณีนี้ จาก idle ไปเป็น move เรากำหนดให้เปลี่ยนทันที ดังนั้นกำหนดให้เป็น False
+- Settings → Transition Duration → 0 การกำหนดเวลาการเปลี่ยน โดยปรกติเราจะใช้กำหนดการเปลี่ยนในรูปแบบ 3 มิติ ในตอนนี้เราจะให้เปลี่ยนเอนิเมชั่นทันที เราจึงกำหนดให้เป็น 0
+
+ที่หน้าต่าง Inspector ส่วนของ condition เราจะได้รับการแจ้งเตือนว่า เราจะต้องกำหนดเงื่อนไขอย่างน้อยหนึ่งอย่างให้กับการเปลี่ยนเอนิเมชั่น เราจึงต้องเพิ่มเงื่อนไขให้กับการเปลี่ยนเอนิเมชั่นนี้
+
+ด้านซ้ายของหน้าต่าง Animator ให้เลือก Parameters โดยสร้างพารามิเตอร์ใหม่ ให้เป็น Float ตั้งชื่อว่า `Speed`
+
+ให้เรากลับมาที่หน้าต่าง Inspector → Condition ให้กดปุ่ม + เพื่อสร้าง condition ใหม่ โปรแกรมจะสร้างเงื่อนไขที่ชื่อ `Speed` ให้เราอัตโนมัติ เนื่องจากเราได้สร้างเอาไว้แล้ว ให้กำหนดค่าของเงื่อนไขเป็น Greater 0.01
+
+ต่อไปเราจะเข้าไปปรับเส้นการเปลี่ยน Animation จาก move ไปยัง idle โดยกำหนดค่าเหมือนกัน คือ
+
+- Has Exit Time → false
+- Settings → Transition Duration → 0
+- Condition → speed → Lester → 0.01
+
+ต่อไปเราจะทำการแก้ไขไฟล์ `PlayerMoveControls`
+
+```csharp
+public class PlayerMoveControls : MonoBehaviour
+{
+		//...
+    private Animator animator;
+
+    // Start is called before the first frame update
+    void Start()
+    {
+	      //...
+        animator = GetComponent<Animator>();
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+        SetAnimatorValues();
+    }
+    //...
+    private void SetAnimatorValues() 
+    {
+        animator.SetFloat("Speed", Mathf.Abs(rigidbody2D.velocity.x));
+    }
+}
+```
+
+เราทำการสร้างตัวแปรชื่อ `animator` จากคลาส `Animator`
+
+หลังจากนั้นสร้างฟังก์ชั่น `SetAnimatorValues()` โดยการเรียกใช้ animator แล้วเพื่อกำหนดค่าของความเร็วที่ชื่อ `Speed` แล้วนำค่าที่ได้จากตำแหน่ง x ใส่ให้กับ `Speed`
+
+ทำไมเราต้องใส่ฟังก์ชั่น `Abs` ให้กับค่าของ `Speed`
+
+เพราะว่าเมื่อตัวละครเคลื่อนที่ ค่าของแกน x จะเปลี่ยน หากไปทางขวา ก็จะได้ค่าบวก แต่หากเคลื่อนมาทางซ้าย ก็จะได้ค่าลบ
+
+ทำให้หากเราไม่ใช้ค่าสัมบูรณ์โดยใช้ฟังก์ชั่น `Abs` ก็จะให้ค่าเป็นลบ และเนื่องจากเรากำหนดไว้ว่า หากค่า `Speed` มีค่าน้อยกว่า 0.01 ก็จะเปลี่ยนจากเอนิเมชั่น move → idle เพื่อป้องกันปัญหานี้ เราจึงต้องใช้ฟังก์ชั่นเพื่อทำให้เป็นค่าสัมบูรณ์
+
+## การกระโดด
+
+เนื่องจากเราได้มีการสร้างการรับการเคลื่อนไหวของการกระโดดเอาไว้แล้ว ดังนั้นเราก็จะทำการเพิ่มในส่วนของโปรแกรมเพื่อรับค่าและการเปลี่ยนแปลงตัวละครเพื่อทำการกระโดด
+
+ที่ไฟล `GatherInput`
+
+```csharp
+public class GatherInput : MonoBehaviour
+{
+		//...
+    public bool jumpInput;
+    
+    private void OnEnable()
+    {
+		    //...
+        myControl.Player.Jump.performed += JumpStart;
+        myControl.Player.Jump.canceled += JumpStop;
+
+        myControl.Player.Enable();
+    } 
+
+    private void OnDisable()
+    {
+		    //...
+        myControl.Player.Jump.performed -= JumpStart;
+        myControl.Player.Jump.canceled -= JumpStop;
+
+        myControl.Player.Disable();
+    }
+   
+    private void JumpStart(InputAction.CallbackContext ctx)
+    {
+        jumpInput = true;
+    }
+    private void JumpStop(InputAction.CallbackContext ctx)
+    {
+        jumpInput = false;
+    }
+}
+```
+
+- เราทำการสร้างตัวแปรชื่อ `jumpInput` เพื่อเป็นการตรวจสอบว่ามีการกดปุ่มเพื่อกระโดด เราก็จะทำการเปลี่ยนค่าของตัวแปรนี้ให้เป็น True หรือ False
+- สร้างฟังก์ชั่นชื่อ `JumbStart()` และ `JumpStop()` เพื่อทำการเปลี่ยนค่าตัวแปรที่เราสร้างขึ้น
+- ทำการผูกเหตุการณ์กับฟังก์ชั่นที่เราสร้างขึ้น เช่นเดียวกับการเคลื่อนที่
+
+เมื่อเราได้ฟังก์ชั่นการกำหนดสถานะของการกระโดดแล้ว เราก็จะเพิ่มคำสั่งให้ตัวละครของเราเปลี่ยนแปลงในแนวแกน Y เพื่อให้เหมือนตัวละครของเรากระโดด ที่ไฟล์ `PlayMoveControl`
+
+```csharp
+public class PlayerMoveControls : MonoBehaviour
+{
+		//...
+    public float jumpForce;
+    //...
+    private void FixedUpdate()
+    {
+        Move();
+        JumpPlayer();
+    }
+		//...
+    private void JumpPlayer() 
+    {
+        if (gatherInput.jumpInput)
+        {
+            rigidbody2D.velocity = new Vector2(gatherInput.valueX * speed, jumpForce);
+        }
+        gatherInput.jumpInput = false;
+    }
+}
+```
+
+- ทำการสร้างตัวแปร `jumpForce` เราจะใช้ตัวแปรนี้สำหรับกำหนดค่าระยะความสูงของการกระโดด
+- ทำการเพิ่มฟังก์ชั่น `JumpPlayer()` โดยทำการตรวจสอบตัวแปรจาก `gatherInput` ที่เราได้สร้างไปก่อนว่า ตอนนี้ตัวละครอยู่ในสถานะของการกระโดดหรือยัง
+- เมื่อตัวละครอยู่ในสถานะของการกระโดด เราก็จะเปลี่ยนตัวละครของเราในแกน Y เพื่อให้ตัวละครของเรากระโดดขึ้น
+- เมื่อมีการกระโดดเกิดขึ้น เปลี่ยนสถานะของ `jumpInput` ให้เป็น False เพื่อให้หยุดการกระโดด ไม่อย่างนั้นตัวละครของเราก็จะกระโดดขึ้นเรื่อย ๆ เนื่องจาก `jumpInput` ยังคงเป็น True
+
+ทดสอบการทำงานของฟังก์ชั่นกระโดด และเปลี่ยนแปลงค่าตามความเหมาะสม โดยเราสามารถเปลี่ยนแปลงค่าที่เรากำหนดขึ้นได้จากหน้าต่าง Inspector ของวัตถุตัวละครของเรา
+
+- JumpForce ระยะความสูงที่ตัวละครกระโดด
+- Rigibody2D → Gravity Scale ค่าของแรงโน้นถ่วงที่ทำกับตัวละคร ส่งผลต่อเวลาที่ตัวละครลอยอยู่กลางอากาศ
+
+## การตรวจสอบพื้น
+
+ให้เราตั้งค่าเลย์เยอร์ ให้กับวัตถุ โดยไปที่หน้าต่าง Inspector  → Layer → Add layer  ทำการสร้างเลเยอร์ใหม่ คือ
+
+- Player
+- Ground
+
+หลังจากนั้นเลือกวัตถุ แล้วทำการใส่เลเยอร์ให้กับ พื้น และตัวละครของเราตามที่ได้สร้างขึ้นใหม่
+
+หลังจากนั้นไปที่เมนู Edit → Project Settings → Physics 2D ทำการยกเลิกการเลือกที่เลเยอร์ Ground และ Player เป็นการกำหนดการชนกันระหว่างทั้งสองเลเยอร์ โดยที่ไม่มีเลย์เยอร์อื่นมาเกี่ยวข้อด้วย
+
+![Untitled](/images/classroom/unity2d/player-animation-controls/untitled-5.png)
+
+ให้สร้าง GameObject ขึ้นมาใหม่ ชื่อ LeftPoint ภายในวัตถุ Player แล้วทำการเลื่อนวัตถุที่สร้างขึ้นมาไว้ที่เท้าของตัวละคร
+
+![Untitled](/images/classroom/unity2d/player-animation-controls/untitled-6.png)
+
+ที่ไฟล์ `PlayerMoveControls` เพิ่มตัวแปรเข้าไปดังนี้
+
+```csharp
+    public float rayLength;
+    public LayerMask groundLayer;
+    public Transform leftPoint;
+    private bool grounded = false;
+```
+
+- rayLength เป็นระยะห่างระหว่างตัวละครและพื้น
+- groundLayer แทนวัตถุพื้นที่เราต้องการตรวจสอบ
+- leftPoint จุดที่เท้าของตัวละครที่เราสร้างขึ้นสำหรับจรวจกับการชนกันกับพื้นดิน
+- grounded ตัวแปรสำหรับกำหนดสถานะว่าตัวละครอยู่บนพื้นหรือไม่
+
+สร้างฟังก์ชั่นเพิ่มเติมสำหรับการตรวจสอบการชนกัน
+
+```csharp
+    private void FixedUpdate()
+    {
+        CheckStatus();
+        Move();
+        JumpPlayer();
+    }
+    private void JumpPlayer() 
+    {
+        if (gatherInput.jumpInput && grounded)
+        {
+            rigidbody2D.velocity = new Vector2(gatherInput.valueX * speed, jumpForce);
+        }
+        gatherInput.jumpInput = false;
+    } 
+    private void CheckStatus()
+    {
+     RaycastHit2D leftCheckHit = Physics2D.Raycast(leftPoint.position, Vector2.down, rayLength, groundLayer);
+     grounded = leftCheckHit;
+	  }
+```
+
+สร้างฟังก์ชั่น `CheckStatus()` สำหรับตรวจสอบการชนกัน โดยกำหนดวัตถุนั่นคือ `leftPoint` กับ `ground` โดยใช้คำสั่ง `Physics2D` เมื่อได้ค่าผลลัพท์นำไปเก็บไว้ที่ `grounded` 
+
+ปรับปรุงฟังก์ชั่น `FixedUpdate()` ให้ทำการเรียกใช้ `CheckStatus()` เพื่อให้สามารถตรวจสอบว่าตัวละครของเราอยู่บนพื้นทุกครั้ง
+
+สุดท้ายที่คำสั่ง `JumpPlayer()` กำหนดเงื่อนไขเพิ่มเติมเมื่อมีการกดปุ่มกระโดด และตัวละครอยู่บนพื้น เราจึงจะสามารถกระโดดได้
+
+ที่วัตถุ Player อย่าลืมลากวัตถุมาใส่ที่ LeftPoint และเลือก Ground Layer เพื่อให้ตัวแปรของเราเชื่อมต่อกับวัตถุ และกำหนดค่าและปรับปรุง Ground Layer เพื่อให้การตรวจหาระยะห่างระหว่างวัตถุสมบูรณ์
+
+> **หมายเหตุ**
+> ✏️ ให้ทำการสร้าง `RightPoint` ขึ้นมาเพื่อตรวจสอบอีกจุดควบคู่กับ `LeftPoint`
+>
+
+## Jump Animation
+
+เนื่องจากว่าแอนิเมชั่นในการกระโดดจะแตกต่างกันประกอบไปด้วยสาม Sprite คือกระโดดขึ้น กระโดดถึงจึดสูงสุด และตัวละครตกลงมา เราจะทำเอนิเมชั่นโดยระบุรายละเอียดดังกล่าว ให้เราเลือกวัตถุ Player และไปที่หน้าต่าง Animation ทำการสร้างแอนิเมชั่นใหม่ชื่อว่า Jump up, Jump peak และ Jump down
+
+ทำการลาก Sprite แต่ละอันมาที่ Animation แต่ละตัว
+
+ทำให้ที่หน้าต่าง Animator เราจะได้ สถานะทั้งสามสถานะตามที่เราตั้งขึ้น คือ Jump up, Jump peak และ Jump down ให้เราลบทั้งสามออก แล้วสร้างใหม่โดยทำการคลิ๊กขวา Create → New from Blend tree และตั้งชื่อว่า Jump
+
+เข้าไปแก้ไข Blend Tree โดยการกดดับเบิ้ลคลิ๊ก เราจะเห็นว่า Blend Tree ที่เราสร้างขึ้น จะมี Blend Type ที่หน้าต่าง Inspector มีค่าเป็น 1D หมายถึง 1 Dimension หมายเป็นการเปลี่ยนในทิศทางเดียว 
+
+ให้เราทำการเพิ่มตัวแปรใหม่ทางด้านซ้ายมือ ที่แต่เดิมเรามีตัวแปรที่ชื่อ Speed อยู่แล้ว เราจะทำการเพิ่ม `vSpeed` เป็นชนิด float
+
+ที่หน้าต่าง Inspector ทำการเปลี่ยน Parameter เป็นตัวแปรใหม่ vSpeed และทำการเพิ่ม motion ใหม่ด้วยคำสั่ง Add Motion field ทำการเพิ่มใหม่ทั้งหมด 3 ฟิล แล้วให้ลากไฟล Animation ที่เราสร้างขึ้นจากบนลงล่างคือ
+
+- Jump down
+- Jump peak
+- Jump up
+
+ยกเลิก Automatic Thresholds เพื่อให้เราสามารถกำหดน Thresholds แต่ละตัวได้ โดยเลือกดังนี้ 
+
+- Jump down → -0.5
+- Jump peak → 0
+- Jump up → 0.5
+
+![Untitled](/images/classroom/unity2d/player-animation-controls/untitled-7.png)
+
+กลับไปที่ Base Layer สร้าง Transition จาก Any State → Jump โดยเรากำหนด Setting ว่าให้มีเงื่อนไขเพิ่มเติมคือต้องไม่อยู่บนพื้น ถึงจะทำการเปลี่ยนเป็นเอนิเมชั่นจั้ม
+
+สร้างตัวแปรใหม่ทางด้านซ้ายมือของหน้าต่าง ต่อจาก `Speed` และ `vSpeed` ชื่อว่า `Grounded` เป็นชนิด boolean
+
+ทำการเพิ่มตัวแปร `Grounded` ลงไปในเงื่อนไขการเปลี่ยนสถานะ โดยระบุว่าเป็น `false` (หมายถึง หากตัวละครไม่อยู่บนพื้น ก็จะทำการเปลี่ยนเป็นอนิเมชั่นกระโดด ซึ่งจะแตกต่างจากเงื่อนไขการเริ่มกระโดด)
+
+![Untitled](/images/classroom/unity2d/player-animation-controls/untitled-8.png)
+
+สร้าง Transition จาก Jump → Idel โดยทำการเพิ่มเงื่อนไข Ground → true
+
+![Untitled](/images/classroom/unity2d/player-animation-controls/untitled-9.png)
+
+ที่ไฟล์ `PlayerMoveControls` ทำการเพิ่มคำสั่งกำหนดค่าลงตัวแปรของเอนิเมเตอร์
+
+```csharp
+    private void SetAnimatorValues() 
+    {
+        animator.SetFloat("Speed", Mathf.Abs(rigidbody2D.velocity.x));
+        animator.SetFloat("vSpeed", rigidbody2D.velocity.y);
+        animator.SetBool("Grounded", grounded);
+    }
+```
+
+## แก้ปัญหาการติดกำแพง
+
+Create → 2D → Physics Material 2D ตั้งชื่อว่า Slip ตั้งค่า Friction → 0
+
+หลังจากนั้นเลือกวัตถุ นำ Physics Material ที่เราได้สร้างขึ้นไปใส่ใน Rigibody 2D → Material เป็นอันเรียบร้อย
+
+เราสามารถนำไปใส่ใน Collider ได้เหมือนกันตามการทำงานของ Unity แล้ว Collider 2D จะมีการเรียกใช้งาน Material ตามลำดับคือ
+
+- Collider 2D
+- Rigidbody 2D

@@ -1,0 +1,16 @@
+export default {
+  introduction: "Introduction",
+  "player-animation-controls": "Player Animation and Controls",
+  camera: "Camera",
+  "collect-item": "Collect Item",
+  "display-update-ui": "Display and Update UI",
+  "health-damage-system": "Health and Damage System",
+  animation: "Animation",
+  enemy: "Enemy",
+  "enemy-movement": "Enemy Movement",
+  "enemy-attack": "Enemy Attack",
+  "attack-animation": "Attack Animation",
+  "attack-damage": "Attack and Damage",
+  "change-level": "Change Level",
+  "main-menu": "Main Menu",
+};

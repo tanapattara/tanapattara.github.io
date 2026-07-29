@@ -1,0 +1,176 @@
+---
+title: "Health and Damage System"
+sidebarTitle: "Health and Damage System"
+---
+
+# Health and Damage System
+
+เราจะสร้างระบบเลือดของตัวละคร แสดงผล และปรับปรุงสถานะของตัวละคร เมื่อได้รับผลกระทบที่เรากำหนดขึ้น
+
+## Player
+
+เริ่มจากที่ตัวละครของเรา ให้เราสร้างวัตถุขึ้นภายในตัวละคร แบบ Empty ทำการตั้งชื่อว่า `PlayerStats`
+
+ทำการเพิ่มคอมโพเนนท์ให้กับ `PlayerStats` ชื่อ Polygon Collider 2D แล้วทำการปรับปรุง Edit Collider ให้ตรงกับรูปร่างของตัวละคร โดยเราจะทำแยกกับ Collider ของตัวละครที่ใช้ตรวจสอบการชนกันของเพื้น เพื่อให้ง่ายต่อการจัดการ
+
+![image.png](/images/classroom/unity2d/health-damage-system/image.png)
+
+ทำการสร้างเลย์เยอร์ใหม่ให้กับ `PlayerStats` ชื่อว่า `PlayerStats`และทำการเปิดให้ Is Trigger เป็น true
+
+สร้างไฟล์ชื่อ `PlayerStats.cs` และทำการใส่มันเข้าไปในวัตถุ
+
+```csharp
+public class PlayerStats : MonoBehaviour
+{
+    public float maxHealth;
+    public float health;
+    void Start()
+    {
+        health = maxHealth;
+    }
+    public void TakeDamage(float damage)
+    {
+        health -= damage;
+        if(health <= 0)
+        { 
+        }
+    }
+}
+```
+
+ที่ไฟล์เราทำการสร้างตัวแปรสองตัวคือ `maxHealth` และ `health` เพื่อแทนจำนวนเลือดสูงสุด และเลือดปัจจุบันของตัวละคร
+
+เมื่อเริ่มต้น `Start()` กำหนดให้เลือดของเรามีค่าสูงสุด
+
+สร้างฟังก์ชั่นเมื่อได้รับความเสียหาย เราก็จะนำค่าความเสียหายที่ได้มาทำการลบออกจากค่าเลือดของเรา เมื่อมื่ค่าน้อยกว่าหรือเท่ากับ 0 ก็จะเข้าเงื่อนไขการตายของตัวละคร
+
+เมื่อตัวละครตาย เราก็จะต้องปิดการทำงานของการเคลื่อนไหวของตัวละครโดยทำการสร้างฟังก์ชั่นสำหรับยกเลิกการรับข้อมูลจากผู้เล่น ที่ไฟล์ `GatherInput.cs`
+
+```csharp
+    public void DisableControls() 
+    {
+        myControl.Player.Move.performed -= StartMove;
+        myControl.Player.Move.canceled -= StopMove;
+
+        myControl.Player.Jump.performed -= JumpStart;
+        myControl.Player.Jump.canceled -= JumpStop;
+
+        myControl.Player.Disable();
+        valueX = 0;
+    }
+```
+
+ทำการยกเลิกการรับข้อมูลการเคลื่อนที่ทั้งหมด และล้างค่าค่า `valueX` ให้เท่ากับ 0
+
+กลับมาที่ `PlayerStats.cs` ให้ทำการเพิ่มคำสั่งเมื่อตัวละครตาย
+
+```csharp
+ public void TakeDamage(float damage)
+ {
+     health -= damage;
+     if(health <= 0)
+     {
+         GetComponent<PolygonCollider2D>().enabled = false;
+         GetComponentInParent<GatherInput>().DisableControls();
+         Debug.Log("Player is dead");
+     }
+ }
+```
+
+ในกรณีที่ตัวละครได้รับความเสียหาย เราจำเป็นต้องมีการหน่วงเวลาในการลดเลือดของตัวละคร เนื่องจากการทำงานของเกมส์ มีการอัพเดทข้อมูลเร็วมาก ดังนั้นจะต้องมีการสร้างเงื่อนไขว่าอยู่ในช่วงรับค่าความเสียหายได้หรือไม่ ในกรณีนี้เราจะใช้ตัวช่วยคือฟังก์ชั่นในการดีเลย์นั่นคือ `Coroutines`
+
+```csharp
+public class PlayerStats : MonoBehaviour
+{
+    public float maxHealth;
+    public float health;
+
+    private bool canTakeDamage = true;
+
+    void Start()
+    {
+        health = maxHealth;
+    }
+    public void TakeDamage(float damage)
+    {
+        if(!canTakeDamage)
+        {
+            return;
+        }
+
+        health -= damage;
+        if(health <= 0)
+        {
+            GetComponent<PolygonCollider2D>().enabled = false;
+            GetComponentInParent<GatherInput>().DisableControls();
+            Debug.Log("Player is dead");
+        }
+        StartCoroutine(DamagePrevention());
+    }
+    private IEnumerator DamagePrevention() 
+    {
+        canTakeDamage = false;
+        yield return new WaitForSeconds(0.15f);
+        if (health > 0)
+        {
+            canTakeDamage = true;
+        }
+        else { }
+    }
+}
+```
+
+เริ่มจากกำหนดตัวแปรชื่อ `canTakeDamage` ให้เป็น bool เพื่อกำหนดว่าอยู่ในช่วงเวลาที่ตัวละครจะรับความเสียหายได้หรือไม่
+
+จากนั้นที่ฟังก์ชั่น `TakeDamage()` ให้เราทำการตรวจสอบก่อนว่าตัวละครสามารถรับค่าความเสียหายได้หรือไม่ หากไม่ได้ เราก็จะสั่งให้ออกจากฟังก์ชั่น โดยการใช้คำสั่ง `return`
+
+เมื่อสามารถลดค่าพลังชีวิตของตัวละครได้แล้ว เราก็จะทำการเรียกใช้ `StartCoroutine()` เพื่อทำการเรียกใช้ฟังก์ชั่น `DamagePrevention()` ภายในจะทำให้ `canTakeDamage` เป็น `false` และทำการหน่วงเวลาไว้ ในตัวอย่างคือ 15 วินาที
+
+ถ้าหากตัวละครยังมีพลังชีวิตเหลืออยู่ก็จะเปลี่ยนสถานะของ `canTakeDamage` แต่ถ้าหากไม่มีแล้ว ก็จะเข้าเงื่อนไขเพื่อให้ตัวละครตาย
+
+## Spike
+
+เราจะสร้างหนามจากดาบที่เรามีอยู่ใน Assets โดยทำการวางเอาไว้ด้านหลังของฉากอีกที ให้เราลาก Sprite ชื่อ Sword เข้ามาในฉาก เราจะได้วัตถุใหม่มาจากชื่อของ Sprite ให้เราเปลี่ยนชื่อเป็น `Spike`
+
+ที่วัตถุ `Spike` ให้เราเพิ่มคอมโพเน้นท์ Rigibody 2D ตั้งค่า Body Type → Kinematic
+
+ทำการเพิ่มคอมโพเนนท์ Polygon Collider 2D ทำการเปิด Is Trigger และทำการกำหนด Collider ให้กับวัตถุของเราเพิ่มทำการตรวจสอบการชนกันระหว่างวัตถุ
+
+![image.png](/images/classroom/unity2d/health-damage-system/image-1.png)
+
+ที่วัตถุ `Spike` ให้ทำการเพิ่ม Layer ใหม่ Enemy Attack แล้วทำการตั้งค่าให้กับวัตถุ
+
+หลังจากนั้นเราจะเข้าไปตั้งค่าที่ Project Setting เพื่อกำหนดการตรวจสอบระหว่างเลย์เยอร์ จะเห็นว่า เราจะกำหนดให้ `PlayerStats` และ `EnemyAttack` เช็คถูก เพื่อให้มีการตรวจสอบการชนกันระหว่างสองเลย์เยอร์นี้
+
+![image.png](/images/classroom/unity2d/health-damage-system/image-2.png)
+
+สร้างไฟล์ชื่อ `Spikes.cs` และทำการเชื่อมเข้ากับวัตถุ
+
+```csharp
+
+public class Spikes : MonoBehaviour
+{
+    public float damage = 10f;
+
+    private void OnTriggerEnter2D(Collider2D collision)
+    {
+        if (collision.CompareTag("PlayerStats"))
+        {
+            Debug.Log("Player hit by spikes");
+            collision.GetComponent<PlayerStats>().TakeDamage(damage);
+        }
+    }
+}
+```
+
+ทำการกำหนดตัวแปร์ให้กับ `Spikes` ชื่อ `damage` สำหรับกำหนดค่าความเสียหาย
+
+สร้างฟังก์ชั่น `OnTriggerEnter2D` เนื่องจากเรากำหนด Is Trigger ให้กับวัตถุ ภายใน เราจะกำหนดว่า หากมีการชนกันของแท็กที่ชื่อว่า `PlayerStats` ให้ทำการเรียกใช้คำสั่งจาก `PlayerStats` ชื่อฟังก์ชั่น `TakeDamage` เพื่อทำการลดพลังชีวิต
+
+> **หมายเหตุ**
+> 💡
+>
+> ให้ตรวจสอบวัตถุ `Spike` และวัตถุ `PlayerStats` ว่าได้กำหนดแท็กเป็น `EnemyAttack` และ `PlayerStats` หรือไม่
+>
+
+ตรวจสอบการทำงานที่ Console จะพบว่าหากเดินไปชนหนาม จะทำให้พลังชีวิตลดลง และเมื่อตายจะไม่สามารถขยับตัวละครได้

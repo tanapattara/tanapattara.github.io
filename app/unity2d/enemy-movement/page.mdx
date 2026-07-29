@@ -1,0 +1,120 @@
+---
+title: "Enemy Movement"
+sidebarTitle: "Enemy Movement"
+---
+
+# Enemy Movement
+
+เราจะทำให้ตัวละครเคลื่อนที่ไปตามพื้นที่กำหนด โดยเราจะสร้างจุดขึ้นมาตรวจสอบว่าจุดดังกล่าวมีการชนกันกับพื้นที่ที่กำหนดหรือไม่
+
+เพื่อให้ง่ายต่อการกำหนดตำแหน่ง เราจะไปที่ไฟล์ `EnemyRedDog` ทำการกำหนดการเคลื่อนที่ของตัวละครผ่านตัวแปรต่าง ๆ  ดังนี้
+
+กำหนดจุดขึ้นมาสองจุด โดยให้เป็นประเภท Transform เพื่อใช้ตรวจสอบการซ้อนทับกันของเลย์เยอร์ พร้อมทั้งกำหนดตัวแปรสำหรับเก็บค่าเมื่อเกิดการซ้อนทับกันของเลย์เยอร์
+
+```csharp
+
+    public Transform groundCheck;
+    public Transform wallCheck; 
+
+    private bool detectGround;
+    private bool detectWall; 
+```
+
+สร้างฟังก์ชั่น `Flip()` สำหรับสั่งให้ตัวละครเปลี่ยนทิศทางการเดิน เมื่อตรวจสอบครบเงื่อนไข โดยภายในจะตรวจสอบว่า จุดอ้างอิงที่สร้างขึ้นทั้งสองจุด ได้เคลื่อนไปทับกับเลย์เยอร์ Ground หรือไม่ หากใช่เราก็จะทำการเปลี่ยนทิศทางการเดินของตัวละคร
+
+```csharp
+    public float speed = 1;
+    private int direction = -1;
+    public LayerMask layerToCheck;
+
+    private void FixedUpdate()
+    {
+        Filp();
+        rb.velocity = new Vector2(direction * speed, rb.velocity.y);
+    }
+    private void Filp() 
+    { 
+        detectGround = Physics2D.OverlapCircle(groundCheck.position, radius, layerToCheck);         
+        detectWall = Physics2D.OverlapCircle(wallCheck.position, radius, layerToCheck);
+
+        if (!detectGround || detectWall)
+        {
+            direction *= -1;
+            transform.localScale = new Vector3(-transform.localScale.x, 1, 1);
+        }
+    }
+```
+
+สุดท้าย สร้างฟังกชั่น `OnDrawGizmos()` สำหรับสร้างเส้น Gizmos เอาไว้ใช้อ้างอิงให้กับจุดของเรา
+
+```csharp
+    public float radius;
+	  private void OnDrawGizmos()
+    {
+        Gizmos.color = Color.red;
+        Gizmos.DrawWireSphere(groundCheck.position, radius);
+        Gizmos.DrawWireSphere(wallCheck.position, radius);
+    } 
+```
+
+เราจะได้คำสั่งสำหรับตรวจสอบและเคลื่อนไหวของตัวละครด้านล่าง
+
+```csharp
+public class EnemyRedDog : Enemy
+{
+    public float speed = 1;
+    private int direction = -1;
+
+    public Transform groundCheck;
+    public Transform wallCheck;
+    public LayerMask layerToCheck;
+
+    private bool detectGround;
+    private bool detectWall;
+    public float radius;
+
+    private void FixedUpdate()
+    {
+        Filp();
+        rb.velocity = new Vector2(direction * speed, rb.velocity.y);
+    }
+    private void Filp() 
+    { 
+        detectGround = Physics2D.OverlapCircle(groundCheck.position, radius, layerToCheck);         
+        detectWall = Physics2D.OverlapCircle(wallCheck.position, radius, layerToCheck);
+
+        if (!detectGround || detectWall)
+        {
+            direction *= -1;
+            transform.localScale = new Vector3(-transform.localScale.x, 1, 1);
+        }
+    }
+    private void OnDrawGizmos()
+    {
+        Gizmos.color = Color.red;
+        Gizmos.DrawWireSphere(groundCheck.position, radius);
+        Gizmos.DrawWireSphere(wallCheck.position, radius);
+    } 
+}   
+```
+
+สร้าง Empty Object ขึ้นมาเป็นวัตถุลูกของ `EnemyRedDog` ตั้งชื่อวัตถุทั้งสองว่า `wallCheck` และ `groundCheck` ตามลำดับ
+
+- `wallCheck` ให้อยู่ด้านหน้าของตัวละคร ทำหน้าที่คอยตรวจสอบว่า จุดดังกล่าว ชนกับกำแพงหรือยัง
+- `groundCheck` ให้เลื่อนลงมาข้างล่างด้านหน้า เพื่อตรวจสอบพื้น ในกรณีที่เดินไปเจอขอบของพื้น จะทำให้ไม่สามารถตรวจสอบพื้นได้
+
+ตำแหน่งของจุดสามารถแสดงได้ในภาพ
+
+![image.png](/images/classroom/unity2d/enemy-movement/image.png)
+
+นำวัตถุที่สร้างขึ้น เข้าไปเชื่อมกับตัวแปร์ `groundCheck` และ `wallCheck` และกำหนดค่าของ `layerToCheck` ให้เป็น Ground
+
+> **หมายเหตุ**
+> 💡
+>
+> หากตัวละครไม่สามารถตรวจสอบเลย์เยอร์ Ground ได้ ให้ตรวจสอบว่า พื้นของเราอยู่ในเลย์เยอร์ Ground ที่ถูกต้อง และให้ตรวจสอบ layer collision matrix ด้วยว่าเลย์เยอร์ Enemy และ Ground ทั้งสองได้ตั้งค่าให้สามารถตรวจสอบการชนกันได้
+>
+> ![image.png](/images/classroom/unity2d/enemy-movement/image-1.png)
+>
+
+ตัวละครของเราจะเดินไปมา ระหว่างพื้นที่
