@@ -1,0 +1,81 @@
+---
+title: "Tilemap"
+sidebarTitle: "Tilemap"
+---
+
+# Tilemap
+
+## ติดตั้ง 2D Tilemap Editor
+
+- ไปที่ Window → Package Manager → 2D Tilemap Editor
+
+## นำเข้าและปรับแต่ง Sprite
+
+ให้ทำการนำเข้า Sprite ที่เตรียมไว้เข้าสู่โปรเจกต์ โดยไฟล์จะประกอบไปด้วย Sprites และ Sound ก่อนที่เราจะนำ Sprite ไปใช้งาน เราต้องทำการปรับ Sprite เพื่อให้โปรแกรมเข้าใจรูปแบบการทำงานของ Sprite ของเราก่อน
+
+เลือก Sprite ชื่อ `Platform Tiles_16x16` เราจะเห็นข้อมูลของ Sprite ได้จากหน้าต่าง Inspector ในไฟล์นี้เราจะทำการแบ่งรูปต่าง ๆ ออกเป็นส่วน ๆ เราเรียกว่า Sprite Mode แบบ Multiple นั่นคือใน Sprite 1 ไฟล์ เราสามารถแบ่งออกเป็นหลาย ๆ รูปได้
+
+ที่หน้าต่าง Inspector กำหนดค่าดังนี้
+
+- Sprite Mode → Multiple
+- Pixels Per Unit → 16
+- Filter Mode → Point (no filter)
+- Compression → None
+
+ที่หน้าต่าง Inspector กดปุ่ม Sprite Editor เพื่อเปิดหน้าต่าง Sprite Editor หน้าต่างนี้จะทำการแบ่ง Sprite ออกเป็นส่วน ๆ ให้เราไปที่มุมขวาบน จะมีตัวเลือกเขียนว่า Slice ให้ทำการกด เลือก Automatic และกดปุ่ม Slice เพื่อทำการแบ่ง Sprite เราจะเห็นได้ว่าโปรแกรมจะทำการแบ่งให้เราอัตโนมัติ จะได้ 3 ส่วนใหญ่ ๆ เนื่องจากโปรแกรมมองเห็นเป็นสามรูปอยู่ใน Sprite
+
+![หน้าต่าง Sprite Editor สำหรับแบ่ง Sprite](/images/classroom/unity2d/tilemap/image.png)
+
+ให้เราเปลี่ยนการแบ่ง Slice เป็นแบบ Grid by Cell Size และตั้งค่า X, Y เป็น 16 โปรแกรมจะทำการแบ่ง Sprite ของเราเป็นกริดขนาด 16 × 16
+
+> **หมายเหตุ**
+>
+> ขนาดของกริดนี้เป็นไปตามการออกแบบไฟล์ที่ถูกสร้างขึ้นโดยผู้ออกแบบ Sprite เราต้องตรวจสอบก่อนการนำไฟล์ Sprite มาใช้งาน
+
+กด Apply ที่มุมขวาบนของหน้าต่าง เป็นอันเสร็จสิ้นการปรับแต่ง
+
+## เพิ่ม Tilemap
+
+สร้างวัตถุใหม่ คลิกขวาที่ Hierarchy → 2D Object → Tilemap → Rectangular เราจะได้ Grid และ Ground ซึ่งเป็นวัตถุที่มีความสัมพันธ์กันในรูปแบบ Parent และ Child
+
+เลือกที่ Ground จะปรากฏปุ่ม Open Tile Palette ที่มุมขวาล่างของหน้าต่าง Scene เพื่อเปิดหน้าต่าง Tile Palette หรือจะเปิดที่เมนู Window → 2D → Tile Palette
+
+![เปิดหน้าต่าง Tile Palette](/images/classroom/unity2d/tilemap/image-1.png)
+
+สร้าง New Palette ด้วยคำสั่ง Create New Palette ตั้งชื่อว่า `GroundPalette` แล้วทำการลาก Sprite ที่เราได้แบ่งเอาไว้แล้วในขั้นตอนก่อนหน้ามาวางลงไป เราจะได้หน้าต่าง Tile Palette ที่แสดง Sprite เป็น Grid ตามที่เราได้แบ่งไว้
+
+![สร้าง GroundPalette และเพิ่ม Sprite](/images/classroom/unity2d/tilemap/image-2.png)
+
+ที่หน้าต่าง Tile Palette มีปุ่มด้านบนเป็นรูปพู่กัน (ปุ่มที่สาม) ให้เรากดปุ่มเพื่อเปิดโหมด Brush แล้วเลือก Sprite ที่อยู่ด้านล่างหนึ่งรูป จากนั้นระบายลงไปในหน้าต่าง Scene ให้เป็นรูปพื้น รวมถึงผนังและเพดาน
+
+ใน Assets ที่เตรียมให้ยังมีรูปแบบ Tile อื่น ๆ ให้ใช้งาน ให้นักศึกษาทำการแบ่ง Tile และนำมาใช้ตามความเหมาะสม
+
+## เพิ่ม Layer
+
+ที่ Tilemap ไปยังหน้าต่าง Inspector → Tilemap Renderer → Additional Settings → Sorting Layer → Add Sorting Layer ให้เราสร้าง Layer ใหม่ 3 เลเยอร์ดังนี้
+
+1. Background
+2. Middleground
+3. Ground
+
+โดยลำดับล่างสุดจะเป็นส่วนที่แสดงผลบนเลเยอร์อื่น ๆ
+
+ให้เราเลือกพื้น (Ground) ที่เราสร้างขึ้นจากหน้าต่าง Hierarchy แล้วเลือก Sorting Layer ให้เป็น `Ground`
+
+![กำหนด Sorting Layer ของ Ground](/images/classroom/unity2d/tilemap/image-3.png)
+
+ที่หน้าต่าง Hierarchy ให้ทำการเพิ่มอีกหนึ่งวัตถุด้วยคำสั่ง 2D Object → Tilemap → Rectangular ตั้งชื่อว่า `Background` โดยให้อยู่ในระดับเดียวกันกับ Ground
+
+นำ Sprite มาเป็นพื้นหลังของฉาก โดยทำการเพิ่มให้อยู่ในวัตถุ `Background` ที่เราสร้างขึ้น และกำหนด Sorting Layer ให้อยู่ในระดับ Background
+
+![สร้าง Tilemap สำหรับ Background](/images/classroom/unity2d/tilemap/image-4.png)
+
+## เพิ่ม Collider
+
+เตรียมฉากของเราให้สามารถรองรับตัวละคร โดยการเพิ่ม Collider เข้าไป เลือกที่ Ground แล้วเลือก Add Component → Tilemap Collider 2D และเพิ่ม Composite Collider 2D
+
+ที่ Tilemap Collider ให้เลือก Used by Composite จะเห็นว่า Collider ทั้งหมดจะรวมกันเป็นวัตถุเดียวกัน ดูได้จากกรอบที่แสดงของวัตถุ Ground
+
+> Unity เวอร์ชัน 6 ให้เลือก Composite Operation → Merge
+
+ที่หน้าต่าง Inspector ปรับ Rigidbody 2D → Body Type → Static เพื่อกำหนดให้วัตถุ `Ground` อยู่คงที่ ไม่ขยับตามแรงโน้มถ่วงของกฎฟิสิกส์ และปรับ Composite Collider 2D → Geometry Type → Polygons จะทำให้พื้นของเรากลายเป็นรูปทรงชนิด Polygon

@@ -1,0 +1,212 @@
+---
+title: "Lab: Start 2D Game Development with Flappy Bird 2"
+sidebarTitle: "Unity 2D: Flappy Bird 2"
+---
+
+import { Cards } from "nextra/components";
+
+# Lab: Start 2D Game Development with Flappy Bird 2
+
+<Cards>
+  <Cards.Card title="← กลับไปยัง Labs" href="/labs" />
+</Cards>
+
+![เกม Flappy Bird](/images/classroom/labs/unity2d-flappy-bird-2/untitled.png)
+
+หลังจากเราได้สร้าง Flappy Bird โดยทำให้มันบินขึ้นจากคำสั่งคีย์บอร์ด และสร้างท่อเป็นสิ่งกีดขวางของเกมแล้ว ต่อไปเราจะตรวจสอบเงื่อนไขสำหรับการให้คะแนน การจบเกม และการเริ่มต้นใหม่
+
+## สร้าง Score UI
+
+ที่ Hierarchy สร้างวัตถุใหม่โดยเลือก UI → Legacy → Text เราจะได้ Canvas และ Text (Legacy)
+
+- ที่วัตถุ Canvas ปรับ UI Scale Mode ในหน้าต่าง Inspector ให้เป็น Scale With Screen Size เพื่อให้ UI ปรับขนาดตามขนาดของอุปกรณ์
+- ที่วัตถุ Text เปลี่ยนข้อความเป็น 0 เพื่อใช้แสดงคะแนน แล้วกำหนดตำแหน่งของคะแนน
+
+> **หมายเหตุ**
+>
+> การแสดงผลที่หน้า Scene และ Game อาจไม่ตรงกัน ให้ตรวจสอบตำแหน่งในหน้า Scene ควบคู่กับผลที่หน้า Game
+
+สร้างวัตถุใหม่ชื่อ `Logic Manager` และเพิ่มสคริปต์ชื่อ `LogicScript` ให้กับวัตถุ สคริปต์นี้ทำหน้าที่เพิ่มคะแนนบน UI ตามเงื่อนไขที่เรากำหนด
+
+```csharp
+using UnityEngine.UI;
+
+public class LogicScript : MonoBehaviour
+{
+    public int playerScore;
+    public Text scoreText;
+
+    [ContextMenu("Increase Score")]
+    public void addScore()
+    {
+        playerScore = playerScore + 1;
+        scoreText.text = playerScore.ToString();
+    }
+}
+```
+
+อย่าลืมเชื่อม GameObject เข้ากับไฟล์ `LogicScript` โดยลาก Text ที่ใช้แสดงคะแนนมาใส่ในช่อง `scoreText`
+
+ตอนนี้วัตถุนกและท่อใช้ Collider เมื่อชนกันจึงไม่สามารถผ่านได้ หากเราจะนับคะแนนก็สามารถใช้หลักการของ Collider ตรวจสอบการชนกัน โดยสร้าง Collider แบบมองไม่เห็นไว้ระหว่างท่อทั้งสอง เมื่อนกบินผ่านจะเกิดการชนและเราจะนำเหตุการณ์นั้นไปเพิ่มคะแนน
+
+ที่หน้าต่าง Project → Assets เรามีวัตถุชื่อ Pipe ซึ่งประกอบด้วยท่อสองอัน ให้ดับเบิลคลิกเพื่อเข้าไปแก้ไข แล้วเพิ่มวัตถุใหม่ชื่อ `Middle`
+
+เพิ่ม Box Collider 2D ให้กับวัตถุ Middle ปรับขนาดให้เต็มพื้นที่ว่างระหว่างท่อ และเลือก Is Trigger
+
+![เพิ่มวัตถุ Middle ระหว่างท่อ](/images/classroom/labs/unity2d-flappy-bird-2/untitled-1.png)
+
+![ปรับ Box Collider 2D ของ Middle](/images/classroom/labs/unity2d-flappy-bird-2/untitled-2.png)
+
+สร้างสคริปต์ใหม่ให้กับ Middle ชื่อ `PipeMiddleScript` จากนั้นสร้างตัวแปรจากคลาส `LogicScript` และเมธอด `OnTriggerEnter2D()` สำหรับทำงานเมื่อวัตถุชนกัน
+
+```csharp
+public class PipeMiddleScript : MonoBehaviour
+{
+    public LogicScript logicScript;
+
+    void Start() { }
+    void Update() { }
+
+    private void OnTriggerEnter2D(Collider2D other) { }
+}
+```
+
+เนื่องจาก `PipeMiddleScript` จะถูกสร้างพร้อมกับวัตถุ Pipe หลังจากเริ่มเกมแล้ว เราจึงไม่สามารถลาก `LogicScript` ไปยังวัตถุ `PipeMiddleScript` โดยตรง และต้องใช้วิธีอื่นในการเชื่อมวัตถุ
+
+## สร้าง Tag
+
+ไปที่วัตถุ Logic Manager แล้วกำหนด Tag ให้กับวัตถุนี้ ที่หน้าต่าง Inspector ใต้ชื่อวัตถุ ให้เปิดเมนู Tag และสร้างแท็กใหม่ชื่อ `Logic`
+
+เมื่อสร้าง Tag แล้ว ให้กลับมากำหนด Logic Manager ให้ใช้ Tag ชื่อ Logic จากนั้นกลับไปที่ `PipeMiddleScript` แล้วใช้ `FindGameObjectWithTag()` ค้นหาวัตถุ
+
+เมื่อนกผ่านท่อและชน Middle Collider จะมีการเรียกเมธอด `addScore()` เพื่อเพิ่มคะแนน
+
+```csharp
+public LogicScript logicScript;
+
+void Start()
+{
+    logicScript = GameObject.FindGameObjectWithTag("Logic").GetComponent<LogicScript>();
+}
+
+private void OnTriggerEnter2D(Collider2D other)
+{
+    logicScript.addScore();
+}
+```
+
+> **หมายเหตุ**
+>
+> หากมีวัตถุที่ใช้ Tag เดียวกันมากกว่าหนึ่งวัตถุ ให้ใช้ `FindGameObjectsWithTag()` และตรวจสอบให้แน่ใจก่อนว่าเป็นวัตถุที่ต้องการ
+
+![กำหนด Logic Tag ให้กับ Logic Manager](/images/classroom/labs/unity2d-flappy-bird-2/untitled-3.png)
+
+## กำหนดเงื่อนไขการจบเกม
+
+ที่ Canvas เพิ่ม Empty Object ชื่อ `Game Over Screen` โดยภายในประกอบด้วย
+
+- Text เขียนว่า Game Over
+- Button เขียนว่า Play again
+
+![สร้าง Game Over Screen](/images/classroom/labs/unity2d-flappy-bird-2/untitled-4.png)
+
+ที่ไฟล์ `LogicScript` เพิ่มเมธอดสำหรับเริ่มเกมใหม่
+
+```csharp
+public void restartGame()
+{
+    SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+}
+```
+
+ที่วัตถุ Button ในหน้าต่าง Inspector จะมีส่วน On Click() สำหรับกำหนดคำสั่งเมื่อคลิกปุ่ม ให้กด + แล้วลาก `Logic Manager` เข้ามา จากนั้นเลือกฟังก์ชัน `restartGame()`
+
+![กำหนด On Click ให้เรียก restartGame](/images/classroom/labs/unity2d-flappy-bird-2/untitled-5.png)
+
+ซ่อนข้อความจบเกมโดยเลือก Game Over Screen ในหน้าต่าง Inspector แล้วนำเครื่องหมายถูกออก ข้อความจะถูกซ่อนไว้และแสดงอีกครั้งเมื่อจบเกมเท่านั้น
+
+ที่ไฟล์ `LogicScript` เพิ่มคำสั่งต่อไปนี้
+
+```csharp
+public GameObject gameOverScreen;
+
+public void gameOver()
+{
+    gameOverScreen.SetActive(true);
+}
+```
+
+คำสั่ง `SetActive(true)` ทำให้ Game Over Screen กลับมาแสดงอีกครั้ง เราจะเรียกใช้เมื่อนกบินชนท่อ โดยกลับไปที่ไฟล์ `BirdScript` แล้วเข้าถึง `LogicScript` ผ่านคำสั่ง `FindGameObjectWithTag()`
+
+```csharp
+public class BirdScript : MonoBehaviour
+{
+    public LogicScript logicScript;
+
+    void Start()
+    {
+        logicScript = GameObject.FindGameObjectWithTag("Logic").GetComponent<LogicScript>();
+    }
+
+    private void OnCollisionEnter2D(Collision2D collision2D)
+    {
+        logicScript.gameOver();
+    }
+}
+```
+
+เมื่อเกิดการชน ข้อความจบเกมจะแสดงขึ้น แต่เรายังสามารถกดปุ่มเพื่อเล่นต่อได้ จึงต้องสร้างตัวแปรและเงื่อนไขเพิ่มเติมเพื่อกำหนดว่านกยังเล่นต่อได้หรือไม่
+
+```csharp
+public class BirdScript : MonoBehaviour
+{
+    public Rigidbody2D myRigibody;
+    public LogicScript logicScript;
+    public bool birdIsAlive = true;
+
+    void Start()
+    {
+        logicScript = GameObject.FindGameObjectWithTag("Logic").GetComponent<LogicScript>();
+    }
+
+    void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.Space) && birdIsAlive)
+        {
+            myRigibody.velocity = Vector2.up * 10;
+        }
+    }
+
+    private void OnCollisionEnter2D(Collision2D collision2D)
+    {
+        logicScript.gameOver();
+        birdIsAlive = false;
+    }
+}
+```
+
+เมื่อนกชนท่อ เกมจะแสดงข้อความจบเกมและอัปเดตเงื่อนไขไม่ให้นกบินขึ้นอีก
+
+## Build Game
+
+ไปที่เมนู File → Build Settings → Windows เลือกโฟลเดอร์ แล้วกด Build and Run
+
+## Source Code
+
+[tanapattara/2DGameDev-FlppyBird](https://github.com/tanapattara/2DGameDev-FlppyBird)
+
+## Congratulation
+
+ขอแสดงความยินดีด้วย เราได้สร้างเกม 2D ที่โด่งดังในอดีต และเรียนรู้การทำงานของวัตถุ สคริปต์ และคำสั่งต่าง ๆ ใน Unity 3D
+
+## ก่อนหน้า
+
+<Cards>
+  <Cards.Card title="← Start 2D Game Development with Flappy Bird" href="/unity2d/unity2d-flappy-bird" />
+</Cards>
+
+## ต่อไป
+
+<Cards>
+  <Cards.Card title="Tilemap →" href="/unity2d/tilemap" />
+</Cards>

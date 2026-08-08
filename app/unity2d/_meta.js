@@ -1,5 +1,8 @@
 export default {
   introduction: "Introduction",
+  "unity2d-flappy-bird": "Flappy Bird",
+  "unity2d-flappy-bird-2": "Flappy Bird 2",
+  tilemap: "Tilemap",
   "player-animation-controls": "Player Animation and Controls",
   camera: "Camera",
   "collect-item": "Collect Item",

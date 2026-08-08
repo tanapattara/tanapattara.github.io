@@ -3,8 +3,8 @@ export default function Unity2DFlappyBirdLayout({ children }) {
     <>
       {children}
       <p>
-        <a href="/unity2d/player-animation-controls">
-          Player Animation and Controls →
+        <a href="/labs/unity2d-flappy-bird-2">
+          Start 2D Game Development with Flappy Bird 2 →
         </a>
       </p>
     </>

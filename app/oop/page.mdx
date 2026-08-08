@@ -4,6 +4,8 @@ sidebarTitle: "OOP"
 asIndexPage: true
 ---
 
+import { Cards } from "nextra/components";
+
 # Object-Oriented Programming
 
 วิชา Object-Oriented Programming (OOP) หรือ การเขียนโปรแกรมเชิงวัตถุ เป็นกระบวนทัศน์ในการพัฒนาซอฟต์แวร์ที่เน้นการจัดระเบียบโปรแกรมเป็นกลุ่มของวัตถุ (Object) ซึ่งเป็นตัวแทนของสิ่งต่าง ๆ ในโลกแห่งความเป็นจริง แต่ละวัตถุจะมีคุณสมบัติ (Attribute) และพฤติกรรม (Method) ที่เกี่ยวข้องกับสิ่งที่มันเป็นตัวแทนอยู่ OOP ช่วยให้โปรแกรมมีความยืดหยุ่น บำรุงรักษาได้ง่าย และนำกลับมาใช้ใหม่ได้ (Reusability)
@@ -22,12 +24,10 @@ asIndexPage: true
 
 ## Introduction
 
-[Variable](/oop/variables)
-
-[ตัวคำนวน](/oop/operators)
-
-[การแปลงชนิดข้อมูล](/oop/type-conversion)
-
-[Array](/oop/arrays)
-
-[การทำซ้ำ](/oop/loops)
+<Cards>
+  <Cards.Card title="Variable" href="/oop/variables" />
+  <Cards.Card title="ตัวคำนวน" href="/oop/operators" />
+  <Cards.Card title="การแปลงชนิดข้อมูล" href="/oop/type-conversion" />
+  <Cards.Card title="Array" href="/oop/arrays" />
+  <Cards.Card title="การทำซ้ำ" href="/oop/loops" />
+</Cards>
