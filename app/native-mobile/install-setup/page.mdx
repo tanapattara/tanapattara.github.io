@@ -1,18 +1,102 @@
 ---
-title: "Install and Setup"
-sidebarTitle: "Install and Setup"
+title: "ติดตั้งและตั้งค่า Flutter"
+sidebarTitle: "ติดตั้งและตั้งค่าเครื่องมือ"
 ---
 
-# Install and Setup
+# ติดตั้งและตั้งค่า Flutter
 
-## Tool
+บทนี้เตรียม Development Environment สำหรับ Android เป็นหลัก ผู้ใช้ macOS สามารถเพิ่ม Xcode เพื่อพัฒนา iOS ได้ ส่วน Windows และ Linux สร้าง iOS build โดยตรงไม่ได้เพราะขั้นตอนสุดท้ายต้องใช้ Xcode บน macOS
 
-- Visual Studio Code
-- Flutter Extension for Visual Studio Code
-- Android Studio
+## เครื่องมือที่ต้องใช้
 
-## Installation
+- Flutter SDK และ Dart SDK ซึ่งมากับ Flutter
+- Visual Studio Code พร้อม Flutter/Dart extensions หรือ Android Studio
+- Android Studio สำหรับ Android SDK, Emulator และ Platform Tools
+- Git สำหรับจัดการ source code
+- Android device จริงหรือ Android Emulator
 
-1.  ติดตั้งไฟล์จาก  Flutter ไปที่โฟลเดอร์ที่ต้องการ เช่น `c:/dev/`
-2.  ตั้งค่า System Variable โดยการใส่ path ของ Flutter ที่เราติดตั้งเข้าไป จากข้อ 1 เราจะได้ `c:\dev\flutter\bin`
-3. บันทึกและลองทดสอบโดยการพิมพ์คำสั่ง `flutter doctor` ที่ cmd หรือ terminal
+ดาวน์โหลด Flutter จาก [Install Flutter](https://docs.flutter.dev/get-started/install) และเลือก Stable channel ไม่ควรติดตั้ง SDK ไว้ในโฟลเดอร์ที่ต้องใช้สิทธิ์ Administrator เช่น `Program Files`
+
+## ตรวจสอบ Flutter SDK
+
+เพิ่ม path ของ `flutter/bin` ใน environment variable แล้วเปิด Terminal ใหม่
+
+```bash
+flutter --version
+dart --version
+flutter doctor -v
+```
+
+`flutter doctor -v` แสดงสถานะ Flutter SDK, Android toolchain, IDE และอุปกรณ์ แก้รายการที่มีเครื่องหมายผิดก่อนเริ่มสร้างโปรเจกต์
+
+ยอมรับ Android SDK licenses:
+
+```bash
+flutter doctor --android-licenses
+```
+
+## สร้าง Android Emulator
+
+1. เปิด Android Studio และเลือก Device Manager
+2. สร้าง Virtual Device เช่น Pixel รุ่นที่ทรัพยากรเครื่องรองรับ
+3. เลือก System Image ที่เป็น Stable API
+4. เปิด Emulator แล้วตรวจด้วยคำสั่ง
+
+```bash
+flutter devices
+```
+
+หาก Emulator ช้า ให้ตรวจว่าเปิด Hardware Virtualization ใน BIOS/UEFI แล้ว และอย่าจัดสรร RAM ให้ Emulator มากจนระบบหลักไม่เหลือหน่วยความจำ
+
+## ใช้อุปกรณ์ Android จริง
+
+1. เปิด Developer options โดยแตะ Build number ตามขั้นตอนของผู้ผลิต
+2. เปิด USB debugging
+3. ต่อสาย USB ที่ส่งข้อมูลได้
+4. ยอมรับ RSA fingerprint บนอุปกรณ์
+5. ตรวจด้วย `flutter devices`
+
+หากไม่พบอุปกรณ์ ให้เปลี่ยน USB mode เป็น File Transfer ตรวจ driver ของผู้ผลิต และลอง `adb devices`
+
+## สร้างและรันโปรเจกต์แรก
+
+```bash
+flutter create campus_events
+cd campus_events
+flutter run
+```
+
+เลือกอุปกรณ์เมื่อมีมากกว่าหนึ่งเครื่อง:
+
+```bash
+flutter devices
+flutter run -d <device-id>
+```
+
+คำสั่งที่ใช้บ่อย:
+
+| คำสั่ง | หน้าที่ |
+| --- | --- |
+| `flutter pub get` | ดาวน์โหลด dependencies |
+| `flutter analyze` | ตรวจปัญหา static analysis |
+| `flutter test` | รันชุดทดสอบ |
+| `flutter clean` | ล้าง build cache เมื่อมีปัญหาบางประเภท |
+| `flutter upgrade` | อัปเดต Flutter channel ปัจจุบัน |
+
+## Hot Reload และ Hot Restart
+
+- Hot Reload นำ source code ใหม่เข้า VM และ rebuild widget โดยพยายามรักษา state
+- Hot Restart เริ่ม Dart application ใหม่และล้าง state แต่ไม่ติดตั้ง native app ใหม่ทั้งหมด
+- การเปลี่ยน native configuration, plugin หรือ code ใน `android`/`ios` อาจต้องหยุดแล้วรันใหม่
+
+## ปัญหาที่พบบ่อย
+
+- `flutter` not found: PATH ยังไม่ถูกต้องหรือ Terminal ยังไม่ได้เปิดใหม่
+- Android licenses missing: รัน `flutter doctor --android-licenses`
+- No devices: เปิด Emulator หรือ USB debugging
+- Gradle download ล้มเหลว: ตรวจ network/proxy และพื้นที่ว่าง
+- Version conflict: อ่านข้อความจาก `flutter pub get` และตรวจ constraint ใน `pubspec.yaml`
+
+## แบบฝึกหัด
+
+ส่งภาพผลลัพธ์ `flutter doctor -v`, รายชื่อจาก `flutter devices` และแอปเริ่มต้นที่รันบน Emulator หรือเครื่องจริง จากนั้นเปลี่ยนข้อความหน้าแรกเป็นชื่อและรหัสนักศึกษา

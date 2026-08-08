@@ -1,0 +1,139 @@
+---
+title: "Dart สำหรับ Flutter"
+sidebarTitle: "Dart สำหรับ Flutter"
+---
+
+# Dart สำหรับ Flutter
+
+Dart เป็นภาษาแบบ type-safe ที่รองรับ Object-Oriented Programming และ Sound Null Safety Flutter ใช้ Dart เพื่อสร้าง Widget, Model และ Business Logic การใช้ชนิดข้อมูลให้ชัดช่วยให้ IDE แนะนำโค้ดและค้นหาข้อผิดพลาดก่อนรัน
+
+## ตัวแปรและค่าคงที่
+
+```dart
+String title = 'Flutter Workshop';
+int seats = 30;
+double fee = 199.0;
+bool isOpen = true;
+
+final DateTime createdAt = DateTime.now(); // รู้ค่าตอน runtime
+const int maxSeats = 50;                   // รู้ค่าตอน compile time
+```
+
+ใช้ `final` เป็นค่าเริ่มต้นเมื่อไม่ต้องเปลี่ยนค่า และใช้ `const` เมื่อค่าคงที่ตั้งแต่ compile time ซึ่ง Flutter ใช้สร้าง widget ที่นำกลับมาใช้ได้อย่างมีประสิทธิภาพ
+
+## Null Safety
+
+```dart
+String name = 'Mali';   // ห้ามเป็น null
+String? nickname;       // เป็น null ได้
+
+String displayName(String name, String? nickname) {
+  return nickname?.trim().isNotEmpty == true ? nickname! : name;
+}
+```
+
+หลีกเลี่ยง `!` หากยังพิสูจน์ไม่ได้ว่าค่าไม่เป็น null ใช้ `?.`, `??`, pattern matching หรือ guard clause แทน
+
+```dart
+String formatEmail(String? email) {
+  if (email == null || email.isEmpty) return 'ไม่มีอีเมล';
+  return email.toLowerCase();
+}
+```
+
+## Collection
+
+```dart
+final events = <String>['Flutter Day', 'Career Fair'];
+events.add('Open House');
+
+final eventById = <int, String>{
+  1: 'Flutter Day',
+  2: 'Career Fair',
+};
+
+final visibleEvents = events
+    .where((event) => event.contains('F'))
+    .map((event) => event.toUpperCase())
+    .toList();
+```
+
+ใช้ spread และ collection-if เพื่อสร้าง Widget list:
+
+```dart
+final widgets = <Widget>[
+  const Text('กิจกรรม'),
+  if (isOpen) const Chip(label: Text('เปิดลงทะเบียน')),
+  ...events.map((event) => Text(event)),
+];
+```
+
+## Function และ Named Parameter
+
+```dart
+double calculateTotal({
+  required double price,
+  int quantity = 1,
+  double discount = 0,
+}) {
+  return (price * quantity) - discount;
+}
+
+final total = calculateTotal(price: 120, quantity: 2, discount: 20);
+```
+
+Flutter constructors ใช้ named parameters มาก เพราะอ่านความหมายได้ชัดเจน
+
+## Immutable Model
+
+```dart
+class Event {
+  const Event({
+    required this.id,
+    required this.title,
+    required this.location,
+    this.isFavorite = false,
+  });
+
+  final int id;
+  final String title;
+  final String location;
+  final bool isFavorite;
+
+  Event copyWith({bool? isFavorite}) {
+    return Event(
+      id: id,
+      title: title,
+      location: location,
+      isFavorite: isFavorite ?? this.isFavorite,
+    );
+  }
+}
+```
+
+Immutable object ลดปัญหาข้อมูลเปลี่ยนจากหลายจุด ใช้ `copyWith` สร้าง state ใหม่แทนแก้ object เดิม
+
+## Enum, Abstract Class และ Extension
+
+```dart
+enum RegistrationStatus { open, full, closed }
+
+abstract interface class EventRepository {
+  Future<List<Event>> getEvents();
+}
+
+extension RegistrationStatusLabel on RegistrationStatus {
+  String get label => switch (this) {
+        RegistrationStatus.open => 'เปิดรับสมัคร',
+        RegistrationStatus.full => 'เต็มแล้ว',
+        RegistrationStatus.closed => 'ปิดรับสมัคร',
+      };
+}
+```
+
+Interface ช่วยเปลี่ยน implementation และเขียน test ด้วย fake repository ได้ง่ายขึ้น
+
+## แบบฝึกหัด
+
+สร้าง `Student`, `Event` และ `Registration` เป็น immutable classes เพิ่ม enum สถานะและ method คำนวณค่าลงทะเบียน จากนั้นสร้างรายการกิจกรรม กรองเฉพาะรายการที่ยังเปิด และแสดงผลใน Console
+

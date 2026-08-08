@@ -1,0 +1,164 @@
+---
+title: "Authentication และ Authorization"
+sidebarTitle: "Authentication และ Authorization"
+---
+
+# Authentication และ Authorization
+
+ระบบสมาชิกประกอบด้วยสามเรื่องที่ต้องแยกจากกัน:
+
+1. **Authentication** ตรวจว่าผู้ใช้เป็นใคร เช่น email/password หรือ OAuth
+2. **Session Management** จดจำสถานะการเข้าสู่ระบบข้าม request
+3. **Authorization** ตัดสินว่าผู้ใช้คนนี้อ่านหรือแก้ข้อมูลใดได้
+
+ในงานจริงควรใช้ Authentication Library ที่ได้รับการดูแล แทนการออกแบบ token หรือการเข้ารหัสเอง เพราะ library ช่วยจัดการ cookie, session rotation, OAuth และกรณีผิดพลาดจำนวนมาก
+
+## Flow การเข้าสู่ระบบ
+
+```text
+Login Form
+   ↓ Server Action ตรวจ input
+Auth Library ตรวจ credential
+   ↓
+สร้าง session และตั้ง httpOnly cookie
+   ↓
+Data Access Layer ตรวจ session/role ทุกครั้ง
+   ↓
+คืนเฉพาะข้อมูลที่ผู้ใช้มีสิทธิ์เห็น
+```
+
+## Login Form
+
+ตัวอย่างนี้สมมติว่า `signIn` มาจาก auth library ที่ตั้งค่าไว้แล้ว
+
+```tsx
+// app/(account)/login/actions.ts
+'use server'
+
+import { redirect } from 'next/navigation'
+import { signIn } from '@/auth'
+
+export type LoginState = { error?: string }
+
+export async function login(
+  _state: LoginState,
+  formData: FormData,
+): Promise<LoginState> {
+  const email = formData.get('email')
+  const password = formData.get('password')
+
+  if (typeof email !== 'string' || !email.includes('@')) {
+    return { error: 'รูปแบบอีเมลไม่ถูกต้อง' }
+  }
+
+  if (typeof password !== 'string' || password.length < 8) {
+    return { error: 'รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร' }
+  }
+
+  try {
+    await signIn('credentials', { email, password, redirect: false })
+  } catch {
+    return { error: 'อีเมลหรือรหัสผ่านไม่ถูกต้อง' }
+  }
+
+  redirect('/dashboard')
+}
+```
+
+ไม่ควรบอกว่า “ไม่พบอีเมล” หรือ “รหัสผ่านผิด” แยกกัน เพราะช่วยให้ผู้โจมตีเดารายชื่อบัญชีได้
+
+## Data Access Layer
+
+รวมการตรวจ session ไว้ใกล้ฐานข้อมูลเพื่อไม่ให้แต่ละหน้าลืมตรวจ
+
+```tsx
+// lib/dal.ts
+import 'server-only'
+import { cache } from 'react'
+import { redirect } from 'next/navigation'
+import { auth } from '@/auth'
+import { db } from '@/lib/db'
+
+export const verifySession = cache(async () => {
+  const session = await auth()
+  if (!session?.user?.id) redirect('/login')
+
+  return { userId: session.user.id }
+})
+
+export async function getCurrentUser() {
+  const { userId } = await verifySession()
+
+  return db.user.findUnique({
+    where: { id: userId },
+    select: { id: true, name: true, email: true, role: true },
+  })
+}
+```
+
+`select` ทำหน้าที่คล้าย Data Transfer Object โดยไม่คืน password hash หรือ field ภายในที่ UI ไม่ต้องใช้
+
+## ป้องกัน Page
+
+```tsx
+// app/dashboard/page.tsx
+import { getCurrentUser } from '@/lib/dal'
+
+export default async function DashboardPage() {
+  const user = await getCurrentUser()
+
+  return (
+    <main>
+      <h1>ยินดีต้อนรับ {user?.name}</h1>
+      <p>{user?.email}</p>
+    </main>
+  )
+}
+```
+
+อย่าพึ่งการตรวจใน Layout เพียงจุดเดียว เพราะ Next.js มีหลาย entry points เช่น Pages, Server Actions และ Route Handlers ให้ตรวจใกล้ data source และ action สำคัญ
+
+## Role-based Authorization
+
+```tsx
+// lib/dal.ts
+export async function requireAdmin() {
+  const user = await getCurrentUser()
+  if (!user || user.role !== 'admin') {
+    throw new Error('Forbidden')
+  }
+  return user
+}
+```
+
+```tsx
+// app/admin/books/actions.ts
+'use server'
+
+export async function deleteBook(id: string) {
+  await requireAdmin()
+  await db.book.delete({ where: { id } })
+}
+```
+
+แม้หน้าเว็บซ่อนปุ่มลบจาก user ปกติ Action ก็ต้องตรวจ `requireAdmin()` ซ้ำ
+
+## Authentication Checklist
+
+- Hash password ด้วย Argon2 หรือ bcrypt และไม่เก็บ plain text
+- ตั้ง session cookie เป็น `httpOnly`, `secure`, `sameSite` และมีวันหมดอายุ
+- เปลี่ยน session หลัง login และยกเลิก session เมื่อ logout
+- ป้องกัน brute force ด้วย rate limit
+- ตรวจ authorization ใน Server Action และ Route Handler ทุกจุด
+- ไม่ส่ง password hash, token หรือข้อมูลส่วนตัวเกินจำเป็น
+- รองรับ reset password และ verify email ด้วย token ที่หมดอายุได้
+- ใช้ HTTPS และเก็บ secret ใน environment ของ hosting
+
+## Static Export
+
+Authentication ที่ใช้ secure cookie และ Server-side authorization ต้องมี Server runtime เว็บไซต์ GitHub Pages ทำได้เพียง UI ฝั่ง Client และไม่ควรเก็บ secret การทดลองบทนี้จึงต้อง deploy แบบ Node.js/Vercel หรือเชื่อม Auth Backend ภายนอกที่ออกแบบมาสำหรับ SPA
+
+## แบบฝึกหัด
+
+ออกแบบ role `customer` และ `admin` ระบุว่าแต่ละ role เข้าหน้าและทำ action ใดได้ จากนั้นเพิ่มการตรวจสิทธิ์ใน Page, Server Action และ Route Handler พร้อมทดสอบทั้งผู้ใช้ที่ยังไม่ login, customer และ admin
+

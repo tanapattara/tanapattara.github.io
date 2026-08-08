@@ -1,0 +1,122 @@
+---
+title: "Inheritance และ Polymorphism"
+sidebarTitle: "Inheritance และ Polymorphism"
+---
+
+# Inheritance และ Polymorphism
+
+Inheritance ใช้สร้าง Class ลูกที่เป็นชนิดเฉพาะของ Class แม่และรับสมาชิกที่เหมาะสมมาใช้ต่อ ความสัมพันธ์ควรอ่านได้ว่า “เป็นชนิดหนึ่งของ” หรือ **is-a** เช่น `EmailNotification` เป็น `Notification` ชนิดหนึ่ง
+
+Polymorphism ทำให้โค้ดเรียกเมธอดผ่านชนิดแม่เดียวกัน แต่ C# เลือกพฤติกรรมตามชนิดจริงของ Object ในขณะรัน
+
+## ตัวอย่างระบบแจ้งเตือน
+
+```csharp
+using System;
+using System.Collections.Generic;
+
+namespace PolymorphismDemo;
+
+public class Notification
+{
+    public string Recipient { get; }
+
+    public Notification(string recipient)
+    {
+        Recipient = recipient;
+    }
+
+    public virtual void Send(string message)
+    {
+        Console.WriteLine($"ส่งข้อความทั่วไปถึง {Recipient}: {message}");
+    }
+}
+
+public class EmailNotification : Notification
+{
+    public string Subject { get; }
+
+    public EmailNotification(string email, string subject)
+        : base(email)
+    {
+        Subject = subject;
+    }
+
+    public override void Send(string message)
+    {
+        Console.WriteLine($"EMAIL ถึง {Recipient} | {Subject} | {message}");
+    }
+}
+
+public class SmsNotification : Notification
+{
+    public SmsNotification(string phoneNumber)
+        : base(phoneNumber)
+    {
+    }
+
+    public override void Send(string message)
+    {
+        Console.WriteLine($"SMS ถึง {Recipient} | {message}");
+    }
+}
+
+public class Program
+{
+    public static void Main()
+    {
+        List<Notification> notifications = new()
+        {
+            new EmailNotification("student@example.com", "ผลการลงทะเบียน"),
+            new SmsNotification("0812345678"),
+            new Notification("หน้าจอประชาสัมพันธ์")
+        };
+
+        foreach (Notification notification in notifications)
+        {
+            notification.Send("ดำเนินการเรียบร้อยแล้ว");
+        }
+    }
+}
+```
+
+```bash
+dotnet new console -n PolymorphismDemo
+cd PolymorphismDemo
+# นำโค้ดด้านบนไปแทนที่ Program.cs
+dotnet run
+```
+
+ผลลัพธ์
+
+```text
+EMAIL ถึง student@example.com | ผลการลงทะเบียน | ดำเนินการเรียบร้อยแล้ว
+SMS ถึง 0812345678 | ดำเนินการเรียบร้อยแล้ว
+ส่งข้อความทั่วไปถึง หน้าจอประชาสัมพันธ์: ดำเนินการเรียบร้อยแล้ว
+```
+
+จุดสำคัญของตัวอย่าง
+
+- `: Notification` ระบุว่า Class ลูกสืบทอดจาก Class แม่
+- `base(email)` เรียก Constructor ของ Class แม่
+- `virtual` อนุญาตให้ Class ลูกเปลี่ยนพฤติกรรม
+- `override` ยืนยันว่าเมธอดนี้เขียนทับเมธอดจาก Class แม่
+- `List<Notification>` เก็บ Object ของ Class แม่และ Class ลูกได้ จึงวนสั่ง `Send()` แบบเดียวกันได้
+
+## Overriding ไม่ใช่ Overloading
+
+| รูปแบบ | ความหมาย | ตัวอย่าง |
+| --- | --- | --- |
+| Overriding | Class ลูกเปลี่ยนการทำงานของเมธอดจาก Class แม่ | `override void Send(string message)` |
+| Overloading | มีเมธอดชื่อเดียวกันแต่ Parameter ต่างกัน | `Send(string message)` และ `Send(string message, int priority)` |
+
+## ควรใช้ Inheritance เมื่อใด
+
+ใช้เมื่อ Class ลูกเป็นชนิดหนึ่งของ Class แม่จริง มีข้อตกลงร่วมกันที่เสถียร และต้องการให้ใช้แทนกันได้ หากเพียงต้องการนำความสามารถของ Object อื่นมาใช้ ความสัมพันธ์แบบ Composition มักยืดหยุ่นกว่า
+
+## แบบฝึกหัด
+
+1. เพิ่ม `PushNotification` ที่มี Property `DeviceToken`
+2. Override `Send()` ให้แสดงรูปแบบข้อความของตนเอง
+3. เพิ่ม Object ลงในรายการเดิมโดยไม่แก้ `foreach`
+4. ทดลองลบคำว่า `virtual` และอ่าน Error ที่ Compiler รายงาน

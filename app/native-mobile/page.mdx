@@ -1,86 +1,75 @@
 ---
-title: "Native Mobile Application Programming"
+title: "Native Mobile Application Programming with Flutter"
 sidebarTitle: "Native Mobile"
 asIndexPage: true
 ---
 
 import { Cards } from "nextra/components";
 
-# Native Mobile Application Programming
+# Native Mobile Application Programming with Flutter
 
-Native Mobile Application Programming คือ การพัฒนาแอปพลิเคชันสำหรับอุปกรณ์พกพา (เช่น สมาร์ทโฟน แท็บเล็ต) โดยใช้ภาษาโปรแกรมและเครื่องมือที่เฉพาะเจาะจงสำหรับระบบปฏิบัติการนั้นๆ เช่น 
+รายวิชานี้ศึกษาการพัฒนาแอปพลิเคชันบนอุปกรณ์เคลื่อนที่ โดยใช้ **Flutter และภาษา Dart** เป็นเครื่องมือหลัก ผู้เรียนจะได้สร้าง UI ที่ปรับตามขนาดหน้าจอ จัดการ State เชื่อมต่อ REST API บันทึกข้อมูลในเครื่อง ขอ Permission ใช้ความสามารถของอุปกรณ์ ทดสอบ และเตรียมแอปสำหรับเผยแพร่
 
-- iOS:  ใช้ภาษา Objective-C หรือ Swift และพัฒนาด้วย Xcode
-- Android: ใช้ภาษา Java หรือ Kotlin และพัฒนาด้วย Android Studio
-- แอปพลิเคชันที่พัฒนาแบบ Native จะสามารถเข้าถึงฟังก์ชันต่างๆ ของอุปกรณ์ได้อย่างเต็มที่ เช่น กล้อง GPS เซ็นเซอร์ต่างๆ ทำให้แอปพลิเคชันมีประสิทธิภาพสูงและตอบสนองได้รวดเร็ว
+Flutter เป็น cross-platform UI toolkit ที่ใช้ codebase ร่วมกันบน Android และ iOS แต่ยังสามารถเรียก Native API ผ่าน Plugin หรือ Platform Channel ได้ จึงเหมาะสำหรับใช้เรียนทั้งแนวคิด Mobile Application และการสร้างผลิตภัณฑ์ที่ใช้งานจริง
 
-**ข้อดี**ของ Native Mobile Application Programming:
+## ผลลัพธ์การเรียนรู้
 
-- ประสิทธิภาพสูง: ทำงานได้รวดเร็วและเสถียร
-- เข้าถึงฟังก์ชันของอุปกรณ์ได้เต็มที่:  ใช้ประโยชน์จากฮาร์ดแวร์และซอฟต์แวร์ของอุปกรณ์ได้อย่างเต็มที่
-- User Experience ที่ดี:  ใช้งานง่ายและมี UI ที่สอดคล้องกับระบบปฏิบัติการ
-- ความปลอดภัยสูง:  ควบคุมความปลอดภัยได้ดีกว่า
+เมื่อเรียนครบ ผู้เรียนจะสามารถ:
 
-**ข้อเสีย**ของ Native Mobile Application Programming: 
+- อธิบายข้อจำกัดของอุปกรณ์เคลื่อนที่และเลือกแนวทางออกแบบที่เหมาะสม
+- เขียน Dart ที่ใช้ Null Safety, Future, Stream และ Object-Oriented Programming ได้
+- สร้าง Flutter UI ที่ responsive, accessible และสอดคล้องกับ Material Design
+- ออกแบบ Navigation, State Management และโครงสร้างแอปแบบแยก UI/Data layer
+- เชื่อมต่อ API จัดการ JSON และบันทึกข้อมูลแบบ local/offline
+- ใช้ Permission, Camera, Location และบริการของแพลตฟอร์มอย่างปลอดภัย
+- เขียน Unit, Widget และ Integration Test และสร้าง Release Build ได้
 
-- ค่าใช้จ่ายสูง:  ต้องพัฒนาแยกสำหรับแต่ละแพลตฟอร์ม
-- ใช้เวลาพัฒนานาน:  ต้องเขียนโค้ดแยกสำหรับ iOS และ Android
-- ต้องมีความเชี่ยวชาญเฉพาะด้าน:  ต้องมีความรู้ความเข้าใจในระบบปฏิบัติการนั้นๆ
+> **พื้นฐานที่ควรมี:** การเขียนโปรแกรมเบื้องต้น ตัวแปร เงื่อนไข Loop Function Class และความเข้าใจ HTTP/JSON ระดับพื้นฐาน
 
-ตัวอย่างแอปพลิเคชันที่พัฒนาแบบ Native: 
-
-- เกมส์
-- แอปพลิเคชันที่ต้องใช้ทรัพยากรเครื่องสูงๆ
-- แอปพลิเคชันที่ต้องการความปลอดภัยสูง
-
-Native Mobile Application Programming เหมาะสำหรับแอปพลิเคชันที่ต้องการประสิทธิภาพสูง ใช้งานฟังก์ชันของอุปกรณ์ได้เต็มที่ และมี User Experience ที่ดี  แต่ต้องแลกมาด้วยค่าใช้จ่ายและเวลาในการพัฒนาที่สูงกว่า
-
-## คำอธิบายรายวิชา
-
-สถาปัตยกรรมฮาร์ดแวร์ คุณลักษณะและข้อจํากัดของอุปกรณ์เคลื่อนที่ เครื่องมือและภาษาที่ใช้สําหรับพัฒนาโปรแกรมประยุกต์บนอุปกรณ์เคลื่อนที่ การพัฒนาโปรแกรมประยุกต์บนอุปกรณ์เคลื่อนที่โดยใช้ภาษาแม่ กระบวนการพัฒนาโปรแกรมประยุกต์บนอุปกรณ์เคลื่อนที่ การใช้หน่วยความจําและส่วนเก็บบันทึกข้อมูล การขออนุญาตและการเข้าถึงส่วนฮาร์ดแวร์ ส่วนติดต่อกับผู้ใช้ การสื่อสารเครือข่ายกับภายนอก การเชื่อมโยงกับระบบคอมพิวเตอร์ การทดสอบโปรแกรมประยุกต์บนอุปกรณ์เคลื่อนที่โดยใช้ระบบคอมพิวเตอร์ ประเด็นด้านความมั่นคง การฝึกปฏิบัติ
-
-## Introduction
-
-- Basic Flutter widgets (Text, Image, Container, Row, Column)
-- Project: Simple "Hello World" app
+## พื้นฐาน Flutter และ Dart
 
 <Cards>
-  <Cards.Card title="Dart" href="/dart" />
-  <Cards.Card title="Flutter" href="/flutter" />
-  <Cards.Card title="Install and Setup" href="/native-mobile/install-setup" />
+  <Cards.Card title="Mobile และ Flutter" href="/native-mobile/mobile-flutter-overview" />
+  <Cards.Card title="ติดตั้งและตั้งค่าเครื่องมือ" href="/native-mobile/install-setup" />
+  <Cards.Card title="Dart สำหรับ Flutter" href="/native-mobile/dart-for-flutter" />
+  <Cards.Card title="Asynchronous Dart" href="/native-mobile/dart-async" />
+  <Cards.Card title="โครงสร้างโปรเจกต์ Flutter" href="/native-mobile/flutter-project-structure" />
 </Cards>
 
-## Building User Interfaces
+## User Interface
 
-- Layout widgets (Stack, Expanded, ListView, GridView)
-- Material Design and Cupertino widgets
-- Styling (themes, colors, fonts)
-- Navigation (routes, tabs, drawers)
-- Project:
-    - User list
-    - User list with details page
+<Cards>
+  <Cards.Card title="Widget และ Lifecycle" href="/native-mobile/widgets-lifecycle" />
+  <Cards.Card title="Layout และ Responsive UI" href="/native-mobile/layouts-responsive" />
+  <Cards.Card title="Form, Theme และ Accessibility" href="/native-mobile/forms-theme-accessibility" />
+  <Cards.Card title="Navigation และ Routing" href="/native-mobile/navigation-routing" />
+</Cards>
 
-## State Management and Data Persistence
+## State, Architecture และ Data
 
-- Stateless vs. stateful widgets- Introduction to Provider (or other state management solutions)
-- Local storage options (SharedPreferences, sqflite)
-- Project:
-    - Todo list app with data persistence
-    - [Shopping cart](https://docs.flutter.dev/data-and-backend/state-mgmt/simple)
+<Cards>
+  <Cards.Card title="State Management" href="/native-mobile/state-management" />
+  <Cards.Card title="Flutter App Architecture" href="/native-mobile/app-architecture" />
+  <Cards.Card title="Networking และ REST API" href="/native-mobile/networking-rest-api" />
+  <Cards.Card title="Local Storage และ Offline Data" href="/native-mobile/local-storage" />
+</Cards>
 
-## Networking and APIs
+## Mobile Features และ Production
 
-- HTTP requests (GET, POST, PUT, DELETE)
-- JSON parsing and serialization
-- Working with REST APIs
-- Firebase integration (authentication, real-time database, cloud storage)
-- Project:
-    - Weather app fetching data from an API
-    - Pokemon API
+<Cards>
+  <Cards.Card title="Authentication และ Firebase" href="/native-mobile/authentication-firebase" />
+  <Cards.Card title="Permission และ Device APIs" href="/native-mobile/device-features" />
+  <Cards.Card title="Testing, Debugging และ Release" href="/native-mobile/testing-debugging-release" />
+</Cards>
 
-## Advanced Topics
+## โปรเจกต์ประจำวิชา
 
-- Animations and transitions
-- Testing Flutter apps
-- Publishing to app stores
-- Integrating platform-specific code (e.g., camera access)
+สร้าง **แอปกิจกรรมมหาวิทยาลัย** แบบต่อเนื่อง: แสดงรายการและรายละเอียดกิจกรรม ค้นหาและบันทึกรายการโปรด เชื่อม REST API รองรับ Offline Login แยกสิทธิ์ผู้ใช้ ใช้ Camera หรือ Location และส่งมอบเป็น Android App Bundle พร้อมชุดทดสอบ
+
+แต่ละบทมี Milestone เพื่อให้โปรเจกต์เติบโตไปพร้อมกับเนื้อหา แนะนำให้เก็บงานด้วย Git และสร้าง branch แยกตาม feature
+
+## เอกสารอ้างอิง
+
+- [Flutter documentation](https://docs.flutter.dev/)
+- [Dart documentation](https://dart.dev/docs)
+- [Flutter packages](https://pub.dev/)

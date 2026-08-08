@@ -1,0 +1,81 @@
+---
+title: "เริ่มต้นโปรเจกต์ C# ด้วย .NET CLI"
+sidebarTitle: "เริ่มต้นโปรเจกต์ .NET"
+---
+
+# เริ่มต้นโปรเจกต์ C# ด้วย .NET CLI
+
+.NET SDK มีคำสั่งสำหรับสร้าง คอมไพล์ รัน และทดสอบโปรเจกต์ C# ได้จาก Terminal เริ่มจากตรวจสอบว่าเครื่องมองเห็น SDK แล้ว
+
+```bash
+dotnet --version
+dotnet --list-sdks
+```
+
+หากคำสั่งแสดงหมายเลขเวอร์ชัน แสดงว่าพร้อมใช้งาน หากไม่พบคำสั่งให้ติดตั้ง **.NET SDK** ก่อน โดย SDK ต่างจาก Runtime ตรงที่ SDK มีเครื่องมือสำหรับพัฒนาและคอมไพล์โปรแกรมด้วย
+
+## สร้างและรัน Console App
+
+```bash
+dotnet new console -n OopCourse
+cd OopCourse
+dotnet run
+```
+
+คำสั่งแรกสร้างโฟลเดอร์และไฟล์เริ่มต้น โครงสร้างสำคัญมีดังนี้
+
+```text
+OopCourse/
+├── OopCourse.csproj   # การตั้งค่าโปรเจกต์และ Target Framework
+├── Program.cs         # จุดเริ่มต้นของโปรแกรม
+└── obj/               # ไฟล์ชั่วคราวที่ .NET สร้างให้อัตโนมัติ
+```
+
+ลองแทนที่เนื้อหาใน `Program.cs` ด้วยโปรแกรมต่อไปนี้
+
+```csharp
+using System;
+
+namespace OopCourse;
+
+public class Program
+{
+    public static void Main()
+    {
+        Console.WriteLine("เริ่มเรียน OOP ด้วย C#");
+    }
+}
+```
+
+จากนั้นตรวจสอบและรันโปรแกรม
+
+```bash
+dotnet build
+dotnet run
+```
+
+- `dotnet build` ตรวจ syntax และคอมไพล์โปรเจกต์
+- `dotnet run` คอมไพล์เมื่อจำเป็น แล้วเริ่มโปรแกรม
+- `dotnet clean` ลบผลลัพธ์จากการ build เพื่อให้สร้างใหม่
+- `dotnet format` จัดรูปแบบโค้ดทั้งโปรเจกต์
+
+## เมื่อโปรเจกต์มีหลาย Class
+
+C# อนุญาตให้ประกาศหลาย Class ในไฟล์เดียว แต่ในการทำงานจริงควรแยกหนึ่ง Class ต่อหนึ่งไฟล์เพื่อค้นหาและแก้ไขได้ง่าย ตัวอย่างเช่น
+
+```text
+OopCourse/
+├── OopCourse.csproj
+├── Program.cs
+├── Product.cs
+└── ShoppingCart.cs
+```
+
+ไฟล์ `.cs` ภายในโปรเจกต์จะถูกนำไปคอมไพล์ให้อัตโนมัติ ไม่ต้องเพิ่มรายชื่อไฟล์เอง และควรใช้ `namespace` เดียวกันเมื่อ Class เหล่านั้นอยู่ในส่วนงานเดียวกัน
+
+## แบบฝึกหัดตรวจความพร้อม
+
+1. สร้าง Console App ชื่อ `HelloOop`
+2. เปลี่ยนข้อความใน `Program.cs` ให้แสดงชื่อและเป้าหมายการเรียนของตนเอง
+3. รัน `dotnet build` และแก้ไขจนไม่มี Error
+4. รัน `dotnet run` และตรวจผลลัพธ์บน Terminal

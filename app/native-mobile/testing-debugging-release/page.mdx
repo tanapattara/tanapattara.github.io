@@ -1,0 +1,151 @@
+---
+title: "Testing, Debugging และ Release"
+sidebarTitle: "Testing, Debugging และ Release"
+---
+
+# Testing, Debugging และ Release
+
+การทดสอบ Flutter แบ่งเป็น Unit Test สำหรับ logic, Widget Test สำหรับ UI component และ Integration Test สำหรับ flow สำคัญบนอุปกรณ์ ควรใช้หลายระดับร่วมกัน ไม่ทดสอบทุกอย่างด้วย Integration Test เพราะช้าและวิเคราะห์สาเหตุยาก
+
+## Unit Test
+
+```dart
+class FakeEventRepository implements EventRepository {
+  @override
+  Future<List<Event>> getEvents({bool refresh = false}) async {
+    return const [Event(id: 1, title: 'Flutter Day', location: 'Room A')];
+  }
+}
+
+void main() {
+  test('load exposes events from repository', () async {
+    final viewModel = EventListViewModel(FakeEventRepository());
+
+    await viewModel.load();
+
+    expect(viewModel.loading, isFalse);
+    expect(viewModel.error, isNull);
+    expect(viewModel.events, hasLength(1));
+  });
+}
+```
+
+ทดสอบ Service, Repository และ ViewModel แยกกัน ครอบคลุม success, empty, error และ boundary values
+
+## Widget Test
+
+```dart
+void main() {
+  testWidgets('favorite button changes icon when tapped', (tester) async {
+    await tester.pumpWidget(
+      const MaterialApp(home: Scaffold(body: FavoriteButton())),
+    );
+
+    expect(find.byIcon(Icons.favorite_border), findsOneWidget);
+
+    await tester.tap(find.byType(IconButton));
+    await tester.pump();
+
+    expect(find.byIcon(Icons.favorite), findsOneWidget);
+  });
+}
+```
+
+ใช้ Key หรือ semantic label ที่มีความหมายแทนค้นหาตามตำแหน่ง widget ทดสอบ interaction, validation, loading และ accessibility semantics
+
+## Integration Test
+
+```bash
+flutter pub add --dev integration_test --sdk=flutter
+flutter test integration_test
+```
+
+```dart
+void main() {
+  IntegrationTestWidgetsFlutterBinding.ensureInitialized();
+
+  testWidgets('user opens an event detail', (tester) async {
+    await tester.pumpWidget(const CampusEventsApp());
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Flutter Day'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('รายละเอียดกิจกรรม'), findsOneWidget);
+  });
+}
+```
+
+ใช้ test backend/emulator และ reset data ให้แต่ละ test เป็นอิสระ Permission dialog ของระบบอาจต้องใช้เครื่องมือที่ควบคุม native UI ได้
+
+## Debugging และ DevTools
+
+```bash
+flutter analyze
+flutter test
+flutter run --profile
+```
+
+ใช้ Flutter DevTools ตรวจ:
+
+- Inspector: Widget tree, constraints และ repaint
+- Performance: jank และ frame timeline
+- Memory: object allocation และ memory leak
+- Network: request, response และเวลา
+- CPU Profiler: function ที่ใช้ CPU สูง
+
+วัด performance ใน Profile mode บนอุปกรณ์จริง ไม่ใช้ Debug mode ตัดสินความลื่นของ release
+
+## Build Modes
+
+| Mode | ใช้สำหรับ |
+| --- | --- |
+| Debug | พัฒนา, assertions, hot reload |
+| Profile | วัด performance ใกล้ production |
+| Release | ส่งผู้ใช้จริงและ optimize เต็ม |
+
+## Android Release
+
+กำหนด application ID, version, icon และ signing key แล้วสร้าง App Bundle:
+
+```bash
+flutter analyze
+flutter test
+flutter build appbundle --release
+```
+
+ผลลัพธ์หลักอยู่ที่ `build/app/outputs/bundle/release/app-release.aab` เก็บ keystore และ password นอก repository และสำรองอย่างปลอดภัย หากสูญ signing key อาจอัปเดตแอปเดิมไม่ได้
+
+## iOS Release
+
+ต้องใช้ macOS, Xcode, Apple Developer account, bundle identifier และ signing certificate:
+
+```bash
+flutter build ipa --release
+```
+
+ทดสอบผ่าน TestFlight ก่อนส่ง App Store และเตรียม privacy manifest/usage descriptions ให้ตรงกับข้อมูลที่แอปใช้
+
+## Flavors และ Environment
+
+แยก `development`, `staging`, `production` เพื่อใช้ API URL, app name และ logging ต่างกัน อย่าใส่ server secret ใน `--dart-define` เพราะค่าฝั่ง client สามารถถูกดึงจาก binary ได้
+
+```bash
+flutter run --flavor staging --dart-define=API_URL=https://staging.example.com
+flutter build appbundle --flavor production --release
+```
+
+## Release Checklist
+
+- Analyze และ test ผ่านทั้งหมด
+- ทดสอบ Android/iOS device จริงหลายขนาดและ OS version
+- ตรวจ offline, slow network, denied permissions และ expired session
+- ไม่มี debug log, test account หรือ secret
+- version/build number ถูกต้อง
+- signing และ backup พร้อม
+- Store screenshots, description, privacy policy และ data disclosure ครบ
+- มี monitoring, crash reporting และ rollback plan
+
+## โปรเจกต์ปลายภาค
+
+ส่ง source code, README, architecture diagram, API/storage documentation, test report และ Android App Bundle สาธิต flow Login → ดูกิจกรรม → Favorite offline → แนบรูป/ตำแหน่ง พร้อมอธิบาย security และข้อจำกัดที่ยังเหลือ

@@ -1,0 +1,151 @@
+---
+title: "Error Handling และ Loading UI"
+sidebarTitle: "Error Handling"
+---
+
+# Error Handling และ Loading UI
+
+ระบบที่ดีต้องออกแบบทั้งกรณีสำเร็จ กำลังโหลด ไม่พบข้อมูล input ไม่ถูกต้อง และระบบขัดข้อง Next.js แยก Expected Error ที่ควรแสดงให้ผู้ใช้เข้าใจออกจาก exception ที่ควรถูก Error Boundary รับไว้
+
+## Expected Error
+
+Expected Error เช่น login ไม่ผ่านหรือชื่อหนังสือซ้ำ ควรคืน state หรือ response ที่อธิบายได้ ไม่ควร `throw` เพื่อใช้ควบคุม flow ปกติ
+
+```tsx
+export async function createBook(
+  _state: { error?: string },
+  formData: FormData,
+) {
+  'use server'
+
+  const title = formData.get('title')
+  if (typeof title !== 'string' || title.trim() === '') {
+    return { error: 'กรุณากรอกชื่อหนังสือ' }
+  }
+
+  await saveBook({ title: title.trim() })
+  return {}
+}
+```
+
+## Loading UI ระดับ Route
+
+วาง `loading.tsx` ข้าง `page.tsx`
+
+```text
+app/books/
+├── loading.tsx
+└── page.tsx
+```
+
+```tsx
+// app/books/loading.tsx
+export default function Loading() {
+  return (
+    <section aria-busy="true" aria-live="polite">
+      <h1>รายการหนังสือ</h1>
+      <p>กำลังโหลดข้อมูล...</p>
+    </section>
+  )
+}
+```
+
+`loading.tsx` สร้าง Suspense boundary ให้ segment โดยอัตโนมัติ Skeleton ควรมีขนาดใกล้เนื้อหาจริงเพื่อลด Layout Shift
+
+## Error Boundary ด้วย error.tsx
+
+```tsx
+// app/books/error.tsx
+'use client'
+
+export default function ErrorPage({
+  error,
+  reset,
+}: {
+  error: Error & { digest?: string }
+  reset: () => void
+}) {
+  return (
+    <section role="alert">
+      <h2>โหลดรายการหนังสือไม่สำเร็จ</h2>
+      <p>กรุณาตรวจสอบการเชื่อมต่อแล้วลองอีกครั้ง</p>
+      <button onClick={() => reset()}>ลองใหม่</button>
+    </section>
+  )
+}
+```
+
+`error.tsx` ต้องเป็น Client Component เพราะใช้ `reset()` และรับ error ที่เกิดใน segment ลูก Error จะไหลขึ้นหา boundary ที่ใกล้ที่สุด หาก root layout ขัดข้องให้ใช้ `global-error.tsx` ซึ่งต้องมี `<html>` และ `<body>`
+
+ไม่ควรแสดง `error.message` จาก Server ตรง ๆ ใน production เพราะอาจมีรายละเอียดระบบภายใน ให้บันทึก error ฝั่ง Server และแสดงข้อความปลอดภัยแก่ผู้ใช้
+
+## หน้าไม่พบข้อมูล
+
+```tsx
+// app/books/[id]/page.tsx
+import { notFound } from 'next/navigation'
+
+type Props = { params: Promise<{ id: string }> }
+
+export default async function BookPage({ params }: Props) {
+  const { id } = await params
+  const book = await getBook(id)
+
+  if (!book) notFound()
+
+  return <h1>{book.title}</h1>
+}
+```
+
+```tsx
+// app/books/[id]/not-found.tsx
+import Link from 'next/link'
+
+export default function NotFound() {
+  return (
+    <section>
+      <h1>ไม่พบหนังสือ</h1>
+      <Link href="/books">กลับไปดูหนังสือทั้งหมด</Link>
+    </section>
+  )
+}
+```
+
+## Redirect
+
+```tsx
+import { redirect } from 'next/navigation'
+
+export default async function AdminPage() {
+  const session = await verifySession()
+  if (!session) redirect('/login')
+
+  return <h1>Admin</h1>
+}
+```
+
+`redirect()`, `notFound()` และ Navigation API ที่คล้ายกันใช้การ throw ภายใน ห้ามวางไว้ใน `try...catch` ทั่วไป หากจำเป็นต้อง catch ให้ rethrow error ภายในของ Next.js ก่อน
+
+## Error ใน Route Handler
+
+```tsx
+export async function GET() {
+  try {
+    const books = await getBooks()
+    return Response.json({ data: books })
+  } catch (error) {
+    console.error('GET /api/books failed', error)
+    return Response.json(
+      { error: 'ระบบไม่สามารถโหลดข้อมูลได้' },
+      { status: 500 },
+    )
+  }
+}
+```
+
+ใช้ status code ให้ตรงความหมาย เช่น 400 input ผิด, 401 ยังไม่ login, 403 ไม่มีสิทธิ์, 404 ไม่พบ และ 500 ระบบภายในผิดพลาด
+
+## แบบฝึกหัด
+
+สร้าง `loading.tsx`, `error.tsx` และ `not-found.tsx` สำหรับหน้ารายละเอียดหนังสือ ทดลองจำลอง API ช้า, throw exception และค้นหา ID ที่ไม่มีอยู่ แล้วประเมินว่าผู้ใช้ได้รับข้อความและทางไปต่อที่เหมาะสมหรือไม่
+

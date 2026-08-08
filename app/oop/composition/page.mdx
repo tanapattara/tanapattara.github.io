@@ -1,0 +1,130 @@
+---
+title: "Composition และการออกแบบความสัมพันธ์ของ Object"
+sidebarTitle: "Composition"
+---
+
+# Composition และการออกแบบความสัมพันธ์ของ Object
+
+Composition คือการสร้าง Class จาก Object ย่อยหลายชนิด ความสัมพันธ์อ่านได้ว่า “มี” หรือ **has-a** เช่น `Order` มี `OrderItem` หลายรายการ และแต่ละ `OrderItem` มีข้อมูลของ `Product`
+
+วิธีนี้ทำให้แต่ละ Class มีหน้าที่เฉพาะและนำไปประกอบรูปแบบใหม่ได้ โดยไม่ต้องสร้างลำดับการสืบทอดที่ซับซ้อน
+
+## ตัวอย่าง Order และ OrderItem
+
+```csharp
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+namespace CompositionDemo;
+
+public class Product
+{
+    public string Name { get; }
+    public decimal Price { get; }
+
+    public Product(string name, decimal price)
+    {
+        Name = name;
+        Price = price;
+    }
+}
+
+public class OrderItem
+{
+    public Product Product { get; }
+    public int Quantity { get; }
+    public decimal Subtotal => Product.Price * Quantity;
+
+    public OrderItem(Product product, int quantity)
+    {
+        if (quantity <= 0)
+            throw new ArgumentOutOfRangeException(nameof(quantity));
+
+        Product = product;
+        Quantity = quantity;
+    }
+}
+
+public class Order
+{
+    private readonly List<OrderItem> _items = new();
+
+    public string OrderNumber { get; }
+    public IReadOnlyList<OrderItem> Items => _items.AsReadOnly();
+    public decimal Total => _items.Sum(item => item.Subtotal);
+
+    public Order(string orderNumber)
+    {
+        OrderNumber = orderNumber;
+    }
+
+    public void AddItem(Product product, int quantity)
+    {
+        _items.Add(new OrderItem(product, quantity));
+    }
+
+    public void PrintReceipt()
+    {
+        Console.WriteLine($"ใบสั่งซื้อ {OrderNumber}");
+        foreach (OrderItem item in _items)
+        {
+            Console.WriteLine($"- {item.Product.Name} x {item.Quantity} = {item.Subtotal:N2}");
+        }
+        Console.WriteLine($"รวม {Total:N2} บาท");
+    }
+}
+
+public class Program
+{
+    public static void Main()
+    {
+        Product pen = new Product("ปากกา", 15m);
+        Product notebook = new Product("สมุด", 40m);
+
+        Order order = new Order("ORD-001");
+        order.AddItem(pen, 3);
+        order.AddItem(notebook, 2);
+        order.PrintReceipt();
+    }
+}
+```
+
+```bash
+dotnet new console -n CompositionDemo
+cd CompositionDemo
+# นำโค้ดด้านบนไปแทนที่ Program.cs
+dotnet run
+```
+
+ผลลัพธ์
+
+```text
+ใบสั่งซื้อ ORD-001
+- ปากกา x 3 = 45.00
+- สมุด x 2 = 80.00
+รวม 125.00 บาท
+```
+
+`Order` ไม่สืบทอดจาก `Product` หรือ `OrderItem` เพราะ Order ไม่ได้ “เป็น” Product แต่ “มี” รายการสินค้า จึงใช้ Composition ได้ตรงกับความหมายกว่า
+
+## ปกป้อง Collection ภายใน
+
+Field `_items` เป็น `private` เพื่อไม่ให้โค้ดภายนอกเพิ่มหรือลบข้อมูลโดยข้ามกฎของ `Order` ส่วน Property `Items` เปิดเป็น `IReadOnlyList<OrderItem>` เพื่อให้อ่านรายการได้แต่แก้รายการโดยตรงไม่ได้ การเปลี่ยนแปลงต้องผ่าน Method ของ `Order`
+
+## หลัก Single Responsibility
+
+แต่ละ Class ในตัวอย่างมีเหตุผลในการเปลี่ยนแปลงต่างกัน
+
+- `Product` ดูแลข้อมูลสินค้าและราคา
+- `OrderItem` ดูแลจำนวนและยอดย่อย
+- `Order` ดูแลรายการสินค้าและยอดรวม
+
+หากภายหลังต้องเปลี่ยนวิธีคำนวณยอดย่อย จะรู้ได้ทันทีว่าควรแก้ที่ `OrderItem` แทนการกระจายสูตรไว้หลายตำแหน่ง
+
+## แบบฝึกหัด
+
+1. เพิ่ม `RemoveItem(string productName)` ใน `Order`
+2. เพิ่ม Interface `IDiscountPolicy` และให้ `Order` รับ Object คำนวณส่วนลด
+3. เพิ่ม `Customer` แล้วประกอบเข้าใน `Order`
+4. อธิบายว่า Class ใดเป็นเจ้าของกฎแต่ละข้อ และเพราะเหตุใด

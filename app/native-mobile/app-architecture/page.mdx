@@ -1,0 +1,112 @@
+---
+title: "Flutter App Architecture"
+sidebarTitle: "Flutter App Architecture"
+---
+
+# Flutter App Architecture
+
+Architecture ที่ดีแยกหน้าที่ ทำให้เปลี่ยน API, database หรือ UI ได้โดยไม่แก้ทั้งระบบ แนวทางนี้ใช้ UI layer และ Data layer โดย View/ViewModel ดูแลการนำเสนอ ส่วน Repository/Service ดูแลข้อมูล
+
+## หน้าที่แต่ละส่วน
+
+| ส่วน | หน้าที่ | ไม่ควรทำ |
+| --- | --- | --- |
+| View | Render UI และส่ง user event | SQL, HTTP, business rule |
+| ViewModel | แปลงข้อมูลเป็น UI state และรับ command | รู้รายละเอียด HTTP/SQLite |
+| Repository | Source of truth, cache และ business data | อ้าง BuildContext |
+| Service | ห่อ API, database หรือ platform plugin | เก็บ UI state |
+
+```text
+User Event → View → ViewModel → Repository → Service
+                 ↑                ↓
+                 └──── UI State ──┘
+```
+
+## Service
+
+```dart
+class EventApiService {
+  EventApiService(this._client);
+  final http.Client _client;
+
+  Future<List<Map<String, dynamic>>> fetchEvents() async {
+    final response = await _client.get(Uri.parse('$baseUrl/events'));
+    if (response.statusCode != 200) throw const ApiException();
+
+    final json = jsonDecode(response.body) as List<dynamic>;
+    return json.cast<Map<String, dynamic>>();
+  }
+}
+```
+
+Service รู้ protocol และ raw data แต่ไม่ตัดสินว่า UI จะแสดงอย่างไร
+
+## Repository
+
+```dart
+abstract interface class EventRepository {
+  Future<List<Event>> getEvents({bool refresh = false});
+}
+
+class EventRepositoryImpl implements EventRepository {
+  EventRepositoryImpl(this._apiService);
+  final EventApiService _apiService;
+  List<Event>? _cache;
+
+  @override
+  Future<List<Event>> getEvents({bool refresh = false}) async {
+    if (!refresh && _cache != null) return _cache!;
+
+    final rawEvents = await _apiService.fetchEvents();
+    _cache = rawEvents.map(Event.fromJson).toList(growable: false);
+    return _cache!;
+  }
+}
+```
+
+Repository เป็น source of truth และซ่อนว่า data มาจาก network, cache หรือ database
+
+## Dependency Injection
+
+```dart
+void main() {
+  final client = http.Client();
+  final service = EventApiService(client);
+  final repository = EventRepositoryImpl(service);
+  final viewModel = EventListViewModel(repository);
+
+  runApp(CampusEventsApp(viewModel: viewModel));
+}
+```
+
+Constructor injection ทำให้ dependency มองเห็นและแทนด้วย Fake ใน test ได้ ภายหลังอาจใช้ Provider, Riverpod หรือ service locator เมื่อ object graph ใหญ่ขึ้น
+
+## Fake Repository สำหรับ Test
+
+```dart
+class FakeEventRepository implements EventRepository {
+  @override
+  Future<List<Event>> getEvents({bool refresh = false}) async {
+    return const [
+      Event(id: 1, title: 'Flutter Day', location: 'Room A'),
+    ];
+  }
+}
+```
+
+ViewModel test ไม่ต้องเปิด network หรือ Flutter binding
+
+## เมื่อใดควรเพิ่ม Domain Layer
+
+เพิ่ม Use Case เมื่อ logic:
+
+- รวมข้อมูลหลาย repositories
+- ซับซ้อนจน ViewModel อ่านยาก
+- ถูกใช้ซ้ำหลาย features
+
+อย่าสร้าง Use Case ให้ทุก getter แบบกลไก เพราะ boilerplate เพิ่ม cognitive load โดยไม่เพิ่มคุณค่า
+
+## แบบฝึกหัด
+
+จัดโค้ด Campus Events เป็น View, ViewModel, Repository และ Service สร้าง Fake Repository สองแบบ—สำเร็จและ error—แล้วทดสอบ ViewModel โดยไม่ใช้ HTTP จริง
+

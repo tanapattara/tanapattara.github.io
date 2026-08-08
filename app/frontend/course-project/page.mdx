@@ -1,0 +1,341 @@
+---
+title: "โปรเจกต์ประจำวิชา Frontend Development"
+sidebarTitle: "โปรเจกต์ประจำวิชา"
+---
+
+# โปรเจกต์ประจำวิชา Frontend Development
+
+โปรเจกต์ประจำวิชาคือ **ระบบร้านหนังสือออนไลน์ (Online Book Store)** พัฒนาต่อเนื่องตั้งแต่เว็บเพจ HTML จนเป็นเว็บแอปพลิเคชัน Next.js ที่เชื่อม API มีระบบสมาชิก และ deploy ให้ผู้ใช้ทดลองได้ แต่ละ Milestone ต่อจากงานเดิม จึงควรปรับปรุง codebase เดียวตลอดภาคการศึกษา
+
+## เป้าหมายของโปรเจกต์
+
+เมื่อเสร็จสมบูรณ์ ระบบควรมีความสามารถดังนี้:
+
+- แสดงรายการและรายละเอียดหนังสือ
+- ค้นหา กรอง และเรียงลำดับหนังสือ
+- เพิ่มหนังสือลงตะกร้าและคำนวณยอดรวม
+- โหลดและแก้ไขข้อมูลผ่าน API
+- สมัครสมาชิก เข้าสู่ระบบ และออกจากระบบ
+- แยกสิทธิ์ลูกค้ากับผู้ดูแลระบบ
+- รองรับมือถือ Keyboard และ Screen Reader
+- แสดง Loading, Empty, Error และ Not Found state
+- มี Production Build, URL สำหรับสาธิต และ README
+
+## วิธีทำงานตลอดโครงการ
+
+ใช้ Git repository เดียวและสร้าง commit อย่างสม่ำเสมอ แต่ละ Milestone ต้องมี tag หรือระบุ commit ที่ส่ง เพื่อให้อาจารย์ตรวจพัฒนาการย้อนหลังได้
+
+```text
+main
+├── milestone/01-html
+├── milestone/02-responsive-css
+├── milestone/03-javascript
+└── feature/shopping-cart
+```
+
+ไม่จำเป็นต้องใช้ชื่อ branch ตามตัวอย่างทุกตัว แต่ต้องแยกงานเป็นส่วน อ่านประวัติ commit เข้าใจ และไม่ส่งทุกอย่างด้วย commit เดียวในวันสุดท้าย
+
+## ข้อมูลหลักของระบบ
+
+ใช้โครงสร้างหนังสือร่วมกันทุก Milestone เพื่อให้เปลี่ยนเฉพาะวิธีจัดเก็บและแสดงผล
+
+```json
+{
+  "id": "book-001",
+  "title": "Clean Code",
+  "author": "Robert C. Martin",
+  "price": 890,
+  "category": "Software Development",
+  "coverUrl": "/images/clean-code.jpg",
+  "description": "แนวคิดการเขียนโค้ดที่อ่านและดูแลรักษาได้",
+  "stock": 12
+}
+```
+
+## Milestone 0 — Product Brief และ Project Setup
+
+### เนื้อหาที่ใช้
+
+Internet, Client/Server, Git และกระบวนการพัฒนาเว็บ
+
+### งานที่ต้องทำ
+
+1. กำหนดกลุ่มผู้ใช้ เช่น ลูกค้าและผู้ดูแลร้าน
+2. เขียน User Stories อย่างน้อย 6 รายการ
+3. วาด Sitemap และ Wireframe หน้า Home, Catalog, Detail, Cart และ Login
+4. สร้าง Git repository, README และโครงสร้างเริ่มต้น
+5. กำหนด Definition of Done ของทีม
+
+ตัวอย่าง User Story:
+
+```text
+ในฐานะลูกค้า
+ฉันต้องการค้นหาหนังสือจากชื่อหรือผู้แต่ง
+เพื่อให้พบหนังสือที่ต้องการได้รวดเร็ว
+```
+
+### สิ่งที่ส่ง
+
+- Product brief ความยาวประมาณหนึ่งหน้า
+- User stories, Sitemap และ Wireframe
+- URL repository และคำสั่งเริ่มโปรเจกต์ใน README
+
+### เกณฑ์ผ่าน
+
+- [ ] ขอบเขตทำเสร็จภายในภาคการศึกษาได้
+- [ ] ทุกหน้าหลักปรากฏใน Sitemap/Wireframe
+- [ ] Repository เปิดได้และมี commit เริ่มต้นที่สื่อความหมาย
+
+## Milestone 1 — Semantic HTML
+
+### เนื้อหาที่ใช้
+
+HTML structure, semantic elements, form และ accessibility เบื้องต้น
+
+### งานที่ต้องทำ
+
+- สร้าง Home, Catalog, Book Detail และ Cart เป็น HTML
+- ใช้ `header`, `nav`, `main`, `section`, `article` และ `footer` ตามความหมาย
+- เพิ่มรูปปกที่มี `alt` และ heading ตามลำดับ
+- สร้าง Search Form และ Quantity Input พร้อม `label`
+- เชื่อมแต่ละหน้าด้วยลิงก์ที่ใช้งานได้
+
+```html
+<article class="book-card">
+  <img src="images/clean-code.jpg" alt="ปกหนังสือ Clean Code" />
+  <h2>Clean Code</h2>
+  <p>Robert C. Martin</p>
+  <a href="book-detail.html?id=book-001">ดูรายละเอียด</a>
+</article>
+```
+
+### สิ่งที่ส่ง
+
+Static website อย่างน้อย 4 หน้า พร้อม HTML validation report
+
+### เกณฑ์ผ่าน
+
+- [ ] ใช้ Semantic HTML เหมาะสมและไม่มี heading level กระโดดโดยไม่มีเหตุผล
+- [ ] Form control ทุกตัวมี label
+- [ ] ใช้งานเนื้อหาหลักได้แม้ยังไม่มี CSS/JavaScript
+
+## Milestone 2 — Responsive CSS และ Design System
+
+### เนื้อหาที่ใช้
+
+CSS, Box Model, Flexbox, Grid, Responsive Design และ CSS Framework
+
+### งานที่ต้องทำ
+
+- สร้างสี Typography Spacing และ Component styles ที่สม่ำเสมอ
+- ทำ Book Grid ที่เปลี่ยนจำนวน column ตามพื้นที่
+- รองรับ Navigation และ Cart บนหน้าจอเล็ก
+- เพิ่ม Hover, Focus และ Disabled states
+- ทดสอบที่ความกว้าง 320, 768 และ 1280 pixels
+
+```css
+.book-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+}
+
+:focus-visible {
+  outline: 3px solid #4f46e5;
+  outline-offset: 3px;
+}
+```
+
+### สิ่งที่ส่ง
+
+Responsive prototype พร้อมภาพทดสอบ Mobile/Tablet/Desktop
+
+### เกณฑ์ผ่าน
+
+- [ ] ไม่มี horizontal overflow ที่ขนาดเป้าหมาย
+- [ ] Keyboard มองเห็นตำแหน่ง focus ชัดเจน
+- [ ] สีและตัวอักษรอ่านได้ทั้งปุ่มปกติและสถานะต่าง ๆ
+
+## Milestone 3 — JavaScript, DOM และ Shopping Cart
+
+### เนื้อหาที่ใช้
+
+Variables, Functions, Arrays/Objects, DOM และ Events
+
+### งานที่ต้องทำ
+
+- Render Book Cards จาก JavaScript array
+- ค้นหา กรองหมวดหมู่ และเรียงราคา
+- เพิ่ม/ลด/ลบสินค้าในตะกร้า
+- คำนวณจำนวนรายการและยอดรวม
+- บันทึกตะกร้าชั่วคราวใน `localStorage`
+- แสดง Empty State เมื่อไม่พบผลค้นหาหรือตะกร้าว่าง
+
+```javascript
+function calculateTotal(items) {
+  return items.reduce((total, item) => {
+    return total + item.price * item.quantity;
+  }, 0);
+}
+```
+
+### สิ่งที่ส่ง
+
+Interactive prototype ที่ reload หน้าแล้วตะกร้ายังอยู่ พร้อม Test Cases ของ `calculateTotal`
+
+### เกณฑ์ผ่าน
+
+- [ ] ไม่มี inline event handler เช่น `onclick="..."`
+- [ ] แยก data, calculation และ DOM rendering ออกจากกัน
+- [ ] ตรวจ quantity และป้องกันค่าติดลบ/ไม่ใช่ตัวเลข
+
+## Milestone 4 — REST API และ CRUD
+
+### เนื้อหาที่ใช้
+
+HTTP, JSON, Fetch API, GET/POST/PATCH/DELETE และ Error Handling
+
+### งานที่ต้องทำ
+
+- โหลดรายการและรายละเอียดหนังสือจาก API
+- สร้างหน้า Admin เพิ่ม แก้ไข และลบหนังสือ
+- แสดง Loading, Error, Retry และ Empty states
+- ตรวจ `response.ok` และ validate input
+- ป้องกันการกด Submit ซ้ำขณะ request กำลังทำงาน
+
+```javascript
+async function getBooks() {
+  const response = await fetch(`${API_URL}/books`);
+  if (!response.ok) {
+    throw new Error(`Load books failed: ${response.status}`);
+  }
+  return response.json();
+}
+```
+
+### สิ่งที่ส่ง
+
+API documentation, ตัวอย่าง Request/Response และวิดีโอสาธิต CRUD
+
+### เกณฑ์ผ่าน
+
+- [ ] จัดการกรณี network ขัดข้องและ status ที่ไม่สำเร็จ
+- [ ] UI ไม่ค้างและผู้ใช้มีทาง Retry
+- [ ] ข้อมูลที่ส่งเข้า API ผ่าน validation
+
+## Milestone 5 — React Component และ State
+
+### เนื้อหาที่ใช้
+
+Component, Props, State, Event, Form และการยก State ขึ้น
+
+### งานที่ต้องทำ
+
+- แปลง UI เป็น `BookCard`, `BookList`, `SearchForm`, `CartItem` และ `CartSummary`
+- กำหนด Props และ State ownership ให้ชัด
+- สร้าง Controlled Form สำหรับค้นหาและ Admin
+- แยก reusable UI ออกจาก data-fetching logic
+- รักษาพฤติกรรมจาก Milestone ก่อนหน้าให้ครบ
+
+### สิ่งที่ส่ง
+
+Component diagram และ React application ที่ไม่มี component ขนาดใหญ่ทำทุกหน้าที่
+
+### เกณฑ์ผ่าน
+
+- [ ] Component มีหน้าที่หลักชัดเจน
+- [ ] ไม่เก็บ derived state ซ้ำโดยไม่จำเป็น
+- [ ] List item มี stable key จาก ID
+
+## Milestone 6 — Next.js Full-stack Application
+
+### เนื้อหาที่ใช้
+
+App Router, Server/Client Components, Data Fetching, Route Handlers และ Server Actions
+
+### งานที่ต้องทำ
+
+- สร้าง Routes `/books`, `/books/[id]`, `/cart`, `/login` และ `/admin/books`
+- ดึงข้อมูลเริ่มต้นใน Server Component
+- ใช้ Client Component เฉพาะ UI ที่ interactive
+- เพิ่ม `loading.tsx`, `error.tsx` และ `not-found.tsx`
+- เพิ่ม Metadata สำหรับรายการและรายละเอียดหนังสือ
+- ใช้ Route Handler สำหรับ public API หรือ Server Action สำหรับ mutation ภายใน UI
+
+### สิ่งที่ส่ง
+
+Next.js application พร้อม route diagram และคำอธิบาย Server/Client boundary
+
+### เกณฑ์ผ่าน
+
+- [ ] Dynamic route อ่าน `params` ถูกต้อง
+- [ ] Secret และ database code ไม่อยู่ใน Client bundle
+- [ ] Loading/Error/404 มี UI และเส้นทางกลับที่เหมาะสม
+
+## Milestone 7 — Authentication, Authorization และ Security
+
+### เนื้อหาที่ใช้
+
+Login/Register, Session, Cookie, Role และ Web Security
+
+### งานที่ต้องทำ
+
+- สมัครสมาชิก Login และ Logout
+- ป้องกันหน้า Admin
+- ตรวจ role ภายใน Server Action/Route Handler ก่อนแก้ข้อมูล
+- Hash password ผ่าน Auth provider/library ที่เหมาะสม
+- เก็บ secret ใน environment variables
+- ทดสอบ unauthenticated, customer และ admin
+
+### สิ่งที่ส่ง
+
+Permission matrix และ Security checklist พร้อมบัญชีทดสอบแต่ละ role
+
+### เกณฑ์ผ่าน
+
+- [ ] การซ่อนปุ่มไม่ใช่กลไกป้องกันเพียงอย่างเดียว
+- [ ] ไม่มี password, token หรือ secret ใน repository/log
+- [ ] ผู้ใช้ไม่มีสิทธิ์เรียก endpoint/action ของ Admin ไม่ได้
+
+## Milestone 8 — Quality, Offline และ Deployment
+
+### เนื้อหาที่ใช้
+
+Testing, Performance, Accessibility, Offline Web และ Production Deployment
+
+### งานที่ต้องทำ
+
+- เขียน Unit Tests สำหรับ calculation/validation
+- เขียน Component หรือ End-to-End Test สำหรับ flow ซื้อหนังสือ
+- ตรวจ Keyboard, Screen Reader, Contrast และ Responsive
+- ปรับรูป, font และ network requests
+- เพิ่ม Offline fallback หรืออธิบายข้อจำกัดของ Static Export/Server deployment
+- สร้าง Production Build และ deploy
+
+### สิ่งที่ส่ง
+
+- URL production และ repository
+- Test report และ Accessibility checklist
+- README: setup, architecture, environment, test account และ known issues
+- วิดีโอสาธิต 5–8 นาที
+
+### เกณฑ์ผ่าน
+
+- [ ] Production build ผ่านโดยไม่มี error
+- [ ] Demo flow หลักทำงานตั้งแต่ค้นหาจนถึงตะกร้าและ Admin CRUD
+- [ ] README ทำให้ผู้ตรวจเริ่มโปรเจกต์ใหม่ได้
+- [ ] Known issues ระบุอย่างตรงไปตรงมา
+
+## เกณฑ์ประเมินรวม
+
+| ด้าน | สัดส่วนแนะนำ |
+| --- | ---: |
+| ความถูกต้องของ Feature และข้อมูล | 30% |
+| โครงสร้างโค้ดและการใช้เทคโนโลยี | 20% |
+| Responsive UI และ Accessibility | 15% |
+| API, Error Handling และ Security | 15% |
+| Testing และคุณภาพ Production | 10% |
+| Git history, README และการนำเสนอ | 10% |
+
+คะแนนแต่ละ Milestone ควรให้ทั้ง “ผลงานปัจจุบัน” และ “การแก้ Feedback จากรอบก่อน” เพื่อส่งเสริมกระบวนการพัฒนาแบบต่อเนื่อง ไม่ใช่ทำใหม่ทั้งหมดก่อนวันส่ง
+

@@ -1,0 +1,250 @@
+---
+title: "มินิโปรเจกต์ OOP: ระบบยืมหนังสือ"
+sidebarTitle: "มินิโปรเจกต์ Library"
+---
+
+# มินิโปรเจกต์ OOP: ระบบยืมหนังสือ
+
+โปรเจกต์นี้นำ Class/Object, Encapsulation และ Composition มาใช้สร้างระบบยืมหนังสือแบบ Console โดยมีกฎสำคัญคือ หนังสือหนึ่งเล่มถูกยืมพร้อมกันได้เพียงคนเดียว และสมาชิกหนึ่งคนยืมได้ไม่เกิน 3 เล่ม
+
+## วิเคราะห์ Object ก่อนเขียนโค้ด
+
+| Class | ข้อมูลที่รับผิดชอบ | พฤติกรรมหลัก |
+| --- | --- | --- |
+| `Book` | ISBN, ชื่อหนังสือ, สถานะการยืม | ยืมและคืน |
+| `Member` | รหัส, ชื่อ, รายการที่กำลังยืม | รับหนังสือและคืนหนังสือ |
+| `LibraryService` | หนังสือและสมาชิกทั้งหมด | ค้นหาและประสานงานการยืม |
+
+`LibraryService` ไม่ควรแก้ `IsBorrowed` หรือรายการหนังสือของสมาชิกโดยตรง แต่สั่งให้ Object ที่เป็นเจ้าของข้อมูลเปลี่ยนสถานะของตนเอง
+
+## 1. สร้างโปรเจกต์
+
+```bash
+dotnet new console -n LibraryApp
+cd LibraryApp
+```
+
+สร้างไฟล์ `Book.cs`, `Member.cs` และ `LibraryService.cs` ไว้ข้าง `Program.cs` โดยใช้โค้ดต่อไปนี้
+
+## 2. สร้าง Book
+
+```csharp
+// Book.cs
+namespace LibraryApp;
+
+public class Book
+{
+    public string Isbn { get; }
+    public string Title { get; }
+    public bool IsBorrowed { get; private set; }
+
+    public Book(string isbn, string title)
+    {
+        if (string.IsNullOrWhiteSpace(isbn))
+            throw new ArgumentException("ต้องระบุ ISBN", nameof(isbn));
+
+        if (string.IsNullOrWhiteSpace(title))
+            throw new ArgumentException("ต้องระบุชื่อหนังสือ", nameof(title));
+
+        Isbn = isbn;
+        Title = title;
+    }
+
+    public bool TryBorrow()
+    {
+        if (IsBorrowed)
+            return false;
+
+        IsBorrowed = true;
+        return true;
+    }
+
+    public void Return()
+    {
+        IsBorrowed = false;
+    }
+}
+```
+
+Setter ของ `IsBorrowed` เป็น `private` จึงเปลี่ยนสถานะผ่าน Method ที่กำหนดไว้เท่านั้น
+
+## 3. สร้าง Member
+
+```csharp
+// Member.cs
+namespace LibraryApp;
+
+public class Member
+{
+    private const int BorrowLimit = 3;
+    private readonly List<Book> _borrowedBooks = new();
+
+    public string Id { get; }
+    public string Name { get; }
+    public IReadOnlyList<Book> BorrowedBooks => _borrowedBooks.AsReadOnly();
+
+    public Member(string id, string name)
+    {
+        Id = id;
+        Name = name;
+    }
+
+    public bool Borrow(Book book)
+    {
+        if (_borrowedBooks.Count >= BorrowLimit)
+            return false;
+
+        if (!book.TryBorrow())
+            return false;
+
+        _borrowedBooks.Add(book);
+        return true;
+    }
+
+    public bool Return(Book book)
+    {
+        if (!_borrowedBooks.Remove(book))
+            return false;
+
+        book.Return();
+        return true;
+    }
+}
+```
+
+`Member` ใช้ Composition โดยมีรายการ `Book` ที่ยืมอยู่ และเปิดรายการเป็น `IReadOnlyList<Book>` เพื่อไม่ให้ภายนอกแก้ Collection โดยข้ามกฎการยืม
+
+## 4. สร้าง LibraryService
+
+```csharp
+// LibraryService.cs
+namespace LibraryApp;
+
+public class LibraryService
+{
+    private readonly List<Book> _books = new();
+    private readonly List<Member> _members = new();
+
+    public void AddBook(Book book)
+    {
+        _books.Add(book);
+    }
+
+    public void RegisterMember(Member member)
+    {
+        _members.Add(member);
+    }
+
+    public Book? FindAvailableBook(string title)
+    {
+        return _books.FirstOrDefault(book =>
+            !book.IsBorrowed &&
+            book.Title.Contains(title, StringComparison.OrdinalIgnoreCase));
+    }
+
+    public bool BorrowBook(string memberId, string title)
+    {
+        Member? member = _members.FirstOrDefault(item => item.Id == memberId);
+        Book? book = FindAvailableBook(title);
+
+        if (member is null || book is null)
+            return false;
+
+        return member.Borrow(book);
+    }
+
+    public void PrintSummary()
+    {
+        Console.WriteLine("=== สถานะห้องสมุด ===");
+        foreach (Book book in _books)
+        {
+            string status = book.IsBorrowed ? "ถูกยืม" : "ว่าง";
+            Console.WriteLine($"[{book.Isbn}] {book.Title} - {status}");
+        }
+
+        Console.WriteLine("=== รายการของสมาชิก ===");
+        foreach (Member member in _members)
+        {
+            string titles = member.BorrowedBooks.Count == 0
+                ? "ไม่มี"
+                : string.Join(", ", member.BorrowedBooks.Select(book => book.Title));
+            Console.WriteLine($"{member.Name}: {titles}");
+        }
+    }
+}
+```
+
+เครื่องหมาย `?` ใน `Book?` และ `Member?` ระบุว่าผลการค้นหาอาจเป็น `null` โค้ดจึงต้องตรวจสอบก่อนเรียกใช้งาน
+
+## 5. เรียกใช้งานใน Program
+
+```csharp
+// Program.cs
+namespace LibraryApp;
+
+public class Program
+{
+    public static void Main()
+    {
+        LibraryService library = new LibraryService();
+
+        library.AddBook(new Book("978-01", "C# Fundamentals"));
+        library.AddBook(new Book("978-02", "Object-Oriented Design"));
+
+        library.RegisterMember(new Member("M001", "กานต์"));
+        library.RegisterMember(new Member("M002", "มะลิ"));
+
+        bool firstBorrow = library.BorrowBook("M001", "C#");
+        bool secondBorrow = library.BorrowBook("M002", "C#");
+
+        Console.WriteLine($"กานต์ยืมสำเร็จ: {firstBorrow}");
+        Console.WriteLine($"มะลิยืมเล่มเดียวกันสำเร็จ: {secondBorrow}");
+        library.PrintSummary();
+    }
+}
+```
+
+## 6. Build และ Run
+
+```bash
+dotnet build
+dotnet run
+```
+
+ผลลัพธ์
+
+```text
+กานต์ยืมสำเร็จ: True
+มะลิยืมเล่มเดียวกันสำเร็จ: False
+=== สถานะห้องสมุด ===
+[978-01] C# Fundamentals - ถูกยืม
+[978-02] Object-Oriented Design - ว่าง
+=== รายการของสมาชิก ===
+กานต์: C# Fundamentals
+มะลิ: ไม่มี
+```
+
+## ทบทวนหลัก OOP ในโปรเจกต์
+
+- **Encapsulation:** สถานะ `IsBorrowed` และรายการ `_borrowedBooks` แก้จากภายนอกโดยตรงไม่ได้
+- **Composition:** `LibraryService` ประกอบด้วยหนังสือและสมาชิก ส่วน `Member` มีหนังสือที่กำลังยืม
+- **Abstraction:** ผู้ใช้ระบบเรียก `BorrowBook()` โดยไม่ต้องรู้ขั้นตอนค้นหาและเปลี่ยนสถานะภายใน
+- **Single Responsibility:** แต่ละ Class ดูแลกฎที่เกี่ยวข้องกับข้อมูลของตนเอง
+
+## งานต่อยอด
+
+1. เพิ่ม `ReturnBook(string memberId, string isbn)` และทดสอบทั้งกรณีสำเร็จกับไม่สำเร็จ
+2. ป้องกัน ISBN และรหัสสมาชิกซ้ำ
+3. เพิ่ม `DueDate` และค่าปรับเมื่อคืนเกินกำหนด
+4. สร้าง Interface `INotificationService` เพื่อแจ้งผลการยืมทาง Console หรือ Email จำลอง
+5. แยกโปรเจกต์ทดสอบด้วย `dotnet new xunit` และเขียน Test สำหรับกฎยืมไม่เกิน 3 เล่ม
+
+## เกณฑ์ตรวจงาน
+
+| หัวข้อ | คะแนนแนะนำ |
+| --- | ---: |
+| โปรแกรม Build และ Run ได้ | 20 |
+| ใช้ Encapsulation รักษากฎของข้อมูล | 25 |
+| แบ่งหน้าที่ของ Class ชัดเจน | 20 |
+| รองรับกรณีข้อมูลไม่พบหรือทำรายการไม่ได้ | 20 |
+| เพิ่มความสามารถจากงานต่อยอดอย่างน้อย 1 ข้อ | 15 |

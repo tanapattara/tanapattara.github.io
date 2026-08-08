@@ -1,0 +1,123 @@
+---
+title: "State Management ใน Flutter"
+sidebarTitle: "State Management"
+---
+
+# State Management ใน Flutter
+
+State คือข้อมูลที่มีผลต่อ UI เช่น tab ปัจจุบัน รายการโปรด ผู้ใช้ที่ login หรือผลจาก API เลือกขอบเขต state ให้เล็กที่สุด: state ของปุ่มเดียวอยู่ใน Widget, state ของ feature อยู่ใน ViewModel และ state ที่ใช้ทั่วแอปอยู่ใน Repository หรือ app-level owner
+
+## UI State ด้วย setState
+
+```dart
+class Counter extends StatefulWidget {
+  const Counter({super.key});
+
+  @override
+  State<Counter> createState() => _CounterState();
+}
+
+class _CounterState extends State<Counter> {
+  int _count = 0;
+
+  @override
+  Widget build(BuildContext context) {
+    return FilledButton(
+      onPressed: () => setState(() => _count++),
+      child: Text('จำนวน $_count'),
+    );
+  }
+}
+```
+
+`setState` เหมาะกับ state ภายในขนาดเล็ก ไม่ควรใส่ API call หรือ business logic จำนวนมากไว้ใน Widget
+
+## ValueNotifier
+
+```dart
+final selectedCategory = ValueNotifier<String>('ทั้งหมด');
+
+ValueListenableBuilder<String>(
+  valueListenable: selectedCategory,
+  builder: (context, value, child) {
+    return DropdownButton<String>(
+      value: value,
+      items: categories
+          .map((item) => DropdownMenuItem(value: item, child: Text(item)))
+          .toList(),
+      onChanged: (newValue) {
+        if (newValue != null) selectedCategory.value = newValue;
+      },
+    );
+  },
+)
+```
+
+ต้อง dispose `ValueNotifier` เมื่อ Widget เป็นเจ้าของ resource นั้น
+
+## ViewModel ด้วย ChangeNotifier
+
+```dart
+class EventListViewModel extends ChangeNotifier {
+  EventListViewModel(this._repository);
+
+  final EventRepository _repository;
+
+  List<Event> _events = const [];
+  List<Event> get events => _events;
+
+  bool _loading = false;
+  bool get loading => _loading;
+
+  String? _error;
+  String? get error => _error;
+
+  Future<void> load() async {
+    _loading = true;
+    _error = null;
+    notifyListeners();
+
+    try {
+      _events = await _repository.getEvents();
+    } catch (_) {
+      _error = 'โหลดกิจกรรมไม่สำเร็จ';
+    } finally {
+      _loading = false;
+      notifyListeners();
+    }
+  }
+}
+```
+
+View แสดง state และส่ง event กลับ ViewModel:
+
+```dart
+ListenableBuilder(
+  listenable: viewModel,
+  builder: (context, child) {
+    if (viewModel.loading) return const CircularProgressIndicator();
+    if (viewModel.error != null) {
+      return ErrorView(message: viewModel.error!, onRetry: viewModel.load);
+    }
+    if (viewModel.events.isEmpty) return const Text('ไม่มีกิจกรรม');
+    return EventList(events: viewModel.events);
+  },
+)
+```
+
+UI ต้องแยก Loading, Success, Empty และ Error state ให้ชัด ไม่ใช้ list ว่างแทนทั้ง “ยังไม่โหลด” และ “ไม่มีข้อมูล”
+
+## Package ภายนอก
+
+Provider, Riverpod และ BLoC ช่วยจัด dependency และ reactive state สำหรับแอปใหญ่ แต่ควรเลือกหนึ่งแนวทางตามทีมและปัญหา ไม่ควรผสมหลาย library โดยไม่มีเหตุผล หลักการสำคัญกว่าชื่อ package คือ:
+
+- Single source of truth
+- State ไหลลง UI และ event ไหลกลับ logic
+- Immutable state เมื่อทำได้
+- Business logic ไม่อยู่ใน Widget
+- Test logic โดยไม่ต้องเปิดหน้าจอ
+
+## แบบฝึกหัด
+
+ย้ายการโหลดและกรองกิจกรรมออกจาก StatefulWidget ไป `EventListViewModel` เพิ่ม state Loading/Empty/Error และเขียน Unit Test ว่า `load()` แจ้ง error เมื่อ repository ล้มเหลว
+

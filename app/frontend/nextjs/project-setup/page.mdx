@@ -1,0 +1,148 @@
+---
+title: "ติดตั้งและโครงสร้างโปรเจกต์ Next.js"
+sidebarTitle: "ติดตั้งและโครงสร้างโปรเจกต์"
+---
+
+# ติดตั้งและโครงสร้างโปรเจกต์ Next.js
+
+บทนี้เริ่มจากสร้างโปรเจกต์ Next.js ด้วย TypeScript ทำความเข้าใจไฟล์สำคัญ และทดลองสร้างหน้าแรก ผู้เรียนควรแยกให้ออกว่าไฟล์ใดเป็น configuration ไฟล์ใดเป็น route และไฟล์ใดเป็น component ที่นำกลับมาใช้ซ้ำ
+
+## เป้าหมายการเรียนรู้
+
+- สร้างและเปิด Development Server ได้
+- อธิบายหน้าที่ของ `app`, `public`, `package.json` และ `next.config.ts` ได้
+- สร้าง `layout.tsx` และ `page.tsx` ที่ถูกต้องได้
+- ใช้ import alias `@/*` เพื่อลด relative path ที่ซับซ้อนได้
+
+## เตรียมเครื่องมือ
+
+ติดตั้ง Node.js 20.9 ขึ้นไป แล้วตรวจสอบเวอร์ชันใน Terminal
+
+```bash
+node --version
+npm --version
+```
+
+สร้างโปรเจกต์ชื่อ `book-store` ด้วยค่าเริ่มต้น ซึ่งเปิดใช้ TypeScript, ESLint, Tailwind CSS, App Router และ Turbopack
+
+```bash
+npx create-next-app@latest book-store --yes
+cd book-store
+npm run dev
+```
+
+เปิด `http://localhost:3000` หากแก้ `app/page.tsx` แล้วบันทึก Browser จะอัปเดตโดยไม่ต้องเริ่ม Server ใหม่
+
+## คำสั่งสำคัญ
+
+| คำสั่ง | ใช้เมื่อใด |
+| --- | --- |
+| `npm run dev` | พัฒนางานและดูผลแบบ Hot Reload |
+| `npm run build` | ตรวจ TypeScript และสร้าง Production Build |
+| `npm run start` | เปิด Production Server หลัง Build |
+| `npm run lint` | ตรวจรูปแบบและปัญหาที่ ESLint ค้นพบ เมื่อโปรเจกต์มี script นี้ |
+
+ควรรัน `npm run build` ก่อนส่งงานเสมอ เพราะข้อผิดพลาดบางอย่างไม่ปรากฏระหว่างพัฒนา
+
+## โครงสร้างพื้นฐาน
+
+```text
+book-store/
+├── app/
+│   ├── globals.css
+│   ├── layout.tsx
+│   └── page.tsx
+├── public/
+│   └── images/
+├── next.config.ts
+├── package.json
+├── tsconfig.json
+└── .env.local
+```
+
+- `app/` เก็บ routes, layouts และไฟล์พิเศษของ App Router
+- `public/` เก็บไฟล์ที่ Browser ขอได้โดยตรง เช่น `/images/logo.png`
+- `next.config.ts` ตั้งค่าพฤติกรรมของ Next.js
+- `package.json` ระบุ dependencies และ scripts
+- `tsconfig.json` ตั้งค่า TypeScript และ alias เช่น `@/*`
+- `.env.local` เก็บค่าตั้งเฉพาะเครื่องและห้าม commit secret
+
+## Root Layout
+
+`app/layout.tsx` เป็น Layout หลักที่ครอบทุกหน้า จึงต้องมี `<html>` และ `<body>`
+
+```tsx
+import type { Metadata } from 'next'
+import './globals.css'
+
+export const metadata: Metadata = {
+  title: 'Book Store',
+  description: 'ร้านหนังสือตัวอย่างสำหรับเรียน Next.js',
+}
+
+export default function RootLayout({
+  children,
+}: Readonly<{ children: React.ReactNode }>) {
+  return (
+    <html lang="th">
+      <body>
+        <header>Book Store</header>
+        <main>{children}</main>
+      </body>
+    </html>
+  )
+}
+```
+
+ค่า `children` คือหน้าหรือ Layout ชั้นถัดไปที่ Next.js นำมาแทรกโดยอัตโนมัติ Header จึงแสดงร่วมกันทุกหน้าโดยไม่ต้องเขียนซ้ำ
+
+## สร้างหน้าแรก
+
+ไฟล์ `app/page.tsx` ตรงกับ URL `/`
+
+```tsx
+export default function HomePage() {
+  return (
+    <section>
+      <h1>หนังสือแนะนำ</h1>
+      <p>เลือกหนังสือที่สนใจจากรายการของเรา</p>
+    </section>
+  )
+}
+```
+
+สร้าง component ที่นำกลับมาใช้ซ้ำใน `components/book-card.tsx`
+
+```tsx
+type BookCardProps = {
+  title: string
+  price: number
+}
+
+export function BookCard({ title, price }: BookCardProps) {
+  return (
+    <article>
+      <h2>{title}</h2>
+      <p>{price.toLocaleString('th-TH')} บาท</p>
+    </article>
+  )
+}
+```
+
+นำเข้าโดยใช้ alias
+
+```tsx
+import { BookCard } from '@/components/book-card'
+```
+
+## แบบฝึกหัด
+
+1. เปลี่ยนชื่อเว็บไซต์ใน Metadata และ Header
+2. สร้าง `BookCard` อย่างน้อยสามรายการจากข้อมูลคนละชุด
+3. เพิ่มรูป `public/images/logo.png` แล้วทดลองเรียกด้วย path `/images/logo.png`
+4. รัน `npm run build` และอธิบายความแตกต่างจาก `npm run dev`
+
+## สรุป
+
+App Router เริ่มจาก `app/layout.tsx` และ `app/page.tsx` ส่วน component ทั่วไปไม่จำเป็นต้องวางใน `app` ให้จัดตามหน้าที่และใช้ชื่อสม่ำเสมอ เพื่อให้โปรเจกต์ขยายต่อได้ง่าย
+

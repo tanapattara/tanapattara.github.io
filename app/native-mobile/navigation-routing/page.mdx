@@ -1,0 +1,117 @@
+---
+title: "Navigation และ Routing"
+sidebarTitle: "Navigation และ Routing"
+---
+
+# Navigation และ Routing
+
+Navigation กำหนดประวัติหน้าจอ การส่งข้อมูล ปุ่มย้อนกลับ และ deep link แอปเล็กใช้ `Navigator` กับ `MaterialPageRoute` ได้ ส่วนแอปที่มี nested navigation, login redirect หรือ deep link ควรใช้ declarative router เช่น `go_router`
+
+## Navigator: Push และ Pop
+
+```dart
+Future<void> openEvent(BuildContext context, Event event) async {
+  final updated = await Navigator.of(context).push<bool>(
+    MaterialPageRoute(
+      builder: (context) => EventDetailScreen(event: event),
+    ),
+  );
+
+  if (updated == true && context.mounted) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('อัปเดตรายการแล้ว')),
+    );
+  }
+}
+```
+
+หน้ารายละเอียดส่งค่ากลับ:
+
+```dart
+Navigator.of(context).pop(true);
+```
+
+กำหนด generic type เช่น `<bool>` ช่วยให้ชนิดข้อมูลไปและกลับชัดเจน
+
+## go_router
+
+ติดตั้ง package:
+
+```bash
+flutter pub add go_router
+```
+
+```dart
+final router = GoRouter(
+  routes: [
+    GoRoute(
+      path: '/',
+      builder: (context, state) => const EventListScreen(),
+      routes: [
+        GoRoute(
+          path: 'events/:id',
+          builder: (context, state) {
+            final id = state.pathParameters['id']!;
+            return EventDetailScreen(eventId: id);
+          },
+        ),
+      ],
+    ),
+    GoRoute(
+      path: '/login',
+      builder: (context, state) => const LoginScreen(),
+    ),
+  ],
+);
+
+MaterialApp.router(
+  routerConfig: router,
+  theme: appTheme,
+)
+```
+
+นำทาง:
+
+```dart
+context.go('/events/${event.id}'); // เปลี่ยน location
+context.push('/events/${event.id}'); // เพิ่มบน stack
+context.pop();
+```
+
+ใช้ ID ใน URL แล้วให้หน้าปลายทางโหลดข้อมูลจาก repository แทนส่ง object ใหญ่เป็น `extra` เพื่อให้ deep link และ process restoration ทำงานได้
+
+## Authentication Redirect
+
+```dart
+final router = GoRouter(
+  redirect: (context, state) {
+    final loggedIn = authRepository.currentUser != null;
+    final goingToLogin = state.matchedLocation == '/login';
+
+    if (!loggedIn && !goingToLogin) return '/login';
+    if (loggedIn && goingToLogin) return '/';
+    return null;
+  },
+  refreshListenable: authRepository,
+  routes: routes,
+);
+```
+
+Redirect ช่วย UX แต่ backend ยังต้องตรวจ token และ authorization ทุก request
+
+## Bottom Navigation
+
+สำหรับหลาย section เช่น Events, Favorites, Profile ควรรักษา navigation stack ของแต่ละ tab ด้วย `StatefulShellRoute` หรือ nested Navigator แทนสร้างหน้าใหม่แล้วสูญเสีย scroll position ทุกครั้ง
+
+## Deep Link Checklist
+
+- URL ต้องระบุ resource ด้วย stable ID
+- ทดสอบเปิดแอปจากสถานะปิดและ background
+- จัดการ ID ไม่ถูกต้องและข้อมูลไม่พบ
+- ตั้ง Android App Links และ iOS Universal Links เมื่อใช้ production domain
+- ไม่ใส่ token หรือข้อมูลส่วนตัวใน URL
+
+## แบบฝึกหัด
+
+สร้าง route `/events/:id`, `/favorites` และ `/login` เพิ่ม login redirect และทดสอบเปิด deep link ไปหน้ารายละเอียดโดยตรง รวมถึงกรณี ID ไม่มีอยู่
+

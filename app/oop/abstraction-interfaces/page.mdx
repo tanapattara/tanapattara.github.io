@@ -1,0 +1,130 @@
+---
+title: "Abstraction และ Interface"
+sidebarTitle: "Abstraction และ Interface"
+---
+
+# Abstraction และ Interface
+
+Abstraction คือการเปิดเผยเฉพาะสิ่งที่ผู้ใช้จำเป็นต้องรู้และซ่อนรายละเอียดการทำงาน ตัวอย่างเช่น ระบบชำระเงินต้องรู้เพียงว่า “ชำระจำนวนเงินนี้” โดยไม่ต้องรู้ขั้นตอนภายในของบัตรเครดิตหรือ PromptPay
+
+ใน C# ใช้ `interface` เพื่อกำหนดข้อตกลงที่หลาย Class นำไปใช้ได้ และใช้ `abstract class` เมื่อ Class กลุ่มนั้นต้องมีทั้งข้อตกลงและโค้ดหรือสถานะร่วมกัน
+
+| หัวข้อ | Interface | Abstract Class |
+| --- | --- | --- |
+| จุดประสงค์หลัก | กำหนดความสามารถหรือ Contract | สร้างฐานร่วมของ Class ที่เกี่ยวข้องกัน |
+| การสืบทอด | Class ใช้ได้หลาย Interface | Class สืบทอดได้หนึ่ง Base Class |
+| State ของ Object | โดยทั่วไปไม่เก็บ Instance State | มี Field, Property และ Constructor ได้ |
+| เหมาะกับ | “ทำอะไรได้” เช่น `IPayable` | “เป็นอะไร” เช่น `Shape` |
+
+## ตัวอย่าง Interface สำหรับการชำระเงิน
+
+```csharp
+using System;
+
+namespace InterfaceDemo;
+
+public interface IPaymentMethod
+{
+    string Name { get; }
+    bool Pay(decimal amount);
+}
+
+public class CreditCardPayment : IPaymentMethod
+{
+    private readonly string _lastFourDigits;
+    public string Name => "บัตรเครดิต";
+
+    public CreditCardPayment(string lastFourDigits)
+    {
+        _lastFourDigits = lastFourDigits;
+    }
+
+    public bool Pay(decimal amount)
+    {
+        Console.WriteLine($"ตัดบัตร ****{_lastFourDigits} จำนวน {amount:N2} บาท");
+        return true;
+    }
+}
+
+public class PromptPayPayment : IPaymentMethod
+{
+    private readonly string _phoneNumber;
+    public string Name => "PromptPay";
+
+    public PromptPayPayment(string phoneNumber)
+    {
+        _phoneNumber = phoneNumber;
+    }
+
+    public bool Pay(decimal amount)
+    {
+        Console.WriteLine($"สร้างรายการ PromptPay สำหรับ {_phoneNumber} จำนวน {amount:N2} บาท");
+        return true;
+    }
+}
+
+public class CheckoutService
+{
+    public bool Checkout(IPaymentMethod paymentMethod, decimal total)
+    {
+        if (total <= 0)
+            throw new ArgumentOutOfRangeException(nameof(total));
+
+        Console.WriteLine($"ช่องทาง: {paymentMethod.Name}");
+        return paymentMethod.Pay(total);
+    }
+}
+
+public class Program
+{
+    public static void Main()
+    {
+        CheckoutService checkout = new CheckoutService();
+
+        IPaymentMethod card = new CreditCardPayment("4242");
+        IPaymentMethod promptPay = new PromptPayPayment("0812345678");
+
+        checkout.Checkout(card, 1_250m);
+        checkout.Checkout(promptPay, 320m);
+    }
+}
+```
+
+```bash
+dotnet new console -n InterfaceDemo
+cd InterfaceDemo
+# นำโค้ดด้านบนไปแทนที่ Program.cs
+dotnet run
+```
+
+`CheckoutService` ขึ้นต่อ `IPaymentMethod` แทนที่จะผูกกับ Class ใด Class หนึ่ง จึงเพิ่มช่องทางชำระเงินใหม่ได้โดยสร้าง Class ที่ทำตาม Interface โดยไม่ต้องแก้ขั้นตอน Checkout
+
+## ตัวอย่างโครงสร้าง Abstract Class
+
+```csharp
+public abstract class Shape
+{
+    public string Color { get; }
+
+    protected Shape(string color)
+    {
+        Color = color;
+    }
+
+    public abstract double CalculateArea();
+
+    public void PrintSummary()
+    {
+        Console.WriteLine($"สี {Color}, พื้นที่ {CalculateArea():N2}");
+    }
+}
+```
+
+สร้าง Object จาก `Shape` โดยตรงไม่ได้ Class ลูกต้อง Override `CalculateArea()` แต่สามารถใช้ `Color` และ `PrintSummary()` ร่วมกันได้
+
+## แบบฝึกหัด
+
+1. สร้าง `CashPayment` ที่ทำตาม `IPaymentMethod`
+2. เพิ่มเงื่อนไขให้คืน `false` เมื่อเงินสดที่รับมาน้อยกว่ายอดรวม
+3. สร้าง `Circle : Shape` และ `Rectangle : Shape`
+4. เก็บรูปทรงทั้งสองชนิดใน `List<Shape>` แล้วหาพื้นที่รวม

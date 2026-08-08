@@ -1,0 +1,146 @@
+---
+title: "Permission และ Device APIs"
+sidebarTitle: "Permission และ Device APIs"
+---
+
+# Permission และ Device APIs
+
+Camera, Location, Microphone และ Photo Library เป็นข้อมูลอ่อนไหว ระบบปฏิบัติการอาจอนุญาต ปฏิเสธ ปฏิเสธถาวร หรือจำกัดบางส่วน แอปต้องขอเมื่อจำเป็น อธิบายเหตุผล และยังใช้งานส่วนอื่นได้เมื่อผู้ใช้ปฏิเสธ
+
+## Permission Flow
+
+```text
+ตรวจสถานะ → อธิบายเหตุผล → ขอ Permission
+                         ├─ Granted → ใช้ Feature
+                         ├─ Denied → แสดงทางเลือก/ลองใหม่
+                         └─ Permanently denied → เปิด Settings
+```
+
+อย่าขอ permission ทั้งหมดทันทีตอนเปิดแอป ให้ขอเมื่อผู้ใช้เริ่ม feature ที่เกี่ยวข้อง
+
+## ติดตั้ง Packages ตัวอย่าง
+
+```bash
+flutter pub add permission_handler image_picker geolocator
+```
+
+Plugin แต่ละตัวต้องตั้ง native configuration เพิ่ม อ่าน README ของ version ที่ใช้เสมอ เช่น Android Manifest permissions และ iOS `Info.plist` usage descriptions
+
+## ขอ Camera Permission
+
+```dart
+Future<bool> ensureCameraPermission(BuildContext context) async {
+  final current = await Permission.camera.status;
+  if (current.isGranted) return true;
+
+  final result = await Permission.camera.request();
+  if (result.isGranted) return true;
+
+  if (result.isPermanentlyDenied && context.mounted) {
+    final openSettings = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('ต้องอนุญาตใช้กล้อง'),
+        content: const Text('เปิด Settings เพื่ออนุญาตให้แอปถ่ายรูปกิจกรรม'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('ยกเลิก')),
+          FilledButton(onPressed: () => Navigator.pop(context, true), child: const Text('เปิด Settings')),
+        ],
+      ),
+    );
+    if (openSettings == true) await openAppSettings();
+  }
+
+  return false;
+}
+```
+
+## เลือกรูปจากกล้อง
+
+```dart
+Future<XFile?> takeEventPhoto(BuildContext context) async {
+  if (!await ensureCameraPermission(context)) return null;
+
+  final picker = ImagePicker();
+  return picker.pickImage(
+    source: ImageSource.camera,
+    imageQuality: 80,
+    maxWidth: 1600,
+  );
+}
+```
+
+ลดขนาดรูปก่อน upload และตรวจ file type/size ซ้ำที่ backend อย่าเชื่อ extension จาก client
+
+## Location
+
+```dart
+Future<Position> getCurrentPosition() async {
+  if (!await Geolocator.isLocationServiceEnabled()) {
+    throw const LocationException('กรุณาเปิด Location Service');
+  }
+
+  var permission = await Geolocator.checkPermission();
+  if (permission == LocationPermission.denied) {
+    permission = await Geolocator.requestPermission();
+  }
+
+  if (permission == LocationPermission.denied ||
+      permission == LocationPermission.deniedForever) {
+    throw const LocationException('ไม่ได้รับอนุญาตให้เข้าถึงตำแหน่ง');
+  }
+
+  return Geolocator.getCurrentPosition(
+    locationSettings: const LocationSettings(
+      accuracy: LocationAccuracy.medium,
+      timeLimit: Duration(seconds: 10),
+    ),
+  );
+}
+```
+
+ใช้ accuracy เท่าที่ feature ต้องการ เพราะ GPS ความละเอียดสูงใช้แบตเตอรี่มาก และไม่ติดตาม background หากไม่มีเหตุผลทางผลิตภัณฑ์และคำยินยอมชัดเจน
+
+## App Lifecycle
+
+```dart
+class AppLifecycleLogger extends StatefulWidget {
+  const AppLifecycleLogger({super.key});
+
+  @override
+  State<AppLifecycleLogger> createState() => _AppLifecycleLoggerState();
+}
+
+class _AppLifecycleLoggerState extends State<AppLifecycleLogger>
+    with WidgetsBindingObserver {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      viewModel.refreshPermissions();
+    }
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+}
+```
+
+ตรวจ permission ใหม่เมื่อกลับจาก Settings และบันทึก draft ก่อนแอป background หากข้อมูลสำคัญ
+
+## Platform Channel
+
+หากไม่มี plugin ที่เหมาะสม Flutter ใช้ `MethodChannel` เรียก Kotlin/Swift ได้ ควรซ่อนรายละเอียดไว้ใน Service และสร้าง interface เพื่อ mock ใน test ไม่เรียก channel ตรงจาก Widget
+
+## แบบฝึกหัด
+
+สร้างหน้าส่งหลักฐานเข้าร่วมกิจกรรม ให้ถ่าย/เลือกรูปและแนบตำแหน่ง จัดการ granted, denied และ permanently denied พร้อมทดสอบกลับจาก Settings และกรณี Location Service ปิด
+

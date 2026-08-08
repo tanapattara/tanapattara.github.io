@@ -1,0 +1,161 @@
+---
+title: "Route Handlers"
+sidebarTitle: "Route Handlers"
+---
+
+# Route Handlers
+
+Route Handler คือ HTTP endpoint ของ App Router สร้างด้วยไฟล์ `route.ts` เหมาะสำหรับ REST API, webhook, endpoint ที่ mobile app เรียกใช้ หรือข้อมูลที่ Client Component ต้อง fetch ผ่าน HTTP
+
+## Method ที่รองรับ
+
+Next.js รองรับ `GET`, `POST`, `PUT`, `PATCH`, `DELETE`, `HEAD` และ `OPTIONS` โดยชื่อ exported function ต้องเป็นตัวพิมพ์ใหญ่ตรงกับ HTTP method
+
+```text
+app/
+├── api/
+│   └── books/
+│       ├── route.ts          → /api/books
+│       └── [id]/
+│           └── route.ts      → /api/books/:id
+└── books/
+    └── page.tsx              → /books
+```
+
+แยก `/books` สำหรับ UI และ `/api/books` สำหรับ API ห้ามวาง `page.tsx` กับ `route.ts` ใน segment เดียวกัน
+
+## GET: อ่านรายการข้อมูล
+
+```tsx
+// app/api/books/route.ts
+import { db } from '@/lib/db'
+
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url)
+  const query = searchParams.get('q')?.trim() ?? ''
+
+  const books = await db.book.findMany({
+    where: query
+      ? { title: { contains: query, mode: 'insensitive' } }
+      : undefined,
+    select: { id: true, title: true, price: true },
+  })
+
+  return Response.json({ data: books, total: books.length })
+}
+```
+
+ทดลองเรียก `/api/books?q=react` ค่า query string อ่านผ่าน `new URL(request.url).searchParams`
+
+## POST: เพิ่มข้อมูลและตรวจ Input
+
+```tsx
+// app/api/books/route.ts
+import { db } from '@/lib/db'
+
+type CreateBookBody = {
+  title?: unknown
+  price?: unknown
+}
+
+export async function POST(request: Request) {
+  const body = (await request.json()) as CreateBookBody
+
+  if (typeof body.title !== 'string' || body.title.trim().length < 2) {
+    return Response.json(
+      { error: 'ชื่อหนังสือต้องมีอย่างน้อย 2 ตัวอักษร' },
+      { status: 400 },
+    )
+  }
+
+  if (typeof body.price !== 'number' || body.price < 0) {
+    return Response.json({ error: 'ราคาไม่ถูกต้อง' }, { status: 400 })
+  }
+
+  const book = await db.book.create({
+    data: { title: body.title.trim(), price: body.price },
+  })
+
+  return Response.json({ data: book }, { status: 201 })
+}
+```
+
+TypeScript type ไม่ได้ตรวจ JSON ตอน runtime จึงต้อง validate ข้อมูลจริงเสมอ โปรเจกต์ขนาดใหญ่ควรใช้ schema validation library และจำกัด field ที่รับแทนการส่ง body ทั้งก้อนไปฐานข้อมูล
+
+## Dynamic Route Handler
+
+```tsx
+// app/api/books/[id]/route.ts
+import { db } from '@/lib/db'
+
+type Context = { params: Promise<{ id: string }> }
+
+export async function GET(_request: Request, { params }: Context) {
+  const { id } = await params
+  const book = await db.book.findUnique({ where: { id } })
+
+  if (!book) {
+    return Response.json({ error: 'ไม่พบหนังสือ' }, { status: 404 })
+  }
+
+  return Response.json({ data: book })
+}
+
+export async function DELETE(_request: Request, { params }: Context) {
+  const { id } = await params
+
+  await db.book.delete({ where: { id } })
+  return new Response(null, { status: 204 })
+}
+```
+
+`params` เป็น Promise เช่นเดียวกับ Page และ Layout ใน Next.js รุ่นปัจจุบัน
+
+## Headers และ Cookies
+
+```tsx
+import { cookies } from 'next/headers'
+
+export async function GET(request: Request) {
+  const authorization = request.headers.get('authorization')
+  const cookieStore = await cookies()
+  const session = cookieStore.get('session')?.value
+
+  return Response.json({
+    hasAuthorizationHeader: Boolean(authorization),
+    hasSession: Boolean(session),
+  })
+}
+```
+
+อย่าส่ง token หรือ secret จริงกลับไปใน response ตัวอย่างคืนเฉพาะ boolean เพื่อแสดงแนวคิด
+
+## Route Handler หรือ Server Action
+
+| งาน | Route Handler | Server Action |
+| --- | --- | --- |
+| Public REST API | เหมาะสม | ไม่เหมาะ |
+| Mobile app เรียกใช้ | เหมาะสม | ไม่เหมาะ |
+| Third-party webhook | เหมาะสม | ไม่เหมาะ |
+| Form ภายใน Next.js UI | ทำได้ | เหมาะกว่า |
+| Mutation จากปุ่มในหน้า | ทำได้ | เหมาะกว่า |
+| Server Component อ่านฐานข้อมูล | ไม่จำเป็น | ไม่จำเป็น |
+
+Server Component ควรเรียก data layer โดยตรง ไม่ควร fetch Route Handler ของแอปตัวเอง เพราะเพิ่ม network round trip โดยไม่จำเป็น
+
+## ข้อควรระวังด้านความปลอดภัย
+
+- ตรวจ Authentication และ Authorization ภายในทุก endpoint ที่ป้องกัน
+- Validate body, params และ query string
+- ไม่ส่ง stack trace หรือข้อมูลฐานข้อมูลภายในกลับผู้ใช้
+- จำกัดขนาด upload และ rate limit endpoint ที่เปิดสาธารณะ
+- Webhook ต้องตรวจ signature จากผู้ให้บริการ
+
+## Static Export
+
+Route Handlers ที่ต้องประมวลผลตาม request ใช้ไม่ได้บน GitHub Pages หรือ static hosting ต้อง deploy แบบมี Next.js server ส่วน GET ที่สร้างผลลัพธ์คงที่ตอน Build มีข้อจำกัดและไม่แทน API server จริง
+
+## แบบฝึกหัด
+
+สร้าง `/api/books` ให้รองรับ GET และ POST และ `/api/books/[id]` ให้รองรับ GET กับ DELETE ทดสอบกรณีสำเร็จ, input ไม่ถูกต้อง, ไม่พบข้อมูล และไม่มีสิทธิ์
+

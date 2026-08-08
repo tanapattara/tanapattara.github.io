@@ -1,0 +1,117 @@
+---
+title: "Local Storage และ Offline Data"
+sidebarTitle: "Local Storage และ Offline Data"
+---
+
+# Local Storage และ Offline Data
+
+ข้อมูลแต่ละประเภทต้องใช้ Storage ต่างกัน การเก็บทุกอย่างใน SharedPreferences หรือเก็บ token ใน plain database เป็นการเลือกที่ผิดทั้งด้านประสิทธิภาพและความปลอดภัย
+
+## เลือก Storage
+
+| ข้อมูล | แนวทาง |
+| --- | --- |
+| Theme, ภาษา, onboarding flag | Shared Preferences |
+| Access/refresh token | Secure Storage |
+| รายการกิจกรรมจำนวนมากและ query | SQLite |
+| รูปหรือเอกสาร | File system |
+| Cache ชั่วคราว | Cache directory พร้อมนโยบายหมดอายุ |
+
+## Shared Preferences
+
+```bash
+flutter pub add shared_preferences
+```
+
+```dart
+class SettingsService {
+  static const _darkModeKey = 'dark_mode';
+
+  Future<void> saveDarkMode(bool enabled) async {
+    final preferences = await SharedPreferences.getInstance();
+    await preferences.setBool(_darkModeKey, enabled);
+  }
+
+  Future<bool> loadDarkMode() async {
+    final preferences = await SharedPreferences.getInstance();
+    return preferences.getBool(_darkModeKey) ?? false;
+  }
+}
+```
+
+Shared Preferences ไม่เหมาะกับข้อมูลใหญ่หรือข้อมูลสำคัญ และการเขียนเสร็จไม่ได้รับประกันว่าเป็น transaction แบบฐานข้อมูล
+
+## Secure Storage
+
+```bash
+flutter pub add flutter_secure_storage
+```
+
+```dart
+class TokenStore {
+  TokenStore(this._storage);
+  final FlutterSecureStorage _storage;
+
+  static const _tokenKey = 'access_token';
+
+  Future<void> save(String token) => _storage.write(key: _tokenKey, value: token);
+  Future<String?> read() => _storage.read(key: _tokenKey);
+  Future<void> clear() => _storage.delete(key: _tokenKey);
+}
+```
+
+Secure Storage ใช้ Keychain/Keystore ของระบบ แต่ยังต้องตั้ง session expiry, revoke token และป้องกันอุปกรณ์ที่ถูก compromise
+
+## SQLite
+
+```bash
+flutter pub add sqflite path
+```
+
+```dart
+final database = await openDatabase(
+  join(await getDatabasesPath(), 'campus_events.db'),
+  version: 1,
+  onCreate: (db, version) async {
+    await db.execute('''
+      CREATE TABLE events(
+        id INTEGER PRIMARY KEY,
+        title TEXT NOT NULL,
+        location TEXT NOT NULL,
+        is_favorite INTEGER NOT NULL DEFAULT 0,
+        updated_at TEXT NOT NULL
+      )
+    ''');
+  },
+);
+```
+
+```dart
+Future<void> saveEvents(Database db, List<Event> events) async {
+  await db.transaction((transaction) async {
+    for (final event in events) {
+      await transaction.insert(
+        'events',
+        event.toDatabase(),
+        conflictAlgorithm: ConflictAlgorithm.replace,
+      );
+    }
+  });
+}
+```
+
+ใช้ transaction เมื่อหลายรายการต้องสำเร็จหรือล้มเหลวร่วมกัน และเพิ่ม migration เมื่อ schema version เปลี่ยน ห้ามลบ database เพื่อแก้ migration ใน production
+
+## Offline-first Flow
+
+```text
+เปิดหน้า → อ่าน Local DB ทันที → แสดงข้อมูลเก่า → เรียก API
+         → บันทึกข้อมูลใหม่ลง DB → Repository แจ้ง UI
+```
+
+ต้องกำหนด conflict policy เช่น server wins, client wins หรือเปรียบเทียบ version/timestamp และบอกผู้ใช้เมื่อ action รอ sync
+
+## แบบฝึกหัด
+
+เก็บ Theme ด้วย Shared Preferences, token จำลองด้วย Secure Storage และรายการโปรดด้วย SQLite ปิดอินเทอร์เน็ตและ restart แอปเพื่อยืนยันว่าข้อมูลที่ควรอยู่ยังแสดงได้
+

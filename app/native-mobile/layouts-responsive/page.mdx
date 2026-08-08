@@ -1,0 +1,122 @@
+---
+title: "Layout และ Responsive UI"
+sidebarTitle: "Layout และ Responsive UI"
+---
+
+# Layout และ Responsive UI
+
+หลักสำคัญของ Flutter layout คือ **Constraints go down, sizes go up, parents set positions** Parent ส่งข้อจำกัดให้ child, child เลือกขนาดภายในข้อจำกัด แล้ว parent กำหนดตำแหน่ง การเข้าใจแนวคิดนี้ช่วยแก้ overflow ได้ดีกว่าการใส่ขนาดแบบสุ่ม
+
+## Row, Column และ Flex
+
+```dart
+Row(
+  crossAxisAlignment: CrossAxisAlignment.start,
+  children: [
+    const CircleAvatar(child: Icon(Icons.event)),
+    const SizedBox(width: 12),
+    Expanded(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(event.title, style: Theme.of(context).textTheme.titleMedium),
+          Text(event.location, maxLines: 2, overflow: TextOverflow.ellipsis),
+        ],
+      ),
+    ),
+  ],
+)
+```
+
+`Expanded` บังคับให้ child ใช้พื้นที่ที่เหลือ ช่วยป้องกันข้อความดัน Row จน overflow ส่วน `Flexible` ยอมให้ child เล็กกว่าพื้นที่ที่จัดสรรได้
+
+## ListView.builder
+
+สำหรับรายการจำนวนมาก สร้างเฉพาะ item ที่มองเห็น
+
+```dart
+ListView.separated(
+  padding: const EdgeInsets.all(16),
+  itemCount: events.length,
+  separatorBuilder: (_, __) => const SizedBox(height: 8),
+  itemBuilder: (context, index) {
+    final event = events[index];
+    return EventCard(
+      key: ValueKey(event.id),
+      title: event.title,
+      location: event.location,
+      onTap: () => openEvent(event.id),
+    );
+  },
+)
+```
+
+ไม่ควรวาง `ListView` ที่ไม่จำกัดความสูงใน `Column` ให้ครอบด้วย `Expanded` หรือออกแบบ scrollable parent เพียงตัวเดียว
+
+## Grid แบบปรับตามพื้นที่
+
+```dart
+GridView.builder(
+  gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+    maxCrossAxisExtent: 320,
+    mainAxisSpacing: 12,
+    crossAxisSpacing: 12,
+    childAspectRatio: 1.4,
+  ),
+  itemCount: events.length,
+  itemBuilder: (context, index) => EventGridCard(event: events[index]),
+)
+```
+
+`maxCrossAxisExtent` ปรับจำนวน column ตามพื้นที่จริง จึงยืดหยุ่นกว่ากำหนด `crossAxisCount: 2` ทุกหน้าจอ
+
+## LayoutBuilder
+
+```dart
+LayoutBuilder(
+  builder: (context, constraints) {
+    if (constraints.maxWidth >= 840) {
+      return Row(
+        children: [
+          const SizedBox(width: 280, child: EventNavigation()),
+          Expanded(child: EventList(events: events)),
+        ],
+      );
+    }
+
+    return EventList(events: events);
+  },
+)
+```
+
+ใช้พื้นที่ที่ component ได้รับแทนขนาดจอทั้งหมด เพราะ component อาจอยู่ใน split view หรือ panel ที่แคบกว่าหน้าจอ
+
+## SafeArea และ Keyboard
+
+```dart
+Scaffold(
+  resizeToAvoidBottomInset: true,
+  body: SafeArea(
+    child: SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: RegistrationForm(),
+    ),
+  ),
+)
+```
+
+SafeArea หลีกเลี่ยง notch และ system UI ส่วน form ควร scroll ได้เมื่อ keyboard ลดพื้นที่
+
+## Responsive Checklist
+
+- ทดสอบหน้าจอเล็ก ใหญ่ แนวตั้ง แนวนอน และ split screen
+- ทดสอบ text scale ขนาดใหญ่ ไม่กำหนดความสูงข้อความแบบตายตัว
+- ใช้ `Expanded`, `Wrap` และ flexible constraints
+- ใช้ `const` และ builder constructor สำหรับ list ใหญ่
+- อย่าซ้อน scroll views โดยไม่มีความจำเป็น
+- รองรับ loading, empty และ error layout ในทุกขนาด
+
+## แบบฝึกหัด
+
+สร้างหน้ารายการกิจกรรมที่แสดง List บนมือถือและ Navigation panel + Grid เมื่อกว้างตั้งแต่ 840 pixels ทดสอบด้วย Device Preview หรือปรับหน้าต่าง Desktop/Web
+

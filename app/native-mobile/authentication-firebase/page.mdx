@@ -1,0 +1,118 @@
+---
+title: "Authentication และ Firebase"
+sidebarTitle: "Authentication และ Firebase"
+---
+
+# Authentication และ Firebase
+
+Authentication พิสูจน์ว่าผู้ใช้เป็นใคร ส่วน Authorization ตัดสินว่าผู้ใช้นั้นทำอะไรได้ Firebase Authentication ช่วยจัดการ credential และ session แต่แอปยังต้อง validate input ออกแบบ error state และกำหนด Security Rules ให้ข้อมูล backend
+
+## ตั้งค่า Firebase
+
+สร้าง Firebase project และลงทะเบียน Android/iOS app ตาม package identifier จากนั้นใช้ FlutterFire CLI สร้าง configuration
+
+```bash
+flutter pub add firebase_core firebase_auth
+dart pub global activate flutterfire_cli
+flutterfire configure
+```
+
+เริ่ม Firebase ก่อน `runApp`:
+
+```dart
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+  runApp(const CampusEventsApp());
+}
+```
+
+ไฟล์ configuration ฝั่ง client มี identifier ที่แอปต้องใช้ แต่สิทธิ์ข้อมูลต้องควบคุมด้วย Authentication และ Security Rules ไม่ใช่การพยายามซ่อน configuration ใน APK
+
+## Auth Repository
+
+```dart
+class AuthRepository extends ChangeNotifier {
+  AuthRepository(this._auth) {
+    _subscription = _auth.authStateChanges().listen((_) => notifyListeners());
+  }
+
+  final FirebaseAuth _auth;
+  late final StreamSubscription<User?> _subscription;
+
+  User? get currentUser => _auth.currentUser;
+  bool get isLoggedIn => currentUser != null;
+
+  Future<void> signIn({required String email, required String password}) async {
+    await _auth.signInWithEmailAndPassword(email: email, password: password);
+  }
+
+  Future<void> register({required String email, required String password}) async {
+    await _auth.createUserWithEmailAndPassword(email: email, password: password);
+  }
+
+  Future<void> signOut() => _auth.signOut();
+
+  @override
+  void dispose() {
+    _subscription.cancel();
+    super.dispose();
+  }
+}
+```
+
+ใช้ `authStateChanges()` เป็น source of truth แทนเก็บ boolean login ซ้ำในหลายหน้า
+
+## Login Error ที่ผู้ใช้เข้าใจ
+
+```dart
+try {
+  await authRepository.signIn(email: email, password: password);
+} on FirebaseAuthException catch (error) {
+  final message = switch (error.code) {
+    'invalid-email' => 'รูปแบบอีเมลไม่ถูกต้อง',
+    'invalid-credential' => 'อีเมลหรือรหัสผ่านไม่ถูกต้อง',
+    'too-many-requests' => 'ลองเข้าสู่ระบบหลายครั้งเกินไป กรุณารอสักครู่',
+    _ => 'เข้าสู่ระบบไม่สำเร็จ',
+  };
+  viewModel.showError(message);
+}
+```
+
+ไม่ควรแยกข้อความ “ไม่พบบัญชี” กับ “รหัสผ่านผิด” ใน production เพราะช่วยให้เดารายชื่อผู้ใช้ได้
+
+## Authorization
+
+การซ่อนปุ่ม Admin ไม่ใช่การป้องกันข้อมูล Backend ต้องตรวจ role หรือ custom claim ใน Security Rules/Server ทุกครั้ง
+
+```text
+UI guard → ช่วยประสบการณ์ผู้ใช้
+Security Rules/API authorization → ป้องกันข้อมูลจริง
+```
+
+ตัวอย่างแนวคิด Firestore rule:
+
+```text
+allow read: if request.auth != null;
+allow write: if request.auth != null
+             && request.auth.token.admin == true;
+```
+
+Rules จริงต้องจำกัด collection/document/field และทดสอบด้วย Emulator Suite ไม่ควรใช้ rule เปิด `allow read, write: if true` ใน production
+
+## Security Checklist
+
+- ใช้ HTTPS และ SDK ทางการ
+- กำหนด password policy และ rate limiting
+- รองรับ email verification และ password reset
+- ไม่ log password, ID token หรือ refresh token
+- ตรวจ authorization ที่ backend ทุก action
+- ปิด session หรือ revoke token เมื่อบัญชีมีความเสี่ยง
+- ใช้ Firebase Emulator สำหรับ test แทน production project
+
+## แบบฝึกหัด
+
+สร้าง Register/Login/Logout ด้วย Firebase Auth เชื่อม route redirect กับ `authStateChanges()` เพิ่มหน้า Profile และจำลอง role Admin พร้อมอธิบายว่าจุดใดเป็น UI guard และจุดใดเป็น security enforcement
+

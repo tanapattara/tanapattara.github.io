@@ -1,0 +1,128 @@
+---
+title: "Asynchronous Programming ใน Dart"
+sidebarTitle: "Asynchronous Dart"
+---
+
+# Asynchronous Programming ใน Dart
+
+งาน Mobile จำนวนมากใช้เวลา เช่น เรียก API อ่านฐานข้อมูล ขอ Location หรือเปิดไฟล์ หากรอแบบ synchronous UI จะค้าง Dart จึงใช้ `Future` สำหรับผลลัพธ์ครั้งเดียวและ `Stream` สำหรับค่าที่เกิดหลายครั้ง
+
+## Future และ async/await
+
+```dart
+Future<String> loadEventTitle() async {
+  await Future<void>.delayed(const Duration(seconds: 1));
+  return 'Flutter Workshop';
+}
+
+Future<void> main() async {
+  final title = await loadEventTitle();
+  print(title);
+}
+```
+
+Function ที่มี `async` คืน `Future` เสมอ `await` หยุดเฉพาะ async function ปัจจุบัน ไม่ได้หยุด UI thread ทั้งแอป
+
+## Error Handling
+
+```dart
+Future<List<Event>> loadEvents() async {
+  try {
+    final events = await repository.getEvents();
+    return events;
+  } on TimeoutException {
+    throw const EventException('การเชื่อมต่อใช้เวลานานเกินไป');
+  } catch (error, stackTrace) {
+    logger.error('Load events failed', error, stackTrace);
+    throw const EventException('โหลดกิจกรรมไม่สำเร็จ');
+  }
+}
+```
+
+แปลง technical error เป็น domain error ที่ UI เข้าใจ และเก็บ stack trace ไว้สำหรับวิเคราะห์โดยไม่แสดงข้อมูลภายในแก่ผู้ใช้
+
+## ทำงานพร้อมกัน
+
+เมื่อสองงานไม่ขึ้นต่อกัน ใช้ `Future.wait`
+
+```dart
+final results = await Future.wait([
+  eventRepository.getEvents(),
+  profileRepository.getProfile(),
+]);
+
+final events = results[0];
+final profile = results[1];
+```
+
+หากงานที่สองต้องใช้ ID จากงานแรกจึงค่อย `await` ตามลำดับ อย่าทำ parallel โดยไม่พิจารณา dependency
+
+## Stream
+
+```dart
+Stream<int> countdown(int from) async* {
+  for (var value = from; value >= 0; value--) {
+    yield value;
+    await Future<void>.delayed(const Duration(seconds: 1));
+  }
+}
+```
+
+แสดง Stream ใน UI:
+
+```dart
+StreamBuilder<int>(
+  stream: countdown(5),
+  builder: (context, snapshot) {
+    if (snapshot.hasError) return const Text('เกิดข้อผิดพลาด');
+    if (!snapshot.hasData) return const CircularProgressIndicator();
+    return Text('เหลือ ${snapshot.data} วินาที');
+  },
+)
+```
+
+`StreamBuilder` ต้องจัดการ waiting, data, error และ done state ส่วนการ subscribe ด้วย `listen()` เองต้องยกเลิก `StreamSubscription` ใน `dispose()`
+
+## FutureBuilder
+
+```dart
+class EventList extends StatefulWidget {
+  const EventList({super.key});
+
+  @override
+  State<EventList> createState() => _EventListState();
+}
+
+class _EventListState extends State<EventList> {
+  late final Future<List<Event>> _eventsFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _eventsFuture = repository.getEvents();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<List<Event>>(
+      future: _eventsFuture,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        if (snapshot.hasError) return const Text('โหลดข้อมูลไม่สำเร็จ');
+        final events = snapshot.data ?? const <Event>[];
+        return ListView(
+          children: events.map((event) => ListTile(title: Text(event.title))).toList(),
+        );
+      },
+    );
+  }
+}
+```
+
+เก็บ Future ใน `initState()` เพื่อไม่ให้ทุก `build()` เริ่ม request ใหม่
+
+## แบบฝึกหัด
+
+สร้าง Service จำลองที่โหลดกิจกรรมหลัง 2 วินาที มีโอกาสเกิด error และแสดงด้วย `FutureBuilder` จากนั้นเพิ่มปุ่ม Retry ที่สร้าง Future ใหม่ภายใน `setState()`

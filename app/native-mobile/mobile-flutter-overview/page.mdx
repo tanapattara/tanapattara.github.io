@@ -1,0 +1,95 @@
+---
+title: "Mobile Application และ Flutter"
+sidebarTitle: "Mobile และ Flutter"
+---
+
+# Mobile Application และ Flutter
+
+การพัฒนา Mobile Application ต้องคำนึงถึงหน้าจอหลายขนาด การหมุนจอ พลังงาน หน่วยความจำ พื้นที่เก็บข้อมูล การเชื่อมต่อที่ไม่แน่นอน และ lifecycle ที่ระบบปฏิบัติการควบคุม แอปที่ทำงานดีบนคอมพิวเตอร์จึงอาจมีประสบการณ์ใช้งานไม่ดีบนโทรศัพท์หากไม่ออกแบบตามข้อจำกัดเหล่านี้
+
+## Native, Cross-platform และ Flutter
+
+| แนวทาง | ตัวอย่าง | จุดเด่น | ข้อแลกเปลี่ยน |
+| --- | --- | --- | --- |
+| Native | Kotlin/Android, Swift/iOS | ใช้ API แพลตฟอร์มโดยตรง | ต้องดูแลหลาย codebase |
+| Cross-platform | Flutter | ใช้ codebase ร่วมกัน | ต้องเข้าใจ plugin และความต่างของแพลตฟอร์ม |
+| Web-based hybrid | WebView-based framework | ใช้ทักษะเว็บได้มาก | UI และ performance ขึ้นกับ WebView |
+
+Flutter วาด UI ผ่าน rendering engine ของตนเองและ embed เข้า Android/iOS shell เมื่อจำเป็นต้องใช้ Camera, GPS หรือ Native SDK จะสื่อสารผ่าน plugin หรือ platform channel
+
+## Declarative UI
+
+Flutter สร้าง UI จาก State แทนการแก้หน้าจอทีละ element
+
+```dart
+Widget build(BuildContext context) {
+  return Text(isLoggedIn ? 'ยินดีต้อนรับ' : 'กรุณาเข้าสู่ระบบ');
+}
+```
+
+เมื่อ `isLoggedIn` เปลี่ยน Framework จะเรียก `build()` ใหม่และปรับเฉพาะส่วนที่จำเป็น แนวคิดนี้ทำให้ UI คาดเดาและทดสอบได้ง่ายขึ้น
+
+## โครงสร้างแอปขั้นต่ำ
+
+```dart
+import 'package:flutter/material.dart';
+
+void main() {
+  runApp(const CampusApp());
+}
+
+class CampusApp extends StatelessWidget {
+  const CampusApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      title: 'Campus Events',
+      theme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.indigo),
+      ),
+      home: const HomeScreen(),
+    );
+  }
+}
+
+class HomeScreen extends StatelessWidget {
+  const HomeScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('กิจกรรมมหาวิทยาลัย')),
+      body: const Center(child: Text('เริ่มต้นเรียน Flutter')),
+    );
+  }
+}
+```
+
+- `main()` เป็น entry point
+- `runApp()` วาง root widget ลงในหน้าจอ
+- `MaterialApp` จัดการ theme, navigation และ localization ระดับแอป
+- `Scaffold` ให้โครงหน้าจอ Material เช่น AppBar, Body และ Floating Action Button
+
+## Mobile Constraints ที่ต้องออกแบบ
+
+- Network อาจช้า หลุด หรือมีค่าใช้จ่าย: ต้องมี loading, timeout, retry และ offline state
+- ระบบอาจหยุดแอปเมื่ออยู่ background: อย่าเก็บข้อมูลสำคัญเฉพาะในหน่วยความจำ
+- Permission ถูกปฏิเสธได้: UI ต้องอธิบายเหตุผลและมีทางเลือก
+- หน้าจอและ text scale ต่างกัน: หลีกเลี่ยงขนาดตายตัวมากเกินไป
+- Battery และ CPU จำกัด: หลีกเลี่ยง polling, animation และ rebuild ที่ไม่จำเป็น
+- ข้อมูลผู้ใช้มีความอ่อนไหว: เก็บ token ใน secure storage และใช้ HTTPS
+
+## เครื่องมือในวงจรพัฒนา
+
+```text
+เขียนโค้ด → Analyze → Run/Debug → Test → Profile → Build → Release
+```
+
+Flutter DevTools ช่วยตรวจ widget tree, layout, network, CPU และ memory ส่วน Store release ต้องมี signing, privacy disclosure และการทดสอบบนอุปกรณ์จริง
+
+## Milestone
+
+สร้างแอป Campus Events ที่แสดงชื่อรายวิชา ชื่อนักศึกษา และรายการคุณสมบัติที่ต้องการอย่างน้อยสามข้อ อธิบายด้วยว่า feature ใดต้องใช้ Native API
+

@@ -1,0 +1,103 @@
+---
+title: "Class และ Object"
+sidebarTitle: "Class และ Object"
+---
+
+# Class และ Object
+
+**Class** คือแม่แบบที่บอกว่า Object จะมีข้อมูลและทำอะไรได้ ส่วน **Object** คือสิ่งที่ถูกสร้างจากแม่แบบนั้นและมีสถานะของตนเอง ตัวอย่างเช่น `Product` เป็น Class ส่วนสมุดราคา 45 บาทหนึ่งรายการเป็น Object
+
+| ส่วนประกอบ | หน้าที่ | ตัวอย่าง |
+| --- | --- | --- |
+| Property | เก็บหรือเปิดเผยสถานะของ Object | `Name`, `Price` |
+| Constructor | กำหนดสถานะเริ่มต้นตอนสร้าง Object | `Product(name, price)` |
+| Method | กำหนดพฤติกรรมของ Object | `ApplyDiscount()` |
+
+## ตัวอย่าง Product
+
+สร้างโปรเจกต์ด้วยคำสั่ง
+
+```bash
+dotnet new console -n ClassObjectDemo
+cd ClassObjectDemo
+```
+
+แทนที่ `Program.cs` ด้วยโค้ดต่อไปนี้
+
+```csharp
+using System;
+
+namespace ClassObjectDemo;
+
+public class Product
+{
+    public string Name { get; set; }
+    public decimal Price { get; private set; }
+
+    public Product(string name, decimal price)
+    {
+        Name = name;
+        Price = price;
+    }
+
+    public void ApplyDiscount(decimal percent)
+    {
+        Price -= Price * percent / 100m;
+    }
+
+    public string GetLabel()
+    {
+        return $"{Name}: {Price:N2} บาท";
+    }
+}
+
+public class Program
+{
+    public static void Main()
+    {
+        Product notebook = new Product("สมุด", 45m);
+        Product backpack = new Product("กระเป๋า", 890m);
+
+        notebook.ApplyDiscount(10m);
+
+        Console.WriteLine(notebook.GetLabel());
+        Console.WriteLine(backpack.GetLabel());
+    }
+}
+```
+
+รันด้วย
+
+```bash
+dotnet run
+```
+
+ผลลัพธ์
+
+```text
+สมุด: 40.50 บาท
+กระเป๋า: 890.00 บาท
+```
+
+`notebook` และ `backpack` สร้างจาก Class เดียวกัน แต่เก็บค่า `Name` และ `Price` แยกกัน การเรียก `ApplyDiscount()` กับ `notebook` จึงไม่เปลี่ยนราคาของ `backpack`
+
+## Reference ของ Object
+
+ตัวแปรที่มีชนิดเป็น Class เก็บ Reference ที่ชี้ไปยัง Object หากนำ Reference เดียวกันไปกำหนดให้ตัวแปรอีกตัว ทั้งสองตัวแปรจะอ้างถึง Object เดียวกัน
+
+```csharp
+Product first = new Product("ปากกา", 20m);
+Product second = first;
+
+second.ApplyDiscount(50m);
+Console.WriteLine(first.Price); // 10.00 เพราะเป็น Object เดียวกัน
+```
+
+หากต้องการ Object ใหม่ที่มีข้อมูลคล้ายเดิม ต้องสร้าง Object ใหม่หรือออกแบบเมธอดสำหรับคัดลอกอย่างชัดเจน
+
+## แบบฝึกหัด
+
+1. เพิ่ม Property `Stock` ชนิด `int`
+2. เพิ่มเมธอด `Sell(int quantity)` สำหรับลดจำนวนสินค้า
+3. ป้องกันไม่ให้ขายเกินจำนวนที่มี
+4. สร้างสินค้าอย่างน้อย 3 Object และแสดงสถานะหลังขาย

@@ -1,0 +1,128 @@
+---
+title: "Networking และ REST API"
+sidebarTitle: "Networking และ REST API"
+---
+
+# Networking และ REST API
+
+Mobile network เปลี่ยนจาก Wi-Fi เป็น cellular หลุด หรือช้าได้ตลอด Data layer จึงต้องจัด timeout, status code, parsing error, retry และ offline state ไม่ใช่แค่เรียก GET แล้วสมมติว่าสำเร็จ
+
+## ติดตั้ง HTTP Client
+
+```bash
+flutter pub add http
+```
+
+Android ต้องมี Internet permission ซึ่งโปรเจกต์ Flutter ทั่วไปกำหนดใน debug profile อยู่แล้ว สำหรับ production ตรวจ `android/app/src/main/AndroidManifest.xml`:
+
+```xml
+<uses-permission android:name="android.permission.INTERNET" />
+```
+
+## Model และ JSON
+
+```dart
+class Event {
+  const Event({required this.id, required this.title, required this.location});
+
+  final int id;
+  final String title;
+  final String location;
+
+  factory Event.fromJson(Map<String, dynamic> json) {
+    return Event(
+      id: json['id'] as int,
+      title: json['title'] as String,
+      location: json['location'] as String? ?? 'ไม่ระบุสถานที่',
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'title': title,
+        'location': location,
+      };
+}
+```
+
+Manual serialization เหมาะกับ model น้อย field โปรเจกต์ใหญ่ควรใช้ code generation เช่น `json_serializable` เพื่อลด casting ผิด
+
+## GET Request
+
+```dart
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+
+class EventApiService {
+  EventApiService(this._client, {required this.baseUrl});
+
+  final http.Client _client;
+  final String baseUrl;
+
+  Future<List<Event>> getEvents() async {
+    final response = await _client
+        .get(Uri.parse('$baseUrl/events'))
+        .timeout(const Duration(seconds: 10));
+
+    if (response.statusCode != 200) {
+      throw ApiException(response.statusCode, 'โหลดกิจกรรมไม่สำเร็จ');
+    }
+
+    final data = jsonDecode(response.body) as List<dynamic>;
+    return data
+        .map((item) => Event.fromJson(item as Map<String, dynamic>))
+        .toList(growable: false);
+  }
+}
+```
+
+## POST Request
+
+```dart
+Future<Event> createEvent(Event event, String accessToken) async {
+  final response = await _client.post(
+    Uri.parse('$baseUrl/events'),
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer $accessToken',
+    },
+    body: jsonEncode(event.toJson()),
+  );
+
+  if (response.statusCode != 201) {
+    throw ApiException(response.statusCode, 'เพิ่มกิจกรรมไม่สำเร็จ');
+  }
+
+  return Event.fromJson(jsonDecode(response.body) as Map<String, dynamic>);
+}
+```
+
+ใช้ HTTPS เสมอใน production และอย่า log Authorization header
+
+## จัดการ Error ตามประเภท
+
+```dart
+try {
+  final events = await service.getEvents();
+  state = EventState.success(events);
+} on TimeoutException {
+  state = const EventState.error('การเชื่อมต่อใช้เวลานานเกินไป');
+} on SocketException {
+  state = const EventState.error('กรุณาตรวจสอบอินเทอร์เน็ต');
+} on FormatException {
+  state = const EventState.error('รูปแบบข้อมูลจากระบบไม่ถูกต้อง');
+} on ApiException catch (error) {
+  state = EventState.error(error.message);
+}
+```
+
+Retry เฉพาะงานที่ปลอดภัยและกำหนดจำนวนครั้ง ห้าม retry POST สร้างรายการโดยอัตโนมัติหาก API ไม่มี idempotency key เพราะอาจสร้างข้อมูลซ้ำ
+
+## Pagination
+
+ส่ง `page` หรือ cursor และเก็บ `hasMore`, `loadingMore` แยกจาก initial loading เรียกหน้าถัดไปเมื่อ scroll ใกล้ท้ายรายการ และป้องกัน request ซ้ำขณะอันก่อนยังไม่เสร็จ
+
+## แบบฝึกหัด
+
+เชื่อม Public REST API สร้างหน้ารายการและรายละเอียด รองรับ Loading/Empty/Error/Retry เพิ่ม POST ด้วย mock server และทดสอบ timeout, 404, 500 และ JSON field ที่หายไป
+

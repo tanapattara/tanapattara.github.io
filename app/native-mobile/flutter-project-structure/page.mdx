@@ -1,0 +1,150 @@
+---
+title: "โครงสร้างโปรเจกต์ Flutter"
+sidebarTitle: "โครงสร้างโปรเจกต์ Flutter"
+---
+
+# โครงสร้างโปรเจกต์ Flutter
+
+โปรเจกต์ที่สร้างด้วย `flutter create campus_events` มีทั้ง Dart source code และ native host projects การเข้าใจหน้าที่ของแต่ละส่วนช่วยป้องกันการวาง business logic กระจายอยู่ใน Widget หรือแก้ native configuration ผิดตำแหน่ง
+
+## โครงสร้างเริ่มต้น
+
+```text
+campus_events/
+├── android/               # Android host และ Gradle configuration
+├── ios/                   # iOS host และ Xcode configuration
+├── lib/                   # Dart source code หลัก
+│   └── main.dart
+├── test/                  # Unit และ Widget tests
+├── pubspec.yaml           # Package, asset, font และ SDK constraints
+├── analysis_options.yaml  # Lint rules
+└── README.md
+```
+
+ไม่ควรแก้ไฟล์ generated หรือ native folders โดยไม่มีเหตุผล ส่วน source code ของ feature เกือบทั้งหมดควรอยู่ใน `lib`
+
+## pubspec.yaml
+
+```yaml
+name: campus_events
+description: แอปกิจกรรมมหาวิทยาลัย
+publish_to: none
+
+environment:
+  sdk: ^3.0.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+  http: any
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: any
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/images/
+    - assets/data/
+```
+
+ในงานจริงควรให้ `flutter pub add package_name` เลือก version ที่เข้ากันได้ แทนพิมพ์ `any` เอง และ commit `pubspec.lock` สำหรับ application เพื่อให้ทีมใช้ dependency ชุดเดียวกัน
+
+```bash
+flutter pub add http
+flutter pub get
+flutter pub outdated
+```
+
+## ใช้ Asset
+
+```dart
+Image.asset(
+  'assets/images/campus.jpg',
+  fit: BoxFit.cover,
+  semanticLabel: 'อาคารเรียนกลาง',
+)
+```
+
+Path ต้องตรงตัวพิมพ์เล็กใหญ่กับไฟล์จริง โดยเฉพาะเมื่อ build บน Linux/CI
+
+## Feature-first Structure
+
+เมื่อแอปโตขึ้น แบ่งตาม feature และแยก UI/Data layer
+
+```text
+lib/
+├── main.dart
+├── app.dart
+├── core/
+│   ├── routing/
+│   ├── theme/
+│   └── ui/
+└── features/
+    └── events/
+        ├── data/
+        │   ├── event_api_service.dart
+        │   └── event_repository.dart
+        ├── domain/
+        │   └── event.dart
+        └── presentation/
+            ├── event_list_screen.dart
+            └── event_list_view_model.dart
+```
+
+- `presentation` มี Widget และ UI state
+- `data` ติดต่อ API, database และแปลงข้อมูล
+- `domain` มี model หรือ use case ที่ไม่ผูกกับ UI
+- `core` มีของใช้ร่วมจริง ๆ ไม่ใช่ที่ทิ้งไฟล์ที่จัดหมวดไม่ได้
+
+เริ่มโปรเจกต์เล็กด้วยโครงสร้างเรียบง่ายก่อน แล้วแยกเมื่อมี feature และ test มากพอ ไม่จำเป็นต้องสร้างทุก layer ให้หน้า Hello World
+
+## main.dart และ app.dart
+
+```dart
+// lib/main.dart
+import 'package:flutter/widgets.dart';
+import 'app.dart';
+
+void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+  runApp(const CampusEventsApp());
+}
+```
+
+```dart
+// lib/app.dart
+import 'package:flutter/material.dart';
+
+class CampusEventsApp extends StatelessWidget {
+  const CampusEventsApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Campus Events',
+      theme: ThemeData(colorSchemeSeed: Colors.indigo),
+      home: const EventListScreen(),
+    );
+  }
+}
+```
+
+แยก bootstrap ออกจาก root widget ทำให้ integration test เรียก `CampusEventsApp` ได้โดยไม่เรียก `main()`
+
+## Code Quality
+
+```bash
+dart format .
+flutter analyze
+flutter test
+```
+
+เปิด lint rules และแก้ warning อย่างมีเหตุผล ใช้ `const` เมื่อทำได้ และหลีกเลี่ยงไฟล์ `utils.dart` ขนาดใหญ่ที่รวมหน้าที่ไม่เกี่ยวข้องกัน
+
+## แบบฝึกหัด
+
+สร้าง folders ตาม feature-first structure ย้ายหน้าแรกไป `features/events/presentation` เพิ่มรูป asset หนึ่งรูป แล้วรัน format, analyze และ test ให้ผ่าน
+

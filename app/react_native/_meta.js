@@ -16,5 +16,6 @@ export default {
   "location-map": "Location and Map",
   "local-authentication": "Local Authentication",
   building: "Building with EAS",
+  "course-project": "โปรเจกต์ประจำวิชา",
   workshop: "Workshop",
 };

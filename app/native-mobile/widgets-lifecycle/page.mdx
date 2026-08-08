@@ -1,0 +1,162 @@
+---
+title: "Widget และ Lifecycle"
+sidebarTitle: "Widget และ Lifecycle"
+---
+
+# Widget และ Lifecycle
+
+Flutter UI ประกอบจาก Widget ที่ซ้อนกัน Widget เป็น configuration ที่ immutable ส่วน Framework ใช้ Element เชื่อม Widget กับตำแหน่งใน tree และ RenderObject จัด layout/paint การสร้าง Widget object ใหม่จึงไม่เท่ากับสร้างหน้าจอทั้งหมดใหม่
+
+## StatelessWidget
+
+ใช้เมื่อผลลัพธ์ขึ้นกับ constructor และ inherited data โดยไม่มี state ภายในที่เปลี่ยนตามเวลา
+
+```dart
+class EventCard extends StatelessWidget {
+  const EventCard({
+    super.key,
+    required this.title,
+    required this.location,
+    required this.onTap,
+  });
+
+  final String title;
+  final String location;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: ListTile(
+        title: Text(title),
+        subtitle: Text(location),
+        trailing: const Icon(Icons.chevron_right),
+        onTap: onTap,
+      ),
+    );
+  }
+}
+```
+
+Widget รับ data และ callback ผ่าน constructor ทำให้ reuse และ widget test ได้ง่าย
+
+## StatefulWidget และ setState
+
+```dart
+class FavoriteButton extends StatefulWidget {
+  const FavoriteButton({super.key});
+
+  @override
+  State<FavoriteButton> createState() => _FavoriteButtonState();
+}
+
+class _FavoriteButtonState extends State<FavoriteButton> {
+  bool _isFavorite = false;
+
+  void _toggleFavorite() {
+    setState(() {
+      _isFavorite = !_isFavorite;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return IconButton(
+      tooltip: _isFavorite ? 'นำออกจากรายการโปรด' : 'เพิ่มรายการโปรด',
+      onPressed: _toggleFavorite,
+      icon: Icon(_isFavorite ? Icons.favorite : Icons.favorite_border),
+    );
+  }
+}
+```
+
+เปลี่ยน state ภายใน callback ของ `setState` เพื่อแจ้ง Framework ให้ schedule rebuild ห้ามเรียก `setState` หลัง `dispose`
+
+## Lifecycle สำคัญ
+
+```dart
+class EventSearch extends StatefulWidget {
+  const EventSearch({super.key, required this.query});
+  final String query;
+
+  @override
+  State<EventSearch> createState() => _EventSearchState();
+}
+
+class _EventSearchState extends State<EventSearch> {
+  late final TextEditingController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController(text: widget.query);
+  }
+
+  @override
+  void didUpdateWidget(covariant EventSearch oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.query != widget.query) {
+      _controller.text = widget.query;
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return TextField(controller: _controller);
+  }
+}
+```
+
+- `initState`: subscribe หรือสร้าง resource ครั้งแรก ห้ามใช้ `BuildContext` บางชนิดก่อน dependencies พร้อม
+- `didChangeDependencies`: ทำงานเมื่อ inherited dependency เปลี่ยน
+- `didUpdateWidget`: รับ configuration ใหม่จาก parent
+- `dispose`: ยกเลิก controller, animation, stream และ listener
+
+## BuildContext
+
+`BuildContext` คือจุดของ Element ใน tree ใช้ค้นหา Theme, Navigator และ inherited widgets ที่อยู่เหนือจุดนั้น
+
+```dart
+final colorScheme = Theme.of(context).colorScheme;
+Navigator.of(context).pop();
+```
+
+หลัง `await` Widget อาจถูกนำออกจาก tree ให้ตรวจ `mounted` ก่อนใช้ context
+
+```dart
+await repository.register(eventId);
+if (!context.mounted) return;
+ScaffoldMessenger.of(context).showSnackBar(
+  const SnackBar(content: Text('ลงทะเบียนสำเร็จ')),
+);
+```
+
+## Key
+
+Key ช่วย Framework จับคู่ Widget เก่ากับใหม่ โดยเฉพาะ list ที่ reorder
+
+```dart
+ListView(
+  children: events
+      .map((event) => EventCard(
+            key: ValueKey(event.id),
+            title: event.title,
+            location: event.location,
+            onTap: () {},
+          ))
+      .toList(),
+)
+```
+
+ใช้ `GlobalKey` เฉพาะเมื่อจำเป็นเพราะมีค่าใช้จ่ายและทำให้ component ผูกกันมากขึ้น
+
+## แบบฝึกหัด
+
+สร้าง EventCard แบบ Stateless และ FavoriteButton แบบ Stateful เพิ่ม TextEditingController ในหน้าค้นหา แล้วตรวจว่า controller ถูก dispose และ callback หลัง async ตรวจ `context.mounted`
+

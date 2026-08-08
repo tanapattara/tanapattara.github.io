@@ -1,0 +1,147 @@
+---
+title: "Form, Theme และ Accessibility"
+sidebarTitle: "Form, Theme และ Accessibility"
+---
+
+# Form, Theme และ Accessibility
+
+Form ที่ดีต้องช่วยผู้ใช้ป้อนข้อมูลถูกต้อง แสดง error ใกล้ช่องที่เกี่ยวข้อง รองรับ keyboard และ screen reader และใช้สี/ข้อความสอดคล้องกันทั้งแอป
+
+## Form และ Validation
+
+```dart
+class RegistrationForm extends StatefulWidget {
+  const RegistrationForm({super.key});
+
+  @override
+  State<RegistrationForm> createState() => _RegistrationFormState();
+}
+
+class _RegistrationFormState extends State<RegistrationForm> {
+  final _formKey = GlobalKey<FormState>();
+  final _emailController = TextEditingController();
+  bool _submitting = false;
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _submit() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    setState(() => _submitting = true);
+    try {
+      await repository.register(email: _emailController.text.trim());
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('ลงทะเบียนสำเร็จ')),
+      );
+    } finally {
+      if (mounted) setState(() => _submitting = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Form(
+      key: _formKey,
+      child: Column(
+        children: [
+          TextFormField(
+            controller: _emailController,
+            keyboardType: TextInputType.emailAddress,
+            textInputAction: TextInputAction.done,
+            decoration: const InputDecoration(
+              labelText: 'อีเมล',
+              hintText: 'name@example.com',
+            ),
+            validator: (value) {
+              final email = value?.trim() ?? '';
+              if (email.isEmpty) return 'กรุณากรอกอีเมล';
+              if (!email.contains('@')) return 'รูปแบบอีเมลไม่ถูกต้อง';
+              return null;
+            },
+            onFieldSubmitted: (_) => _submitting ? null : _submit(),
+          ),
+          const SizedBox(height: 16),
+          FilledButton(
+            onPressed: _submitting ? null : _submit,
+            child: Text(_submitting ? 'กำลังส่ง...' : 'ลงทะเบียน'),
+          ),
+        ],
+      ),
+    );
+  }
+}
+```
+
+Client validation ช่วย UX แต่ Server/API ต้องตรวจซ้ำเสมอ อย่าเชื่อถือข้อมูลจากแอปมือถือ
+
+## Theme และ Dark Mode
+
+```dart
+MaterialApp(
+  theme: ThemeData(
+    colorScheme: ColorScheme.fromSeed(
+      seedColor: Colors.indigo,
+      brightness: Brightness.light,
+    ),
+    inputDecorationTheme: const InputDecorationTheme(
+      border: OutlineInputBorder(),
+    ),
+  ),
+  darkTheme: ThemeData(
+    colorScheme: ColorScheme.fromSeed(
+      seedColor: Colors.indigo,
+      brightness: Brightness.dark,
+    ),
+  ),
+  themeMode: ThemeMode.system,
+  home: const HomeScreen(),
+)
+```
+
+เรียกสีจาก `Theme.of(context).colorScheme` แทน hard-code เพื่อให้ Dark Mode และ branding เปลี่ยนได้จากจุดเดียว
+
+## Accessibility
+
+```dart
+Semantics(
+  button: true,
+  label: event.isFavorite
+      ? 'นำ ${event.title} ออกจากรายการโปรด'
+      : 'เพิ่ม ${event.title} ในรายการโปรด',
+  child: IconButton(
+    tooltip: 'รายการโปรด',
+    onPressed: onFavorite,
+    icon: Icon(event.isFavorite ? Icons.favorite : Icons.favorite_border),
+  ),
+)
+```
+
+แนวทางสำคัญ:
+
+- Icon button ต้องมี tooltip หรือ semantic label
+- ไม่ใช้สีเพียงอย่างเดียวสื่อสถานะ ให้มีข้อความหรือ icon เพิ่ม
+- touch target ต้องใหญ่พอและไม่วางชิดกันเกินไป
+- รองรับ text scaling โดยไม่ตัดข้อความสำคัญ
+- ลำดับ focus ต้องเป็นธรรมชาติและใช้งานด้วย keyboard ได้
+- ตรวจ contrast ทั้ง Light/Dark theme
+
+## Focus และ Keyboard
+
+```dart
+TextFormField(
+  textInputAction: TextInputAction.next,
+  onFieldSubmitted: (_) => FocusScope.of(context).nextFocus(),
+)
+```
+
+ปิด keyboard เมื่อแตะพื้นที่ว่างด้วย `FocusScope.of(context).unfocus()` และอย่าบังคับ focus จนผู้ใช้ screen reader สับสน
+
+## แบบฝึกหัด
+
+สร้าง Registration Form ที่มีชื่อ อีเมล และเบอร์โทร เพิ่ม validation, pending state, Light/Dark theme และทดสอบด้วย text scale 200% รวมถึง TalkBack หรือ VoiceOver
+

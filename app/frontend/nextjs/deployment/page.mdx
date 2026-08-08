@@ -1,0 +1,134 @@
+---
+title: "Build และ Deployment"
+sidebarTitle: "Build และ Deployment"
+---
+
+# Build และ Deployment
+
+Deployment ไม่ได้มีรูปแบบเดียว การเลือก hosting ต้องเริ่มจาก feature ที่แอปใช้ หากมี Authentication, Server Actions, Route Handlers หรือข้อมูลตาม request ต้องมี Server runtime แต่เว็บไซต์ข้อมูลคงที่สามารถ export เป็นไฟล์ static ได้
+
+## Production Build
+
+```bash
+npm run build
+```
+
+Build จะตรวจ TypeScript สร้าง route และรายงานว่าหน้าใด prerender หรือ dynamic ควรแก้ warning และ error ให้หมดก่อน deploy ไม่ควรใช้เพียงผลจาก Development Server ตัดสินว่างานพร้อมแล้ว
+
+## เปรียบเทียบรูปแบบ Deployment
+
+| รูปแบบ | ข้อดี | ข้อจำกัด |
+| --- | --- | --- |
+| Vercel/Managed Next.js | ตั้งค่าง่าย รองรับ feature ครบ | ผูกกับข้อกำหนดและราคาของผู้ให้บริการ |
+| Node.js Server | รองรับ feature ครบ ควบคุมระบบได้ | ต้องดูแล process, HTTPS และ scaling |
+| Docker Standalone | deploy ซ้ำได้และย้ายระบบง่าย | ต้องดูแล container และ infrastructure |
+| Static Export | เร็ว ราคาถูก ใช้ CDN/GitHub Pages ได้ | ไม่มี Server Actions, dynamic API และ SSR ตาม request |
+
+## Deploy แบบ Node.js
+
+`package.json` ต้องมี scripts ต่อไปนี้
+
+```json
+{
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start"
+  }
+}
+```
+
+บน Server:
+
+```bash
+npm ci
+npm run build
+npm run start
+```
+
+กำหนด environment variables ในระบบของ hosting ไม่ควรคัดลอก `.env.local` เข้า image หรือ commit ลง Git
+
+## Docker Standalone
+
+ตั้งค่า output สำหรับ container
+
+```tsx
+// next.config.ts
+import type { NextConfig } from 'next'
+
+const nextConfig: NextConfig = {
+  output: 'standalone',
+}
+
+export default nextConfig
+```
+
+Build จะสร้าง `.next/standalone` ที่มี production dependencies เท่าที่จำเป็น แต่ต้องคัดลอก `public` และ `.next/static` ไปกับ image ด้วย
+
+## Static Export
+
+```tsx
+// next.config.ts
+import type { NextConfig } from 'next'
+
+const nextConfig: NextConfig = {
+  output: 'export',
+  images: {
+    unoptimized: true,
+  },
+}
+
+export default nextConfig
+```
+
+เมื่อรัน `npm run build` ผลลัพธ์อยู่ใน `out/` และนำไปวางบน static hosting ได้
+
+### สิ่งที่เหมาะกับ Static Export
+
+- Landing page และ Portfolio
+- Documentation
+- Blog ที่เนื้อหามาจากไฟล์ตอน Build
+- Dynamic routes ที่ระบุค่าครบด้วย `generateStaticParams`
+- Client-side fetching ไป API ภายนอก
+
+### สิ่งที่ต้องมี Server
+
+- Server Actions
+- Route Handlers ที่ประมวลผล request
+- Authentication/Authorization ฝั่ง Server
+- `cookies()` หรือ `headers()` ตาม request
+- SSR และ on-demand revalidation
+- Image Optimization Server ในตัว
+
+## Deployment ของเว็บไซต์รายวิชานี้
+
+เว็บไซต์นี้ใช้ Nextra และตั้ง `output: "export"` ใน `next.config.mjs` GitHub Actions จะ Build แล้วเผยแพร่โฟลเดอร์ `out/` ไป GitHub Pages ดังนั้นหน้าบทเรียนเป็น static content แม้ตัวอย่างข้างในจะแสดงความสามารถแบบ Full-stack ของ Next.js
+
+คำสั่งตรวจสอบก่อนส่งการเปลี่ยนแปลงคือ
+
+```bash
+npm ci
+npm run build
+```
+
+หากต้อง preview ผล static ให้ใช้ static file server ที่รองรับ clean URL แทน `next start`
+
+## Environment แยกตาม Stage
+
+ควรมีอย่างน้อย Development, Preview/Staging และ Production แต่ละ stage ใช้ database และ key คนละชุด ตัวแปร `NEXT_PUBLIC_*` ถูกฝังตอน Build จึงต้อง Build ใหม่เมื่อเปลี่ยนค่า
+
+## Production Checklist
+
+- Production Build ผ่านโดยไม่มี error
+- Environment variables ครบและไม่มี secret ใน Client bundle
+- Database migration และ backup พร้อม
+- HTTPS, custom domain และ security headers ถูกต้อง
+- Health check และ monitoring ทำงาน
+- ทดสอบ 404, error, loading และ permission
+- ตรวจ responsive, accessibility และ Core Web Vitals
+- มี rollback plan เมื่อ release มีปัญหา
+
+## แบบฝึกหัด
+
+จัด feature ของระบบร้านหนังสือเป็นสองชุด: ชุดที่ deploy บน Static Export ได้และชุดที่ต้องมี Server จากนั้นสร้าง Production Build ทดลอง preview และเขียน Deployment Checklist ของกลุ่มตนเอง
+

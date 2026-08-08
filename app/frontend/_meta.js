@@ -16,4 +16,5 @@ export default {
   nextjs: "Next.js",
   authentication: "Authentication",
   register: "Register",
+  "course-project": "โปรเจกต์ประจำวิชา",
 };

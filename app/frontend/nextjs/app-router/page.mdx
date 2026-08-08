@@ -1,0 +1,155 @@
+---
+title: "App Router และ Navigation"
+sidebarTitle: "App Router และ Navigation"
+---
+
+# App Router และ Navigation
+
+App Router ใช้โฟลเดอร์และชื่อไฟล์กำหนด URL แต่โฟลเดอร์จะกลายเป็นหน้าสาธารณะก็ต่อเมื่อมี `page.tsx` หรือ `route.ts` อยู่ภายใน แนวคิดนี้เรียกว่า File-system Routing
+
+## Static และ Nested Routes
+
+```text
+app/
+├── page.tsx                 → /
+├── books/
+│   ├── page.tsx             → /books
+│   └── recommended/
+│       └── page.tsx         → /books/recommended
+└── about/
+    └── page.tsx             → /about
+```
+
+แต่ละโฟลเดอร์คือหนึ่ง Route Segment การซ้อนโฟลเดอร์จึงสร้าง URL ที่ซ้อนกัน
+
+## Layout ที่ใช้ร่วมกัน
+
+สร้าง `app/books/layout.tsx` เพื่อครอบเฉพาะ `/books` และหน้าลูกทั้งหมด
+
+```tsx
+import Link from 'next/link'
+
+export default function BooksLayout({
+  children,
+}: Readonly<{ children: React.ReactNode }>) {
+  return (
+    <div>
+      <nav>
+        <Link href="/books">หนังสือทั้งหมด</Link>{' '}
+        <Link href="/books/recommended">หนังสือแนะนำ</Link>
+      </nav>
+      {children}
+    </div>
+  )
+}
+```
+
+Layout จะรักษา state และไม่ render ใหม่ทั้งหมดเมื่อเปลี่ยนหน้าภายในกลุ่มเดียวกัน
+
+## Dynamic Routes
+
+ใช้วงเล็บเหลี่ยมเมื่อค่าใน URL เปลี่ยนได้ เช่น `/books/101`
+
+```text
+app/books/[id]/page.tsx
+```
+
+ใน Next.js รุ่นปัจจุบัน `params` เป็น Promise จึงต้อง `await`
+
+```tsx
+type BookPageProps = {
+  params: Promise<{ id: string }>
+}
+
+export default async function BookPage({ params }: BookPageProps) {
+  const { id } = await params
+
+  return (
+    <article>
+      <h1>รายละเอียดหนังสือ</h1>
+      <p>รหัสหนังสือ: {id}</p>
+    </article>
+  )
+}
+```
+
+รูปแบบ Dynamic Segment ที่ควรรู้:
+
+| รูปแบบ | ตัวอย่าง URL |
+| --- | --- |
+| `[id]` | `/books/101` |
+| `[...slug]` | `/docs/react/hooks` |
+| `[[...slug]]` | รองรับทั้ง `/docs` และ `/docs/react/hooks` |
+
+## สร้าง Dynamic Page ล่วงหน้า
+
+ถ้า deploy แบบ Static Export ต้องบอก Next.js ว่ามีค่า `id` ใดบ้างตั้งแต่ตอน Build
+
+```tsx
+export function generateStaticParams() {
+  return [{ id: '101' }, { id: '102' }, { id: '103' }]
+}
+```
+
+## การเชื่อมโยงหน้า
+
+ใช้ `Link` สำหรับลิงก์ภายใน เพราะ Next.js สามารถ prefetch และเปลี่ยนหน้าแบบ Client-side Navigation ได้
+
+```tsx
+import Link from 'next/link'
+
+export function BookLink({ id, title }: { id: string; title: string }) {
+  return <Link href={`/books/${id}`}>{title}</Link>
+}
+```
+
+ใช้ `<a>` สำหรับลิงก์ออกเว็บไซต์ภายนอกตามปกติ
+
+## Programmatic Navigation
+
+เมื่อจำเป็นต้องเปลี่ยนหน้าหลัง Event ให้ใช้ `useRouter` ใน Client Component
+
+```tsx
+'use client'
+
+import { useRouter } from 'next/navigation'
+
+export function BackButton() {
+  const router = useRouter()
+
+  return <button onClick={() => router.back()}>ย้อนกลับ</button>
+}
+```
+
+Navigation hooks ที่ใช้บ่อย ได้แก่ `useRouter`, `usePathname`, `useSearchParams` และ `useParams` โดย `useSearchParams` ใน static route ควรอยู่ภายใน `Suspense` boundary
+
+## Route Groups และ Private Folders
+
+```text
+app/
+├── (shop)/books/page.tsx       → /books
+├── (shop)/cart/page.tsx        → /cart
+├── (account)/login/page.tsx    → /login
+└── _components/book-card.tsx   → ไม่เป็น route
+```
+
+- `(shop)` ใช้จัดกลุ่มหรือกำหนด Layout โดยไม่เพิ่มชื่อใน URL
+- `_components` ระบุว่าโฟลเดอร์เป็นรายละเอียดภายในและไม่ควรเป็น route
+
+## ไฟล์พิเศษที่ควรรู้
+
+| ไฟล์ | หน้าที่ |
+| --- | --- |
+| `page.tsx` | UI ของ route |
+| `layout.tsx` | UI ที่ใช้ร่วมกับ route ลูก |
+| `loading.tsx` | Loading UI และ Suspense boundary |
+| `error.tsx` | รับ exception ที่เกิดใน segment |
+| `not-found.tsx` | หน้าไม่พบข้อมูลหรือ 404 |
+| `route.ts` | HTTP endpoint ไม่ใช่ React page |
+
+ห้ามวาง `page.tsx` และ `route.ts` ในโฟลเดอร์เดียวกัน เพราะทั้งคู่แข่งขันกันใช้ URL เดียวกัน
+
+## แบบฝึกหัด
+
+สร้าง `/books`, `/books/[id]` และ `/about` เพิ่ม Navigation ใน Layout และสร้างข้อมูลหนังสือสามเล่มด้วย `generateStaticParams` จากนั้นตรวจว่าแต่ละ URL เปิดได้หลัง `npm run build`
+

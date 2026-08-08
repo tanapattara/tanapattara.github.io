@@ -1,0 +1,127 @@
+---
+title: "Encapsulation และการปกป้องข้อมูล"
+sidebarTitle: "Encapsulation"
+---
+
+# Encapsulation และการปกป้องข้อมูล
+
+Encapsulation คือการรวมข้อมูลกับพฤติกรรมที่ดูแลข้อมูลนั้นไว้ใน Class เดียวกัน และไม่เปิดให้โค้ดภายนอกแก้สถานะสำคัญได้โดยตรง Object จึงสามารถตรวจสอบเงื่อนไขก่อนเปลี่ยนสถานะของตนเองได้
+
+ตัวอย่างเช่น ยอดเงินในบัญชีไม่ควรถูกกำหนดจากภายนอกด้วย `account.Balance = -500` แต่ควรเปลี่ยนผ่าน `Deposit()` และ `Withdraw()` ซึ่งตรวจจำนวนเงินก่อนเสมอ
+
+## Access Modifier ที่ใช้บ่อย
+
+| Modifier | เข้าถึงได้จาก | การใช้งานทั่วไป |
+| --- | --- | --- |
+| `public` | ทุกส่วนของโปรแกรม | สิ่งที่ Class ตั้งใจเปิดให้ใช้งาน |
+| `private` | ภายใน Class เดียวกัน | รายละเอียดและข้อมูลภายใน |
+| `protected` | Class เดียวกันและ Class ลูก | จุดขยายสำหรับ Inheritance |
+| `internal` | ภายในโปรเจกต์เดียวกัน | API ที่ใช้เฉพาะภายใน Assembly |
+
+เริ่มต้นด้วย `private` แล้วเปิดเฉพาะสิ่งที่ผู้ใช้ Class จำเป็นต้องใช้ จะช่วยลดสถานะที่ผิดเงื่อนไข
+
+## ตัวอย่าง BankAccount
+
+```csharp
+using System;
+
+namespace EncapsulationDemo;
+
+public class BankAccount
+{
+    public string AccountNumber { get; }
+    public string OwnerName { get; private set; }
+    public decimal Balance { get; private set; }
+
+    public BankAccount(string accountNumber, string ownerName, decimal initialBalance)
+    {
+        if (string.IsNullOrWhiteSpace(accountNumber))
+            throw new ArgumentException("ต้องระบุเลขบัญชี", nameof(accountNumber));
+
+        if (initialBalance < 0)
+            throw new ArgumentOutOfRangeException(
+                nameof(initialBalance),
+                "ยอดเงินเริ่มต้นต้องไม่ติดลบ");
+
+        AccountNumber = accountNumber;
+        OwnerName = ownerName;
+        Balance = initialBalance;
+    }
+
+    public void RenameOwner(string newName)
+    {
+        if (string.IsNullOrWhiteSpace(newName))
+            throw new ArgumentException("ชื่อต้องไม่ว่าง", nameof(newName));
+
+        OwnerName = newName.Trim();
+    }
+
+    public void Deposit(decimal amount)
+    {
+        if (amount <= 0)
+            throw new ArgumentOutOfRangeException(nameof(amount), "จำนวนฝากต้องมากกว่า 0");
+
+        Balance += amount;
+    }
+
+    public bool Withdraw(decimal amount)
+    {
+        if (amount <= 0)
+            throw new ArgumentOutOfRangeException(nameof(amount), "จำนวนถอนต้องมากกว่า 0");
+
+        if (amount > Balance)
+            return false;
+
+        Balance -= amount;
+        return true;
+    }
+}
+
+public class Program
+{
+    public static void Main()
+    {
+        BankAccount account = new BankAccount("A-1001", "มาลี", 1_000m);
+
+        account.Deposit(500m);
+        bool success = account.Withdraw(1_200m);
+
+        Console.WriteLine($"ถอนเงินสำเร็จ: {success}");
+        Console.WriteLine($"ยอดคงเหลือ: {account.Balance:N2} บาท");
+    }
+}
+```
+
+สร้างและรันตัวอย่าง
+
+```bash
+dotnet new console -n EncapsulationDemo
+cd EncapsulationDemo
+# นำโค้ดด้านบนไปแทนที่ Program.cs
+dotnet run
+```
+
+ผลลัพธ์
+
+```text
+ถอนเงินสำเร็จ: True
+ยอดคงเหลือ: 300.00 บาท
+```
+
+แม้ `Balance` จะเป็น `public` Property แต่มี Setter เป็น `private` โค้ดภายนอกจึงอ่านยอดเงินได้แต่แก้โดยตรงไม่ได้ ส่วน Constructor และ Method ทำหน้าที่รักษากฎของบัญชีตลอดอายุของ Object
+
+## Field กับ Property
+
+```csharp
+private decimal _balance;               // Field ใช้เก็บข้อมูลภายใน
+public decimal Balance { get; private set; } // Property กำหนดวิธีเข้าถึง
+```
+
+Property สามารถใช้ Auto-property อย่างตัวอย่าง `Balance` หรือเขียน `get` และ `set` เองเมื่อต้องตรวจสอบหรือแปลงค่า ควรหลีกเลี่ยง Public Field เพราะควบคุมการเปลี่ยนแปลงในอนาคตได้ยากกว่า
+
+## แบบฝึกหัด
+
+1. เพิ่ม `TransferTo(BankAccount destination, decimal amount)`
+2. ป้องกันการโอนไปยังบัญชีเดียวกัน
+3. คืนค่า `false` เมื่อยอดเงินไม่พอ และห้ามยอดเงินของทั้งสองบัญชีเปลี่ยน
+4. ทดลองกรณีฝากจำนวนติดลบและอธิบาย Exception ที่เกิดขึ้น
