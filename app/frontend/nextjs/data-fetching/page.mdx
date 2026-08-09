@@ -53,21 +53,19 @@ export default async function BooksPage() {
 
 ตรวจ `response.ok` ทุกครั้ง เพราะ `fetch` จะไม่ throw อัตโนมัติเมื่อได้รับ status เช่น 404 หรือ 500
 
-## เรียกฐานข้อมูลโดยตรง
+## เรียก Data Layer โดยตรง
 
 ```tsx
-// lib/books.ts
-import { db } from '@/lib/db'
+// app/books/page.tsx
+import { listBooks } from '@/lib/books'
 
-export async function getBooks() {
-  return db.book.findMany({
-    orderBy: { title: 'asc' },
-    select: { id: true, title: true, price: true },
-  })
+export default async function BooksPage() {
+  const books = await listBooks()
+  return <BookList books={books} />
 }
 ```
 
-Server Component เรียก `getBooks()` ได้โดยไม่ต้องผ่าน `/api/books` ช่วยลด network round trip และรวมกฎการเข้าถึงข้อมูลไว้ใน Server
+Server Component เรียก `listBooks()` ได้โดยไม่ต้องผ่าน `/api/books` ช่วยลด network round trip และรวมกฎการเข้าถึงข้อมูลไว้ใน Server เมื่อเปลี่ยนจาก Repository ตัวอย่างเป็นฐานข้อมูลจริง ให้แก้ implementation ใน Data Layer โดยไม่ต้องเปลี่ยน Component
 
 ## หลีกเลี่ยง Data Waterfall
 
@@ -137,14 +135,26 @@ export function Suggestions({ query }: { query: string }) {
 
     const controller = new AbortController()
 
-    fetch(`/api/books/search?q=${encodeURIComponent(query)}`, {
-      signal: controller.signal,
-    })
-      .then((response) => response.json())
-      .then(setItems)
-      .catch((error) => {
-        if (error.name !== 'AbortError') console.error(error)
-      })
+    async function loadSuggestions() {
+      try {
+        const response = await fetch(
+          `/api/books/search?q=${encodeURIComponent(query)}`,
+          { signal: controller.signal },
+        )
+
+        if (!response.ok) {
+          throw new Error(`โหลดคำแนะนำไม่สำเร็จ (${response.status})`)
+        }
+
+        const body = (await response.json()) as { data: Suggestion[] }
+        setItems(body.data)
+      } catch (error) {
+        if (error instanceof DOMException && error.name === 'AbortError') return
+        console.error(error)
+      }
+    }
+
+    void loadSuggestions()
 
     return () => controller.abort()
   }, [query])
@@ -162,4 +172,3 @@ Static Export ดึงข้อมูลได้ตอน Build แต่ไ�
 ## แบบฝึกหัด
 
 สร้างหน้า Dashboard ที่ดึงหนังสือ หมวดหมู่ และโปรโมชั่นแบบ parallel จากนั้นแยกโปรโมชั่นไว้ใน `Suspense` และทดลองทำให้ API ช้าลงเพื่อสังเกตลำดับการแสดงผล
-

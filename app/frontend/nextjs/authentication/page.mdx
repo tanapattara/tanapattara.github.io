@@ -1,0 +1,301 @@
+---
+title: "ติดตั้ง Auth.js และจัดการ Session"
+sidebarTitle: "ติดตั้ง Auth.js และ Session"
+---
+
+# ติดตั้ง Auth.js และจัดการ Session
+
+บทนี้ใช้ API รูปแบบ Auth.js v5 กับ Next.js App Router เป้าหมายคือให้ Library ดูแล session cookie และขั้นตอน sign-in ส่วนแอปยังต้องรับผิดชอบ validation, การค้นหาผู้ใช้ และ authorization เอง
+
+> Authentication ต้องมี Server runtime ตัวอย่างนี้ใช้ไม่ได้กับ `output: "export"` หรือ GitHub Pages
+
+## ติดตั้งและตั้งค่า Secret
+
+ขณะที่ Auth.js v5 ยังเผยแพร่ผ่าน beta tag ให้ติดตั้งแบบระบุ tag เพื่อไม่ให้ได้ API ของ v4 โดยไม่ตั้งใจ
+
+```bash
+npm install next-auth@beta bcryptjs
+npx auth secret
+```
+
+คำสั่งสร้าง secret จะเพิ่ม `AUTH_SECRET` ลงในไฟล์ environment อย่า commit ค่านี้ และใช้ secret คนละค่าระหว่าง Development, Preview และ Production
+
+## เตรียม User Data Layer
+
+Credentials Provider ไม่ได้สร้างตารางผู้ใช้หรือ hash password ให้ แอปต้องมี Data Layer ที่เชื่อมฐานข้อมูลจริงและคืนเฉพาะข้อมูลที่จำเป็น
+
+```tsx
+// lib/users.ts
+import 'server-only'
+
+export type AuthUserRecord = {
+  id: string
+  name: string
+  email: string
+  passwordHash: string
+  role: 'customer' | 'admin'
+}
+
+export async function findUserByEmail(
+  email: string,
+): Promise<AuthUserRecord | null> {
+  // query ฐานข้อมูลด้วย normalized email
+  // ห้ามค้นหาผู้ใช้จากข้อมูล in-memory เมื่อใช้จริงใน production
+  throw new Error('Implement findUserByEmail with your database')
+}
+
+export type PublicUser = Omit<AuthUserRecord, 'passwordHash'>
+
+export async function findPublicUserById(
+  id: string,
+): Promise<PublicUser | null> {
+  // select เฉพาะ id, name, email และ role
+  throw new Error('Implement findPublicUserById with your database')
+}
+```
+
+ตัวอย่างตั้งใจเว้น implementation ของฐานข้อมูลไว้ เพราะแต่ละโครงการอาจใช้ ORM หรือบริการคนละชนิด ก่อนทดสอบ Login ต้องเปลี่ยน `throw` เป็น query จริงและตั้ง unique constraint ที่คอลัมน์ email
+
+## ตั้งค่า Auth.js
+
+สร้าง `auth.ts` ที่ root ของโครงการ
+
+```tsx
+// auth.ts
+import NextAuth from 'next-auth'
+import Credentials from 'next-auth/providers/credentials'
+import { compare } from 'bcryptjs'
+import { findUserByEmail } from '@/lib/users'
+
+export const { auth, handlers, signIn, signOut } = NextAuth({
+  session: { strategy: 'jwt' },
+  pages: { signIn: '/login' },
+  providers: [
+    Credentials({
+      credentials: {
+        email: { label: 'Email', type: 'email' },
+        password: { label: 'Password', type: 'password' },
+      },
+      async authorize(credentials) {
+        const email = credentials.email
+        const password = credentials.password
+
+        if (typeof email !== 'string' || typeof password !== 'string') {
+          return null
+        }
+
+        const normalizedEmail = email.trim().toLocaleLowerCase('en-US')
+        const user = await findUserByEmail(normalizedEmail)
+        if (!user) return null
+
+        const passwordMatches = await compare(password, user.passwordHash)
+        if (!passwordMatches) return null
+
+        return {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+        }
+      },
+    }),
+  ],
+  callbacks: {
+    jwt({ token, user }) {
+      if (user) {
+        token.id = user.id
+        token.role = user.role
+      }
+      return token
+    },
+    session({ session, token }) {
+      if (
+        session.user &&
+        typeof token.id === 'string' &&
+        (token.role === 'customer' || token.role === 'admin')
+      ) {
+        session.user.id = token.id
+        session.user.role = token.role
+      }
+      return session
+    },
+  },
+})
+```
+
+`authorize()` ต้องคืน `null` เมื่อ credential ไม่ผ่าน และไม่ควร throw ข้อความที่เปิดเผยว่า email มีอยู่หรือไม่ ห้ามคืน `passwordHash` ออกจากฟังก์ชันนี้
+
+## เพิ่ม Type ให้ Session
+
+```tsx
+// types/next-auth.d.ts
+import type { DefaultSession } from 'next-auth'
+
+declare module 'next-auth' {
+  interface User {
+    role: 'customer' | 'admin'
+  }
+
+  interface Session {
+    user: {
+      id: string
+      role: 'customer' | 'admin'
+    } & DefaultSession['user']
+  }
+}
+
+declare module 'next-auth/jwt' {
+  interface JWT {
+    id?: string
+    role?: 'customer' | 'admin'
+  }
+}
+```
+
+## สร้าง Auth Route Handler
+
+```tsx
+// app/api/auth/[...nextauth]/route.ts
+import { handlers } from '@/auth'
+
+export const { GET, POST } = handlers
+```
+
+Auth.js แนะนำให้เพิ่ม `proxy.ts` ใน Next.js 16 เพื่อหมุนอายุ session เมื่อ request ผ่าน Proxy
+
+```tsx
+// proxy.ts
+export { auth as proxy } from '@/auth'
+```
+
+## Login ด้วย Server Action
+
+```tsx
+// app/(account)/login/actions.ts
+'use server'
+
+import { AuthError } from 'next-auth'
+import { signIn } from '@/auth'
+
+export type LoginState = { error?: string }
+
+export async function login(
+  _state: LoginState,
+  formData: FormData,
+): Promise<LoginState> {
+  const email = formData.get('email')
+  const password = formData.get('password')
+
+  if (typeof email !== 'string' || !email.includes('@')) {
+    return { error: 'รูปแบบอีเมลไม่ถูกต้อง' }
+  }
+  if (typeof password !== 'string' || password.length < 8) {
+    return { error: 'อีเมลหรือรหัสผ่านไม่ถูกต้อง' }
+  }
+
+  try {
+    await signIn('credentials', {
+      email: email.trim().toLocaleLowerCase('en-US'),
+      password,
+      redirectTo: '/dashboard',
+    })
+  } catch (error) {
+    if (error instanceof AuthError) {
+      if (error.type === 'CredentialsSignin') {
+        return { error: 'อีเมลหรือรหัสผ่านไม่ถูกต้อง' }
+      }
+      return { error: 'ระบบเข้าสู่ระบบขัดข้อง กรุณาลองใหม่' }
+    }
+
+    throw error
+  }
+
+  return {}
+}
+```
+
+ต้อง rethrow error ที่ไม่ใช่ `AuthError` เพราะ redirect สำเร็จใช้ framework control-flow exception ภายใน ถ้าจับแล้วไม่ throw ต่อ Navigation จะหยุดทำงาน
+
+```tsx
+// app/(account)/login/login-form.tsx
+'use client'
+
+import { useActionState } from 'react'
+import { login, type LoginState } from './actions'
+
+const initialState: LoginState = {}
+
+export function LoginForm() {
+  const [state, formAction, pending] = useActionState(login, initialState)
+
+  return (
+    <form action={formAction}>
+      <label htmlFor="email">อีเมล</label>
+      <input id="email" name="email" type="email" autoComplete="email" required />
+
+      <label htmlFor="password">รหัสผ่าน</label>
+      <input
+        id="password"
+        name="password"
+        type="password"
+        autoComplete="current-password"
+        required
+      />
+
+      {state.error && <p role="alert">{state.error}</p>}
+      <button type="submit" disabled={pending}>
+        {pending ? 'กำลังเข้าสู่ระบบ...' : 'เข้าสู่ระบบ'}
+      </button>
+    </form>
+  )
+}
+```
+
+## อ่าน Session บน Server
+
+```tsx
+// app/dashboard/page.tsx
+import { redirect } from 'next/navigation'
+import { auth } from '@/auth'
+
+export default async function DashboardPage() {
+  const session = await auth()
+  if (!session?.user) redirect('/login')
+
+  return <h1>ยินดีต้อนรับ {session.user.name}</h1>
+}
+```
+
+Route Handler ต้องตรวจ session เอง Auth.js ไม่ได้ authorize endpoint ให้อัตโนมัติเพียงเพราะ Browser ส่ง cookie มา
+
+```tsx
+// app/api/profile/route.ts
+import { auth } from '@/auth'
+
+export async function GET() {
+  const session = await auth()
+  if (!session?.user) {
+    return Response.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  return Response.json({
+    id: session.user.id,
+    name: session.user.name,
+  })
+}
+```
+
+หาก Client Component ต้องใช้ `useSession()` ต้องครอบ subtree ด้วย `SessionProvider` ก่อน แต่ควรอ่าน session ใน Server Component แล้วส่งข้อมูลเท่าที่จำเป็นเป็น props เมื่อทำได้
+
+## Checklist
+
+- ใช้ HTTPS และ secret ที่สุ่มอย่างปลอดภัย
+- Hash password ด้วย algorithm สำหรับ password โดยเฉพาะ
+- Rate limit การ Login และบันทึกเหตุการณ์โดยไม่เก็บ password/token
+- คืนข้อความ Login แบบรวม ไม่เปิดเผยว่า email มีอยู่หรือไม่
+- ตรวจ authorization ซ้ำใน Server Action และ Route Handler ทุกจุด
+- ใช้ `auth()` บน Server แทนการพยายามอ่าน httpOnly cookie จาก Client
+
+## แบบฝึกหัด
+
+เชื่อม `findUserByEmail()` กับฐานข้อมูลจริง สร้างผู้ใช้ทดสอบที่ password ถูก hash แล้ว ทดลอง Login ทั้งค่าถูกและผิด จากนั้นสร้าง Route Handler ที่คืน 401 เมื่อยังไม่เข้าสู่ระบบ

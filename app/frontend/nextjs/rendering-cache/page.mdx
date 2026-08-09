@@ -89,11 +89,34 @@ export async function getCategories() {
 'use server'
 
 import { revalidatePath } from 'next/cache'
+import { updateBook as updateBookInStore } from '@/lib/books'
+import { requireAdmin } from '@/lib/dal'
 
 export async function updateBook(formData: FormData) {
-  await requireAdmin()
-  await saveBook(formData)
+  const admin = await requireAdmin()
+  if (!admin) return { error: 'Forbidden' }
+
+  const id = formData.get('id')
+  const title = formData.get('title')
+  const priceText = formData.get('price')
+  if (
+    typeof id !== 'string' ||
+    typeof title !== 'string' ||
+    typeof priceText !== 'string'
+  ) {
+    return { error: 'Invalid input' }
+  }
+
+  const price = Number(priceText)
+  if (!Number.isFinite(price) || price < 0) {
+    return { error: 'Invalid price' }
+  }
+
+  const book = await updateBookInStore(id, { title: title.trim(), price })
+  if (!book) return { error: 'Book not found' }
+
   revalidatePath('/books')
+  return { error: null }
 }
 ```
 
@@ -123,7 +146,9 @@ export default function BookPage() {
 
 ## Static Export
 
-Static Export สร้าง HTML ตอน Build และไม่มี Server สำหรับ ISR หรือ on-demand revalidation หลัง deploy ข้อมูลที่เปลี่ยนต้องใช้วิธีใดวิธีหนึ่ง:
+`cacheComponents: true` และ directive `'use cache'` ต้องมี Server runtime จึงไม่รองรับ `output: "export"` ห้ามเปิดสองตัวเลือกนี้พร้อมกัน
+
+Static Export สร้าง HTML ตอน Build และไม่มี Server สำหรับ PPR, ISR หรือ on-demand revalidation หลัง deploy ข้อมูลที่เปลี่ยนต้องใช้วิธีใดวิธีหนึ่ง:
 
 1. Build และ deploy เว็บไซต์ใหม่
 2. ให้ Client เรียก API ภายนอก
@@ -132,4 +157,3 @@ Static Export สร้าง HTML ตอน Build และไม่มี Serv
 ## แบบฝึกหัด
 
 จำแนกข้อมูลร้านหนังสือต่อไปนี้ว่า cache ได้นานเพียงใด: รายชื่อหมวดหมู่, ราคาปัจจุบัน, สต็อก, ประวัติคำสั่งซื้อ และชื่อผู้ใช้ จากนั้นสร้างหน้าเดียวที่มีทั้งข้อมูล cache และข้อมูล runtime พร้อม Suspense fallback
-

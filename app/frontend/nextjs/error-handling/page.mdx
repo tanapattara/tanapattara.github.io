@@ -12,6 +12,8 @@ sidebarTitle: "Error Handling"
 Expected Error เช่น login ไม่ผ่านหรือชื่อหนังสือซ้ำ ควรคืน state หรือ response ที่อธิบายได้ ไม่ควร `throw` เพื่อใช้ควบคุม flow ปกติ
 
 ```tsx
+import { insertBook } from '@/lib/books'
+
 export async function createBook(
   _state: { error?: string },
   formData: FormData,
@@ -19,11 +21,20 @@ export async function createBook(
   'use server'
 
   const title = formData.get('title')
+  const priceText = formData.get('price')
   if (typeof title !== 'string' || title.trim() === '') {
     return { error: 'กรุณากรอกชื่อหนังสือ' }
   }
+  if (typeof priceText !== 'string' || priceText.trim() === '') {
+    return { error: 'กรุณากรอกราคา' }
+  }
 
-  await saveBook({ title: title.trim() })
+  const price = Number(priceText)
+  if (!Number.isFinite(price) || price < 0) {
+    return { error: 'ราคาไม่ถูกต้อง' }
+  }
+
+  await insertBook({ title: title.trim(), price })
   return {}
 }
 ```
@@ -148,4 +159,3 @@ export async function GET() {
 ## แบบฝึกหัด
 
 สร้าง `loading.tsx`, `error.tsx` และ `not-found.tsx` สำหรับหน้ารายละเอียดหนังสือ ทดลองจำลอง API ช้า, throw exception และค้นหา ID ที่ไม่มีอยู่ แล้วประเมินว่าผู้ใช้ได้รับข้อความและทางไปต่อที่เหมาะสมหรือไม่
-

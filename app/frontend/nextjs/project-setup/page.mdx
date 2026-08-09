@@ -42,7 +42,7 @@ npm run dev
 | `npm run start` | เปิด Production Server หลัง Build |
 | `npm run lint` | ตรวจรูปแบบและปัญหาที่ ESLint ค้นพบ เมื่อโปรเจกต์มี script นี้ |
 
-ควรรัน `npm run build` ก่อนส่งงานเสมอ เพราะข้อผิดพลาดบางอย่างไม่ปรากฏระหว่างพัฒนา
+ควรรันทั้ง `npm run lint` และ `npm run build` ก่อนส่งงาน เพราะตั้งแต่ Next.js 16 คำสั่ง Build ตรวจ TypeScript แต่ไม่รัน Linter ให้อัตโนมัติ
 
 ## โครงสร้างพื้นฐาน
 
@@ -145,4 +145,3 @@ import { BookCard } from '@/components/book-card'
 ## สรุป
 
 App Router เริ่มจาก `app/layout.tsx` และ `app/page.tsx` ส่วน component ทั่วไปไม่จำเป็นต้องวางใน `app` ให้จัดตามหน้าที่และใช้ชื่อสม่ำเสมอ เพื่อให้โปรเจกต์ขยายต่อได้ง่าย
-

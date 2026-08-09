@@ -17,7 +17,8 @@ Server Function คือ async function ที่ทำงานบน Server �
 
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
-import { db } from '@/lib/db'
+import { insertBook } from '@/lib/books'
+import { requireAdmin } from '@/lib/dal'
 
 export type FormState = {
   error?: string
@@ -30,8 +31,15 @@ export async function createBook(
   const title = formData.get('title')
   const priceText = formData.get('price')
 
+  const admin = await requireAdmin()
+  if (!admin) return { error: 'คุณไม่มีสิทธิ์เพิ่มหนังสือ' }
+
   if (typeof title !== 'string' || title.trim().length < 2) {
     return { error: 'ชื่อหนังสือต้องมีอย่างน้อย 2 ตัวอักษร' }
+  }
+
+  if (typeof priceText !== 'string' || priceText.trim() === '') {
+    return { error: 'กรุณาระบุราคา' }
   }
 
   const price = Number(priceText)
@@ -41,8 +49,9 @@ export async function createBook(
 
   let book
   try {
-    book = await db.book.create({
-      data: { title: title.trim(), price },
+    book = await insertBook({
+      title: title.trim(),
+      price,
     })
   } catch {
     return { error: 'บันทึกข้อมูลไม่สำเร็จ กรุณาลองใหม่' }
@@ -102,11 +111,16 @@ Browser ตรวจ `required` และ `minLength` เพื่อ UX ที�
 'use server'
 
 import { revalidatePath } from 'next/cache'
-import { db } from '@/lib/db'
+import { removeBook } from '@/lib/books'
+import { requireAdmin } from '@/lib/dal'
 
 export async function deleteBook(id: string) {
-  await requireAdmin()
-  await db.book.delete({ where: { id } })
+  const admin = await requireAdmin()
+  if (!admin) return
+
+  const deleted = await removeBook(id)
+  if (!deleted) return
+
   revalidatePath('/books')
 }
 ```
@@ -127,6 +141,8 @@ export function DeleteBookButton({ id }: { id: string }) {
 
 Server Action เป็น public entry point ของระบบ ผู้ใช้สามารถเรียก action โดยไม่ผ่านปุ่มที่เราสร้าง จึงต้องตรวจ session และสิทธิ์ **ภายใน action** ก่อนแก้ข้อมูลทุกครั้ง
 
+ตัวอย่างใช้ `requireAdmin()` จากบท Authentication และ Authorization หากยังไม่ได้สร้างฟังก์ชันนี้ ให้หยุดไว้ที่การแสดง Form และอย่าเปิด mutation ให้ผู้ใช้อื่นเรียกจนกว่าจะเพิ่มการตรวจสิทธิ์
+
 ## Progressive Enhancement
 
 Form ที่ผูก Server Action สามารถ submit ได้แม้ JavaScript ยังโหลดไม่เสร็จ เมื่อ JavaScript พร้อม React จะจัดการ pending state และอัปเดต UI โดยไม่ reload ทั้งหน้า
@@ -145,4 +161,3 @@ Server Actions ต้องมี Server runtime จึงใช้ไม่ไ�
 ## แบบฝึกหัด
 
 สร้าง Form เพิ่มและลบหนังสือ เพิ่ม validation ทั้ง Client และ Server แสดง Pending state และ Error จากนั้นทดสอบส่งค่าติดลบหรือชื่อว่างโดยปิด validation ใน Browser DevTools
-

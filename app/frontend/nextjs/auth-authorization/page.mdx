@@ -29,13 +29,13 @@ Data Access Layer ตรวจ session/role ทุกครั้ง
 
 ## Login Form
 
-ตัวอย่างนี้สมมติว่า `signIn` มาจาก auth library ที่ตั้งค่าไว้แล้ว
+ตัวอย่างนี้ใช้ `signIn` จาก Auth.js ที่ตั้งค่าในบทก่อนหน้า
 
 ```tsx
 // app/(account)/login/actions.ts
 'use server'
 
-import { redirect } from 'next/navigation'
+import { AuthError } from 'next-auth'
 import { signIn } from '@/auth'
 
 export type LoginState = { error?: string }
@@ -56,12 +56,23 @@ export async function login(
   }
 
   try {
-    await signIn('credentials', { email, password, redirect: false })
-  } catch {
-    return { error: 'อีเมลหรือรหัสผ่านไม่ถูกต้อง' }
+    await signIn('credentials', {
+      email: email.trim().toLocaleLowerCase('en-US'),
+      password,
+      redirectTo: '/dashboard',
+    })
+  } catch (error) {
+    if (error instanceof AuthError) {
+      if (error.type === 'CredentialsSignin') {
+        return { error: 'อีเมลหรือรหัสผ่านไม่ถูกต้อง' }
+      }
+      return { error: 'ระบบเข้าสู่ระบบขัดข้อง กรุณาลองใหม่' }
+    }
+
+    throw error
   }
 
-  redirect('/dashboard')
+  return {}
 }
 ```
 
@@ -77,7 +88,7 @@ import 'server-only'
 import { cache } from 'react'
 import { redirect } from 'next/navigation'
 import { auth } from '@/auth'
-import { db } from '@/lib/db'
+import { findPublicUserById } from '@/lib/users'
 
 export const verifySession = cache(async () => {
   const session = await auth()
@@ -89,14 +100,11 @@ export const verifySession = cache(async () => {
 export async function getCurrentUser() {
   const { userId } = await verifySession()
 
-  return db.user.findUnique({
-    where: { id: userId },
-    select: { id: true, name: true, email: true, role: true },
-  })
+  return findPublicUserById(userId)
 }
 ```
 
-`select` ทำหน้าที่คล้าย Data Transfer Object โดยไม่คืน password hash หรือ field ภายในที่ UI ไม่ต้องใช้
+`findPublicUserById()` ต้องคืนเฉพาะ `{ id, name, email, role }` และห้ามคืน password hash หรือ field ภายในที่ UI ไม่ต้องใช้ รูปแบบนี้ทำหน้าที่เป็น Data Transfer Object
 
 ## ป้องกัน Page
 
@@ -124,10 +132,7 @@ export default async function DashboardPage() {
 // lib/dal.ts
 export async function requireAdmin() {
   const user = await getCurrentUser()
-  if (!user || user.role !== 'admin') {
-    throw new Error('Forbidden')
-  }
-  return user
+  return user?.role === 'admin' ? user : null
 }
 ```
 
@@ -135,13 +140,21 @@ export async function requireAdmin() {
 // app/admin/books/actions.ts
 'use server'
 
+import { removeBook } from '@/lib/books'
+import { requireAdmin } from '@/lib/dal'
+
 export async function deleteBook(id: string) {
-  await requireAdmin()
-  await db.book.delete({ where: { id } })
+  const admin = await requireAdmin()
+  if (!admin) return { error: 'Forbidden' }
+
+  const deleted = await removeBook(id)
+  if (!deleted) return { error: 'Book not found' }
+
+  return { error: null }
 }
 ```
 
-แม้หน้าเว็บซ่อนปุ่มลบจาก user ปกติ Action ก็ต้องตรวจ `requireAdmin()` ซ้ำ
+แม้หน้าเว็บซ่อนปุ่มลบจาก user ปกติ Action ก็ต้องตรวจ `requireAdmin()` ซ้ำ สำหรับ Route Handler ให้คืน HTTP 401/403 โดยตรง ส่วน Page สามารถ redirect ไป Login หรือแสดงหน้าไม่มีสิทธิ์ตาม UX ของระบบ
 
 ## Authentication Checklist
 
@@ -161,4 +174,3 @@ Authentication ที่ใช้ secure cookie และ Server-side authorizat
 ## แบบฝึกหัด
 
 ออกแบบ role `customer` และ `admin` ระบุว่าแต่ละ role เข้าหน้าและทำ action ใดได้ จากนั้นเพิ่มการตรวจสิทธิ์ใน Page, Server Action และ Route Handler พร้อมทดสอบทั้งผู้ใช้ที่ยังไม่ login, customer และ admin
-

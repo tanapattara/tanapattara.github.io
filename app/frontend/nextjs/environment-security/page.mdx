@@ -38,7 +38,7 @@ export async function createPayment(amount: number) {
 }
 ```
 
-`server-only` ทำให้ Build แจ้งเตือนหากมี Client Component import module นี้ อย่าส่ง `secret` กลับเป็น prop หรือ JSON response
+`server-only` ทำให้เกิด Build Error หากมี Client Component import module นี้ อย่าส่ง `secret` กลับเป็น prop หรือ JSON response
 
 ## Validate Environment ตอนเริ่มระบบ
 
@@ -106,6 +106,8 @@ export async function saveSession(token: string) {
 การซ่อนปุ่ม Admin เป็นเพียง UX ไม่ใช่ Security ผู้โจมตีเรียก Server Action หรือ Route Handler โดยตรงได้
 
 ```tsx
+import { removeBook } from '@/lib/books'
+
 export async function deleteBook(id: string) {
   'use server'
 
@@ -114,7 +116,8 @@ export async function deleteBook(id: string) {
     throw new Error('Forbidden')
   }
 
-  await db.book.delete({ where: { id } })
+  const deleted = await removeBook(id)
+  if (!deleted) throw new Error('Book not found')
 }
 ```
 
@@ -138,4 +141,3 @@ Environment ที่ใช้ตอน Build อาจถูกฝังลง 
 ## แบบฝึกหัด
 
 ตรวจโครงการตัวอย่างว่า environment ตัวใดเปิดเผยได้ ย้าย database module ไปไฟล์ที่ import `server-only` เพิ่ม validation สำหรับราคา และเขียน test case สำหรับ input ติดลบ, string, ค่าว่าง และค่าที่ใหญ่ผิดปกติ
-

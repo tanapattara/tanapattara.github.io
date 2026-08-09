@@ -1,5 +1,6 @@
 export default {
   "project-setup": "ติดตั้งและโครงสร้างโปรเจกต์",
+  "data-layer": "Data Layer และข้อมูลตัวอย่าง",
   "app-router": "App Router และ Navigation",
   "server-client-components": "Server และ Client Components",
   "data-fetching": "การดึงข้อมูล",
@@ -9,6 +10,8 @@ export default {
   "error-handling": "Error Handling",
   "metadata-optimization": "Metadata และ Optimization",
   "environment-security": "Environment และ Security",
+  authentication: "ติดตั้ง Auth.js และ Session",
+  register: "ลงทะเบียนผู้ใช้",
   "auth-authorization": "Authentication และ Authorization",
   deployment: "Build และ Deployment",
 };

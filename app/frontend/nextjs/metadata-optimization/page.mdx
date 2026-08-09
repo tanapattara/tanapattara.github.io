@@ -124,13 +124,14 @@ export function BookCover() {
       alt="ปกหนังสือ Clean Code"
       width={480}
       height={640}
-      sizes="(max-width: 768px) 50vw, 240px"
+      sizes="240px"
+      style={{ width: 240, height: 'auto' }}
     />
   )
 }
 ```
 
-เมื่อใช้ `fill` parent ต้องมี position และขนาด พร้อมกำหนด `sizes`
+ค่า `sizes` ต้องตรงกับขนาดที่รูปแสดงจริง มิฉะนั้น Browser อาจเลือกรูปเล็กเกินไปหรือดาวน์โหลดไฟล์ใหญ่เกินจำเป็น เมื่อใช้ `fill` parent ต้องมี position และขนาด พร้อมกำหนด `sizes`
 
 ```tsx
 <div style={{ position: 'relative', width: '100%', aspectRatio: '16 / 9' }}>
@@ -186,4 +187,3 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 ## แบบฝึกหัด
 
 เพิ่ม Metadata ให้หน้ารายการและรายละเอียดหนังสือ สร้าง sitemap ใส่รูปปกด้วย `next/image` และตรวจ `<head>`, alt text, ขนาดรูป และ Layout Shift ด้วย Browser DevTools
-

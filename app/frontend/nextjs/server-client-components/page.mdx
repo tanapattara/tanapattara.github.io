@@ -24,10 +24,10 @@ sidebarTitle: "Server และ Client Components"
 
 ```tsx
 // app/books/page.tsx
-import { db } from '@/lib/db'
+import { listBooks } from '@/lib/books'
 
 export default async function BooksPage() {
-  const books = await db.book.findMany()
+  const books = await listBooks()
 
   return (
     <ul>
@@ -115,14 +115,14 @@ export function FavoriteButton({
 
 ## ข้อมูลที่ส่งข้าม Boundary
 
-Props จาก Server ไป Client ต้อง serialize ได้ เช่น string, number, boolean, array และ plain object
+Props จาก Server ไป Client ต้องเป็นชนิดที่ React serialize ได้ เช่น primitive, array, plain object, `Date`, `Map`, `Set`, typed array, `FormData`, Promise และ Server Function
 
 ```tsx
-// ควรแปลง Date เป็น string ก่อนส่ง
-<BookInfo publishedAt={book.publishedAt.toISOString()} />
+// React ส่ง Date ข้าม boundary ได้
+<BookInfo publishedAt={book.publishedAt} />
 ```
 
-ไม่ควรส่ง function ทั่วไป, class instance, `Date`, `Map` หรือ `Set` โดยตรง ข้อยกเว้นคือ Server Action ที่ประกาศด้วย `'use server'`
+ชนิดที่ไม่รองรับ ได้แก่ function ทั่วไป, class instance, object ที่มี null prototype และ Symbol ที่ไม่ได้สร้างด้วย `Symbol.for()` ส่วน Server Function ที่ประกาศด้วย `'use server'` ส่งข้าม boundary ได้ แม้ React รองรับ `Date`, `Map` และ `Set` แต่การแปลงเป็น plain object/string ยังมีประโยชน์เมื่อต้องการสัญญาข้อมูลที่เรียบง่ายหรือส่งต่อเป็น JSON
 
 ## ข้อผิดพลาดที่พบบ่อย
 
@@ -143,4 +143,3 @@ Hydration mismatch มักเกิดจาก render `window`, เวลา�
 ## แบบฝึกหัด
 
 สร้างหน้ารายละเอียดหนังสือเป็น Server Component และสร้างปุ่มเพิ่มจำนวนสินค้าเป็น Client Component ตรวจด้วย Browser DevTools ว่า secret และโค้ดฐานข้อมูลไม่ปรากฏใน JavaScript bundle
-

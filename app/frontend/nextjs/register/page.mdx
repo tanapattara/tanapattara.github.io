@@ -1,0 +1,151 @@
+---
+title: "ลงทะเบียนผู้ใช้อย่างปลอดภัย"
+sidebarTitle: "ลงทะเบียนผู้ใช้"
+---
+
+# ลงทะเบียนผู้ใช้อย่างปลอดภัย
+
+การลงทะเบียนไม่ใช่เพียงส่ง Form ไปฐานข้อมูล Server ต้อง validate ข้อมูล, normalize email, hash password, ป้องกันข้อมูลซ้ำด้วย unique constraint และจำกัดจำนวน request
+
+บทนี้ต่อจากการตั้งค่า Auth.js และสมมติว่ามี User Data Layer ที่เชื่อมฐานข้อมูลจริงแล้ว
+
+## สัญญาของ User Data Layer
+
+ให้ฐานข้อมูลกำหนด unique constraint ที่ normalized email และออกแบบ function สร้างผู้ใช้ให้คืนผลลัพธ์แบบชัดเจน
+
+```tsx
+// lib/users.ts
+import 'server-only'
+
+type CreateUserInput = {
+  name: string
+  email: string
+  passwordHash: string
+  role: 'customer'
+}
+
+type CreateUserResult =
+  | { ok: true; userId: string }
+  | { ok: false; reason: 'duplicate-email' | 'database-error' }
+
+export async function createUser(
+  input: CreateUserInput,
+): Promise<CreateUserResult> {
+  // insert ด้วย ORM/SQL และแปลง unique-constraint error เป็น duplicate-email
+  // อย่าเขียน check-then-insert อย่างเดียว เพราะ request พร้อมกันอาจผ่าน check ทั้งคู่
+  throw new Error('Implement createUser with your database')
+}
+```
+
+## Registration Server Action
+
+```tsx
+// app/(account)/register/actions.ts
+'use server'
+
+import { hash } from 'bcryptjs'
+import { redirect } from 'next/navigation'
+import { createUser } from '@/lib/users'
+
+export type RegisterState = { error?: string }
+
+export async function register(
+  _state: RegisterState,
+  formData: FormData,
+): Promise<RegisterState> {
+  const name = formData.get('name')
+  const email = formData.get('email')
+  const password = formData.get('password')
+
+  if (typeof name !== 'string' || name.trim().length < 2) {
+    return { error: 'ชื่อต้องมีอย่างน้อย 2 ตัวอักษร' }
+  }
+  if (typeof email !== 'string' || !email.includes('@')) {
+    return { error: 'รูปแบบอีเมลไม่ถูกต้อง' }
+  }
+  if (typeof password !== 'string' || password.length < 12) {
+    return { error: 'รหัสผ่านต้องมีอย่างน้อย 12 ตัวอักษร' }
+  }
+
+  const normalizedEmail = email.trim().toLocaleLowerCase('en-US')
+  const passwordHash = await hash(password, 12)
+  const result = await createUser({
+    name: name.trim(),
+    email: normalizedEmail,
+    passwordHash,
+    role: 'customer',
+  })
+
+  if (!result.ok) {
+    if (result.reason === 'duplicate-email') {
+      return { error: 'ไม่สามารถสร้างบัญชีด้วยอีเมลนี้ได้' }
+    }
+    return { error: 'สร้างบัญชีไม่สำเร็จ กรุณาลองใหม่' }
+  }
+
+  redirect('/login?registered=1')
+}
+```
+
+เรียก `redirect()` นอก `try...catch` เช่นเดียวกับ Server Action อื่น หาก Data Layer ใช้ exception ให้จับเฉพาะ database error ก่อน แล้วเรียก redirect หลังออกจาก catch
+
+## Registration Form
+
+```tsx
+// app/(account)/register/register-form.tsx
+'use client'
+
+import { useActionState } from 'react'
+import { register, type RegisterState } from './actions'
+
+const initialState: RegisterState = {}
+
+export function RegisterForm() {
+  const [state, formAction, pending] = useActionState(register, initialState)
+
+  return (
+    <form action={formAction}>
+      <label htmlFor="name">ชื่อ</label>
+      <input id="name" name="name" autoComplete="name" minLength={2} required />
+
+      <label htmlFor="email">อีเมล</label>
+      <input id="email" name="email" type="email" autoComplete="email" required />
+
+      <label htmlFor="password">รหัสผ่าน</label>
+      <input
+        id="password"
+        name="password"
+        type="password"
+        autoComplete="new-password"
+        minLength={12}
+        required
+      />
+
+      {state.error && <p role="alert">{state.error}</p>}
+      <button type="submit" disabled={pending}>
+        {pending ? 'กำลังสร้างบัญชี...' : 'สร้างบัญชี'}
+      </button>
+    </form>
+  )
+}
+```
+
+Browser validation ช่วย UX เท่านั้น Server Action ต้องตรวจทุก field ซ้ำ และห้ามรับ `role` จาก Form เพราะผู้โจมตีสามารถแก้ request ให้สมัครเป็น Admin ได้
+
+## สิ่งที่ต้องเพิ่มในระบบจริง
+
+- Rate limit ตาม IP และ identifier พร้อมพิจารณาผู้ใช้หลัง reverse proxy อย่างถูกต้อง
+- Verify email ด้วย token แบบใช้ครั้งเดียวและมีวันหมดอายุ
+- ป้องกันชื่อหรือ email ที่ยาวผิดปกติ และใช้ schema validation library
+- นโยบาย password ที่เหมาะกับระบบ รวมถึงตรวจ breached passwords เมื่อจำเป็น
+- บันทึก audit event โดยไม่ log password หรือ password hash
+- ส่งข้อความตอบกลับที่ไม่ช่วยให้ผู้โจมตี enumerate บัญชี
+- เขียน integration test สำหรับ request ซ้ำและ unique constraint race condition
+
+## Static Export
+
+Registration Server Action และการเก็บ password ต้องมี trusted backend ห้ามทำใน GitHub Pages หรือเก็บ secret/hash logic ไว้ใน Client Component หากหน้าเว็บเป็น Static Export ให้ส่ง Form ไปยัง Authentication Backend ภายนอกที่ออกแบบมาสำหรับ public client
+
+## แบบฝึกหัด
+
+เชื่อม `createUser()` กับฐานข้อมูล เพิ่ม unique constraint ที่ email และทดสอบกรณีข้อมูลถูกต้อง, email ซ้ำ, password สั้น, request พร้อมกันสองรายการ และระบบฐานข้อมูลขัดข้อง

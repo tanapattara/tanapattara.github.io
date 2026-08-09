@@ -14,7 +14,6 @@ export default {
   api: "API",
   react: "React.js",
   nextjs: "Next.js",
-  authentication: "Authentication",
-  register: "Register",
+
   "course-project": "โปรเจกต์ประจำวิชา",
 };

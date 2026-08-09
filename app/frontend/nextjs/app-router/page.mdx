@@ -121,7 +121,7 @@ export function BackButton() {
 }
 ```
 
-Navigation hooks ที่ใช้บ่อย ได้แก่ `useRouter`, `usePathname`, `useSearchParams` และ `useParams` โดย `useSearchParams` ใน static route ควรอยู่ภายใน `Suspense` boundary
+Navigation hooks ที่ใช้บ่อย ได้แก่ `useRouter`, `usePathname`, `useSearchParams` และ `useParams` โดย Client Component ที่เรียก `useSearchParams` ใน static route ต้องอยู่ภายใน `Suspense` boundary มิฉะนั้น Production Build จะล้มเหลว
 
 ## Route Groups และ Private Folders
 
@@ -152,4 +152,3 @@ app/
 ## แบบฝึกหัด
 
 สร้าง `/books`, `/books/[id]` และ `/about` เพิ่ม Navigation ใน Layout และสร้างข้อมูลหนังสือสามเล่มด้วย `generateStaticParams` จากนั้นตรวจว่าแต่ละ URL เปิดได้หลัง `npm run build`
-

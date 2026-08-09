@@ -28,18 +28,13 @@ app/
 
 ```tsx
 // app/api/books/route.ts
-import { db } from '@/lib/db'
+import { listBooks } from '@/lib/books'
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
   const query = searchParams.get('q')?.trim() ?? ''
 
-  const books = await db.book.findMany({
-    where: query
-      ? { title: { contains: query, mode: 'insensitive' } }
-      : undefined,
-    select: { id: true, title: true, price: true },
-  })
+  const books = await listBooks(query)
 
   return Response.json({ data: books, total: books.length })
 }
@@ -51,7 +46,7 @@ export async function GET(request: Request) {
 
 ```tsx
 // app/api/books/route.ts
-import { db } from '@/lib/db'
+import { insertBook } from '@/lib/books'
 
 type CreateBookBody = {
   title?: unknown
@@ -59,7 +54,13 @@ type CreateBookBody = {
 }
 
 export async function POST(request: Request) {
-  const body = (await request.json()) as CreateBookBody
+  let body: CreateBookBody
+
+  try {
+    body = (await request.json()) as CreateBookBody
+  } catch {
+    return Response.json({ error: 'JSON ไม่ถูกต้อง' }, { status: 400 })
+  }
 
   if (typeof body.title !== 'string' || body.title.trim().length < 2) {
     return Response.json(
@@ -72,8 +73,9 @@ export async function POST(request: Request) {
     return Response.json({ error: 'ราคาไม่ถูกต้อง' }, { status: 400 })
   }
 
-  const book = await db.book.create({
-    data: { title: body.title.trim(), price: body.price },
+  const book = await insertBook({
+    title: body.title.trim(),
+    price: body.price,
   })
 
   return Response.json({ data: book }, { status: 201 })
@@ -86,13 +88,13 @@ TypeScript type ไม่ได้ตรวจ JSON ตอน runtime จึง�
 
 ```tsx
 // app/api/books/[id]/route.ts
-import { db } from '@/lib/db'
+import { getBook, removeBook } from '@/lib/books'
 
 type Context = { params: Promise<{ id: string }> }
 
 export async function GET(_request: Request, { params }: Context) {
   const { id } = await params
-  const book = await db.book.findUnique({ where: { id } })
+  const book = await getBook(id)
 
   if (!book) {
     return Response.json({ error: 'ไม่พบหนังสือ' }, { status: 404 })
@@ -104,7 +106,11 @@ export async function GET(_request: Request, { params }: Context) {
 export async function DELETE(_request: Request, { params }: Context) {
   const { id } = await params
 
-  await db.book.delete({ where: { id } })
+  const deleted = await removeBook(id)
+  if (!deleted) {
+    return Response.json({ error: 'ไม่พบหนังสือ' }, { status: 404 })
+  }
+
   return new Response(null, { status: 204 })
 }
 ```
@@ -151,11 +157,26 @@ Server Component ควรเรียก data layer โดยตรง ไม�
 - จำกัดขนาด upload และ rate limit endpoint ที่เปิดสาธารณะ
 - Webhook ต้องตรวจ signature จากผู้ให้บริการ
 
+เมื่อเรียนบท Authentication แล้ว ให้เพิ่มการตรวจ session และ role ก่อน `POST`, `PATCH` และ `DELETE` เสมอ ตัวอย่างรูปแบบสำหรับ Auth.js:
+
+```tsx
+import { auth } from '@/auth'
+
+const session = await auth()
+if (!session) {
+  return Response.json({ error: 'Unauthorized' }, { status: 401 })
+}
+if (session.user.role !== 'admin') {
+  return Response.json({ error: 'Forbidden' }, { status: 403 })
+}
+```
+
+ระหว่างที่ยังไม่เพิ่ม Authentication อย่านำ mutation endpoint ตัวอย่างไปเปิดบนอินเทอร์เน็ต
+
 ## Static Export
 
-Route Handlers ที่ต้องประมวลผลตาม request ใช้ไม่ได้บน GitHub Pages หรือ static hosting ต้อง deploy แบบมี Next.js server ส่วน GET ที่สร้างผลลัพธ์คงที่ตอน Build มีข้อจำกัดและไม่แทน API server จริง
+Static Export รองรับเฉพาะ `GET` Route Handler ที่สร้าง response คงที่ได้ตอน Build และไม่อ่านค่าที่เปลี่ยนตาม incoming request ส่วน `POST`, `PUT`, `PATCH`, `DELETE` หรือ `GET` ที่ต้องอ่าน request/cookie ต้อง deploy แบบมี Next.js server
 
 ## แบบฝึกหัด
 
 สร้าง `/api/books` ให้รองรับ GET และ POST และ `/api/books/[id]` ให้รองรับ GET กับ DELETE ทดสอบกรณีสำเร็จ, input ไม่ถูกต้อง, ไม่พบข้อมูล และไม่มีสิทธิ์
-
