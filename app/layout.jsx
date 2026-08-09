@@ -7,6 +7,29 @@ import "nextra-theme-docs/style.css";
 export const metadata = {
   title: "Classroom Handouts",
   description: "Course materials and handouts for students",
+  manifest: "/site.webmanifest",
+  icons: {
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
+      { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+      { url: "/site-icon-48x48.png", sizes: "48x48", type: "image/png" },
+      { url: "/site-icon-64x64.png", sizes: "64x64", type: "image/png" },
+      { url: "/site-icon-96x96.png", sizes: "96x96", type: "image/png" },
+      {
+        url: "/site-icon-master.png",
+        sizes: "357x357",
+        type: "image/png",
+      },
+    ],
+    apple: [
+      {
+        url: "/apple-touch-icon.png",
+        sizes: "180x180",
+        type: "image/png",
+      },
+    ],
+  },
   other: {
     "google-adsense-account": "ca-pub-8546645383819348",
   },
