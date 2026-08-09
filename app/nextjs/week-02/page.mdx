@@ -1,0 +1,497 @@
+---
+title: "สัปดาห์ 2: PokéAPI และ Route Handler"
+sidebarTitle: "PokéAPI และ Route Handler"
+---
+
+import { Callout } from "nextra/components"
+
+# สัปดาห์ 2: PokéAPI และ Route Handler
+
+โปรเจกต์ประจำคาบคือ **Pokémon Explorer** ผู้ใช้เปิดรายการ Pokémon แล้วเลือกดูรายละเอียดทีละตัว ข้อมูลมาจาก PokéAPI แต่ Browser จะเรียกผ่าน API ของ Next.js ที่เราสร้างเอง
+
+สัปดาห์นี้ตั้งใจใช้ Client Component เรียก `/api/pokemon` เพื่อให้เห็นวงจร HTTP ชัดเจน สัปดาห์หน้าจึงค่อย refactor และเปรียบเทียบกับการ fetch โดยตรงใน Server Component
+
+## ผลลัพธ์การเรียนรู้
+
+- อธิบาย Request, Response, JSON และ HTTP status code
+- สร้าง GET Route Handler ด้วยไฟล์ `route.ts`
+- รับ Query String และ Dynamic Parameter
+- จัดรูปข้อมูลจาก External API ก่อนส่งให้ Browser
+- สร้างหน้ารายการและ Dynamic Route `/pokemon/[name]`
+- ออกแบบ Loading และ Error state ใน Client Component
+
+## Route map
+
+```text
+/pokemon                    หน้ารายการ
+/pokemon/pikachu            หน้ารายละเอียด
+/api/pokemon?limit=24       API รายการของเรา
+/api/pokemon/pikachu        API รายละเอียดของเรา
+```
+
+โครงสร้างไฟล์:
+
+```text
+src/
+├── app/
+│   ├── api/pokemon/
+│   │   ├── route.ts
+│   │   └── [name]/route.ts
+│   └── pokemon/
+│       ├── page.tsx
+│       └── [name]/page.tsx
+├── components/
+│   ├── pokemon-list.tsx
+│   └── pokemon-detail-view.tsx
+└── types/pokemon.ts
+```
+
+## 1. สำรวจ PokéAPI
+
+ทดลองเปิด:
+
+```text
+https://pokeapi.co/api/v2/pokemon?limit=5
+https://pokeapi.co/api/v2/pokemon/pikachu
+```
+
+ให้ผู้เรียนหา:
+
+- HTTP method ที่ใช้
+- ชนิดข้อมูลของ `results`
+- ตำแหน่ง `name`, `types`, `height`, `weight` และ `sprites`
+- สิ่งที่เกิดขึ้นเมื่อขอ Pokémon ที่ไม่มีจริง
+
+## 2. กำหนด Type ที่หน้าเว็บต้องใช้
+
+สร้าง `src/types/pokemon.ts`
+
+```ts
+export type PokemonListItem = {
+  id: number
+  name: string
+  imageUrl: string
+}
+
+export type PokemonDetailData = {
+  id: number
+  name: string
+  imageUrl: string
+  types: string[]
+  height: number
+  weight: number
+  stats: {
+    name: string
+    value: number
+  }[]
+}
+```
+
+เราไม่จำเป็นต้องส่ง JSON ทุก field ของ PokéAPI ไปยัง Browser เลือกเฉพาะข้อมูลที่ UI ใช้ทำให้โค้ดอ่านง่ายและลดการผูกติดกับรูปแบบภายนอก
+
+## 3. Route Handler สำหรับรายการ
+
+สร้าง `src/app/api/pokemon/route.ts`
+
+```ts
+import type { PokemonListItem } from '@/types/pokemon'
+
+type PokeApiListResponse = {
+  results: {
+    name: string
+    url: string
+  }[]
+}
+
+function getPokemonId(url: string) {
+  const parts = url.split('/').filter(Boolean)
+  return Number(parts.at(-1))
+}
+
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url)
+  const limit = Number(searchParams.get('limit') ?? '24')
+  const offset = Number(searchParams.get('offset') ?? '0')
+
+  if (
+    !Number.isInteger(limit) ||
+    limit < 1 ||
+    limit > 60 ||
+    !Number.isInteger(offset) ||
+    offset < 0
+  ) {
+    return Response.json(
+      { message: 'limit ต้องอยู่ระหว่าง 1–60 และ offset ต้องไม่ติดลบ' },
+      { status: 400 },
+    )
+  }
+
+  const response = await fetch(
+    `https://pokeapi.co/api/v2/pokemon?limit=${limit}&offset=${offset}`,
+    { cache: 'no-store' },
+  )
+
+  if (!response.ok) {
+    return Response.json(
+      { message: 'ไม่สามารถโหลดข้อมูลจาก PokéAPI' },
+      { status: 502 },
+    )
+  }
+
+  const data = (await response.json()) as PokeApiListResponse
+
+  const items: PokemonListItem[] = data.results.map((pokemon) => {
+    const id = getPokemonId(pokemon.url)
+    return {
+      id,
+      name: pokemon.name,
+      imageUrl:
+        `https://raw.githubusercontent.com/PokeAPI/sprites/master/` +
+        `sprites/pokemon/other/official-artwork/${id}.png`,
+    }
+  })
+
+  return Response.json({ items })
+}
+```
+
+ทดลอง URL:
+
+```text
+http://localhost:3000/api/pokemon?limit=12
+http://localhost:3000/api/pokemon?limit=999
+```
+
+อภิปราย status code:
+
+| Code | ความหมายในโปรเจกต์นี้ |
+| --- | --- |
+| 200 | สำเร็จ |
+| 400 | Client ส่ง parameter ไม่ถูกต้อง |
+| 404 | ไม่พบ Pokémon |
+| 502 | Next.js ติดต่อบริการภายนอกไม่สำเร็จ |
+
+## 4. Route Handler สำหรับรายละเอียด
+
+สร้าง `src/app/api/pokemon/[name]/route.ts`
+
+```ts
+import type { PokemonDetailData } from '@/types/pokemon'
+
+type PokeApiPokemon = {
+  id: number
+  name: string
+  height: number
+  weight: number
+  sprites: {
+    other: {
+      'official-artwork': {
+        front_default: string | null
+      }
+    }
+  }
+  types: {
+    type: { name: string }
+  }[]
+  stats: {
+    base_stat: number
+    stat: { name: string }
+  }[]
+}
+
+export async function GET(
+  _request: Request,
+  { params }: { params: Promise<{ name: string }> },
+) {
+  const { name } = await params
+  const safeName = encodeURIComponent(name.toLowerCase())
+  const response = await fetch(
+    `https://pokeapi.co/api/v2/pokemon/${safeName}`,
+    { cache: 'no-store' },
+  )
+
+  if (response.status === 404) {
+    return Response.json({ message: 'ไม่พบ Pokémon' }, { status: 404 })
+  }
+
+  if (!response.ok) {
+    return Response.json(
+      { message: 'PokéAPI ไม่พร้อมใช้งาน' },
+      { status: 502 },
+    )
+  }
+
+  const data = (await response.json()) as PokeApiPokemon
+
+  const pokemon: PokemonDetailData = {
+    id: data.id,
+    name: data.name,
+    height: data.height,
+    weight: data.weight,
+    imageUrl: data.sprites.other['official-artwork'].front_default ?? '',
+    types: data.types.map((item) => item.type.name),
+    stats: data.stats.map((item) => ({
+      name: item.stat.name,
+      value: item.base_stat,
+    })),
+  }
+
+  return Response.json({ pokemon })
+}
+```
+
+`params` เป็น Promise ใน Next.js รุ่นปัจจุบัน จึงต้อง `await params` ก่อนใช้
+
+## 5. อนุญาต Remote Image
+
+แก้ `next.config.ts`
+
+```ts
+import type { NextConfig } from 'next'
+
+const nextConfig: NextConfig = {
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'raw.githubusercontent.com',
+        pathname: '/PokeAPI/sprites/**',
+      },
+    ],
+  },
+}
+
+export default nextConfig
+```
+
+หลังแก้ config ให้หยุดและเปิด `npm run dev` ใหม่
+
+## 6. Client Component สำหรับรายการ
+
+สร้าง `src/components/pokemon-list.tsx`
+
+```tsx
+'use client'
+
+import Image from 'next/image'
+import Link from 'next/link'
+import { useEffect, useState } from 'react'
+import type { PokemonListItem } from '@/types/pokemon'
+
+type ApiResponse = {
+  items?: PokemonListItem[]
+  message?: string
+}
+
+export function PokemonList() {
+  const [items, setItems] = useState<PokemonListItem[]>([])
+  const [status, setStatus] =
+    useState<'loading' | 'success' | 'error'>('loading')
+  const [message, setMessage] = useState('')
+
+  useEffect(() => {
+    const controller = new AbortController()
+
+    async function loadPokemon() {
+      try {
+        const response = await fetch('/api/pokemon?limit=24', {
+          signal: controller.signal,
+        })
+        const data = (await response.json()) as ApiResponse
+
+        if (!response.ok) {
+          throw new Error(data.message ?? 'โหลดข้อมูลไม่สำเร็จ')
+        }
+
+        setItems(data.items ?? [])
+        setStatus('success')
+      } catch (error) {
+        if (controller.signal.aborted) return
+        setMessage(error instanceof Error ? error.message : 'เกิดข้อผิดพลาด')
+        setStatus('error')
+      }
+    }
+
+    loadPokemon()
+    return () => controller.abort()
+  }, [])
+
+  if (status === 'loading') {
+    return <p role="status">กำลังโหลด Pokémon…</p>
+  }
+
+  if (status === 'error') {
+    return <p role="alert" className="text-red-700">{message}</p>
+  }
+
+  return (
+    <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+      {items.map((pokemon) => (
+        <li key={pokemon.id}>
+          <Link
+            href={`/pokemon/${pokemon.name}`}
+            className="block rounded-2xl border bg-white p-5 transition hover:-translate-y-1 hover:shadow-lg focus-visible:outline-2 focus-visible:outline-indigo-600"
+          >
+            <Image
+              src={pokemon.imageUrl}
+              alt={`ภาพ ${pokemon.name}`}
+              width={240}
+              height={240}
+              className="mx-auto aspect-square object-contain"
+            />
+            <p className="text-sm text-slate-500">#{pokemon.id}</p>
+            <h2 className="text-lg font-semibold capitalize">{pokemon.name}</h2>
+          </Link>
+        </li>
+      ))}
+    </ul>
+  )
+}
+```
+
+สร้าง `src/app/pokemon/page.tsx`
+
+```tsx
+import { PokemonList } from '@/components/pokemon-list'
+
+export const metadata = { title: 'Pokémon Explorer' }
+
+export default function PokemonPage() {
+  return (
+    <main className="mx-auto max-w-6xl px-5 py-12">
+      <h1 className="text-4xl font-bold">Pokémon Explorer</h1>
+      <p className="mb-8 mt-3 text-slate-600">
+        เลือก Pokémon เพื่อเปิดข้อมูลทีละตัว
+      </p>
+      <PokemonList />
+    </main>
+  )
+}
+```
+
+## 7. หน้ารายละเอียด
+
+สร้าง `src/components/pokemon-detail-view.tsx`
+
+```tsx
+'use client'
+
+import Image from 'next/image'
+import { useEffect, useState } from 'react'
+import type { PokemonDetailData } from '@/types/pokemon'
+
+export function PokemonDetailView({ name }: { name: string }) {
+  const [pokemon, setPokemon] = useState<PokemonDetailData | null>(null)
+  const [error, setError] = useState('')
+
+  useEffect(() => {
+    const controller = new AbortController()
+
+    fetch(`/api/pokemon/${encodeURIComponent(name)}`, {
+      signal: controller.signal,
+    })
+      .then(async (response) => {
+        const data = await response.json()
+        if (!response.ok) throw new Error(data.message)
+        return data.pokemon as PokemonDetailData
+      })
+      .then(setPokemon)
+      .catch((reason: unknown) => {
+        if (!controller.signal.aborted) {
+          setError(reason instanceof Error ? reason.message : 'เกิดข้อผิดพลาด')
+        }
+      })
+
+    return () => controller.abort()
+  }, [name])
+
+  if (error) return <p role="alert">{error}</p>
+  if (!pokemon) return <p role="status">กำลังโหลดรายละเอียด…</p>
+
+  return (
+    <article className="grid gap-8 md:grid-cols-2">
+      <Image
+        src={pokemon.imageUrl}
+        alt={`ภาพ ${pokemon.name}`}
+        width={520}
+        height={520}
+        className="aspect-square object-contain"
+      />
+      <div>
+        <p className="text-slate-500">#{pokemon.id}</p>
+        <h1 className="text-5xl font-bold capitalize">{pokemon.name}</h1>
+        <p className="mt-4">Type: {pokemon.types.join(', ')}</p>
+        <p>Height: {pokemon.height / 10} m</p>
+        <p>Weight: {pokemon.weight / 10} kg</p>
+        <h2 className="mt-8 text-2xl font-semibold">Base stats</h2>
+        <dl className="mt-3 space-y-2">
+          {pokemon.stats.map((stat) => (
+            <div key={stat.name} className="flex justify-between border-b py-2">
+              <dt className="capitalize">{stat.name}</dt>
+              <dd className="font-semibold">{stat.value}</dd>
+            </div>
+          ))}
+        </dl>
+      </div>
+    </article>
+  )
+}
+```
+
+สร้าง `src/app/pokemon/[name]/page.tsx`
+
+```tsx
+import Link from 'next/link'
+import { PokemonDetailView } from '@/components/pokemon-detail-view'
+
+type PageProps = {
+  params: Promise<{ name: string }>
+}
+
+export default async function PokemonDetailPage({ params }: PageProps) {
+  const { name } = await params
+
+  return (
+    <main className="mx-auto max-w-5xl px-5 py-12">
+      <Link href="/pokemon" className="mb-8 inline-block text-indigo-700">
+        ← กลับไปรายการ
+      </Link>
+      <PokemonDetailView name={name} />
+    </main>
+  )
+}
+```
+
+<Callout type="warning">
+  Route Handler เหมาะเมื่อ Browser หรือระบบภายนอกต้องการ API แต่ Server Component ที่ต้องอ่านข้อมูลเพื่อ render หน้าเว็บสามารถ fetch แหล่งข้อมูลโดยตรงได้ ไม่จำเป็นต้องยิง HTTP กลับเข้าหา API ของโปรเจกต์ตัวเอง สัปดาห์หน้าจะ refactor ให้เห็นความแตกต่าง
+</Callout>
+
+## Lab และ Challenge
+
+1. เพิ่มปุ่ม Previous/Next ด้วย `offset`
+2. แสดง Skeleton แทนข้อความกำลังโหลด
+3. ทดสอบชื่อที่ไม่มีจริงและปรับข้อความ 404
+4. แสดง stat ด้วย `<progress>`
+
+Challenge: เพิ่มช่องค้นหาที่พาไป `/pokemon/{name}` โดยใช้ `useRouter`
+
+## Definition of Done
+
+- [ ] `/api/pokemon` ส่ง JSON และ validate Query String
+- [ ] API รายละเอียดคืน 404 เมื่อไม่พบข้อมูล
+- [ ] รายการมี Loading, Success และ Error state
+- [ ] กด Card แล้วเปิด Dynamic Route ถูกตัว
+- [ ] Remote image แสดงผ่าน `next/image`
+- [ ] ไม่มี `any` ใน Type หลัก
+
+## Exit ticket
+
+1. `page.tsx` และ `route.ts` ส่งผลลัพธ์คนละชนิดอย่างไร
+2. เพราะเหตุใดจึงแปลงข้อมูล PokéAPI ก่อนส่งให้ Client
+3. เมื่อใดควรใช้ status 400, 404 และ 502
+
+## อ่านเพิ่ม
+
+- [PokéAPI Documentation](https://pokeapi.co/docs/v2)
+- [Next.js: Route Handlers](https://nextjs.org/docs/app/api-reference/file-conventions/route)
+- [Next.js: Dynamic Segments](https://nextjs.org/docs/app/api-reference/file-conventions/dynamic-routes)

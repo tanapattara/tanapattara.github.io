@@ -1,0 +1,363 @@
+---
+title: "สัปดาห์ 13: Shareable Article, Metadata และ SEO"
+sidebarTitle: "Metadata และ SEO"
+---
+
+import { Callout } from "nextra/components"
+
+# สัปดาห์ 13: Shareable Article, Metadata และ SEO
+
+โปรเจกต์ประจำคาบคือ **Shareable Article** บทความ Dynamic Route ที่แต่ละหน้ามี Title, Description, Canonical URL และ Open Graph Image ของตนเอง พร้อม Sitemap และ Robots
+
+## ผลลัพธ์การเรียนรู้
+
+- อธิบายความต่างของเนื้อหาบนหน้าและ Metadata
+- สร้าง Static/Dynamic Metadata ใน Server Component
+- ตั้ง `metadataBase` และ Canonical URL
+- สร้าง Open Graph Image ด้วย `next/og`
+- สร้าง `sitemap.ts` และ `robots.ts`
+- ใช้ Semantic HTML และ Heading hierarchy
+
+## 1. ข้อมูลบทความ
+
+สร้าง `src/data/articles.ts`
+
+```ts
+export type Article = {
+  slug: string
+  title: string
+  description: string
+  publishedAt: string
+  author: string
+  paragraphs: string[]
+}
+
+export const articles: Article[] = [
+  {
+    slug: 'server-or-client-component',
+    title: 'เลือก Server หรือ Client Component อย่างไร',
+    description: 'หลักคิดสำหรับแบ่งงานระหว่าง Server และ Browser ใน Next.js',
+    publishedAt: '2026-08-09',
+    author: 'Next.js Classroom',
+    paragraphs: [
+      'เริ่มจาก Server Component แล้วเพิ่ม Client boundary เมื่อจำเป็นต้องมี interaction หรือ browser API',
+      'การแบ่ง boundary ที่เหมาะสมช่วยลด JavaScript ที่ส่งไป Browser และแยก Secret ไว้ฝั่ง Server',
+    ],
+  },
+  {
+    slug: 'url-is-state',
+    title: 'เมื่อ URL ทำหน้าที่เป็น State',
+    description: 'ทำให้ Search และ Filter แชร์ Bookmark และใช้ Back/Forward ได้',
+    publishedAt: '2026-08-16',
+    author: 'Next.js Classroom',
+    paragraphs: [
+      'Query String เหมาะกับค่าที่ผู้ใช้ควรแชร์หรือกลับมาเปิดใหม่ได้',
+      'ทุกค่าจาก URL ต้องถูก validate เพราะผู้ใช้สามารถแก้ได้โดยตรง',
+    ],
+  },
+]
+
+export function findArticle(slug: string) {
+  return articles.find((article) => article.slug === slug)
+}
+```
+
+## 2. Root Metadata และ metadataBase
+
+แก้ `src/app/layout.tsx`
+
+```tsx
+import type { Metadata } from 'next'
+import './globals.css'
+
+const siteUrl =
+  process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'
+
+export const metadata: Metadata = {
+  metadataBase: new URL(siteUrl),
+  title: {
+    default: 'Next.js Classroom',
+    template: '%s | Next.js Classroom',
+  },
+  description: 'บทความและ Workshop สำหรับเรียนรู้ Next.js',
+  openGraph: {
+    siteName: 'Next.js Classroom',
+    type: 'website',
+    locale: 'th_TH',
+  },
+}
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
+  return (
+    <html lang="th">
+      <body>{children}</body>
+    </html>
+  )
+}
+```
+
+ตั้ง Environment ของ Production:
+
+```dotenv
+NEXT_PUBLIC_SITE_URL=https://your-domain.example
+```
+
+Site URL เปิดเผยได้ จึงใช้ `NEXT_PUBLIC_` ได้ ต่างจาก Database/OAuth/Blob token
+
+## 3. Dynamic Metadata
+
+สร้าง `src/app/articles/[slug]/page.tsx`
+
+```tsx
+import type { Metadata } from 'next'
+import { notFound } from 'next/navigation'
+import { articles, findArticle } from '@/data/articles'
+
+type Props = {
+  params: Promise<{ slug: string }>
+}
+
+export function generateStaticParams() {
+  return articles.map((article) => ({ slug: article.slug }))
+}
+
+export async function generateMetadata({
+  params,
+}: Props): Promise<Metadata> {
+  const { slug } = await params
+  const article = findArticle(slug)
+
+  if (!article) return { title: 'ไม่พบบทความ' }
+
+  return {
+    title: article.title,
+    description: article.description,
+    alternates: {
+      canonical: `/articles/${article.slug}`,
+    },
+    openGraph: {
+      type: 'article',
+      title: article.title,
+      description: article.description,
+      publishedTime: article.publishedAt,
+      authors: [article.author],
+      url: `/articles/${article.slug}`,
+    },
+  }
+}
+
+export default async function ArticlePage({ params }: Props) {
+  const { slug } = await params
+  const article = findArticle(slug)
+  if (!article) notFound()
+
+  return (
+    <main className="mx-auto max-w-3xl px-5 py-14">
+      <article>
+        <header>
+          <p className="text-sm font-semibold text-indigo-700">Next.js Note</p>
+          <h1 className="mt-3 text-4xl font-bold leading-tight">
+            {article.title}
+          </h1>
+          <p className="mt-4 text-lg text-slate-600">
+            {article.description}
+          </p>
+          <p className="mt-5 text-sm text-slate-500">
+            โดย {article.author} ·{' '}
+            <time dateTime={article.publishedAt}>
+              {new Intl.DateTimeFormat('th-TH', {
+                dateStyle: 'long',
+                timeZone: 'Asia/Bangkok',
+              }).format(new Date(article.publishedAt))}
+            </time>
+          </p>
+        </header>
+
+        <div className="mt-10 space-y-6 text-lg leading-8">
+          {article.paragraphs.map((paragraph) => (
+            <p key={paragraph}>{paragraph}</p>
+          ))}
+        </div>
+      </article>
+    </main>
+  )
+}
+```
+
+Metadata API ใช้ได้ใน Server Component เท่านั้น หากหน้าต้องมี interaction ให้คง Page เป็น Server แล้ว import Client Component เฉพาะส่วนที่โต้ตอบ
+
+## 4. Dynamic Open Graph Image
+
+สร้าง `src/app/articles/[slug]/opengraph-image.tsx`
+
+```tsx
+import { ImageResponse } from 'next/og'
+import { findArticle } from '@/data/articles'
+
+export const alt = 'Next.js Classroom article'
+export const size = { width: 1200, height: 630 }
+export const contentType = 'image/png'
+
+type Props = {
+  params: Promise<{ slug: string }>
+}
+
+export default async function OpenGraphImage({ params }: Props) {
+  const { slug } = await params
+  const article = findArticle(slug)
+  const title = article?.title ?? 'Next.js Classroom'
+
+  return new ImageResponse(
+    (
+      <div
+        style={{
+          width: '100%',
+          height: '100%',
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'space-between',
+          background: '#0f172a',
+          color: 'white',
+          padding: '72px',
+        }}
+      >
+        <div style={{ display: 'flex', fontSize: 30, color: '#a5b4fc' }}>
+          NEXT.JS CLASSROOM
+        </div>
+        <div
+          style={{
+            display: 'flex',
+            maxWidth: '1000px',
+            fontSize: 68,
+            fontWeight: 700,
+            lineHeight: 1.15,
+          }}
+        >
+          {title}
+        </div>
+        <div style={{ display: 'flex', fontSize: 26, color: '#cbd5e1' }}>
+          Project-based Learning · 14 Weeks
+        </div>
+      </div>
+    ),
+    size,
+  )
+}
+```
+
+ใช้ `next/og` ไม่ต้องติดตั้ง `@vercel/og` และควรใช้ Flexbox/inline style ภายใน ImageResponse
+
+## 5. Sitemap
+
+สร้าง `src/app/sitemap.ts`
+
+```ts
+import type { MetadataRoute } from 'next'
+import { articles } from '@/data/articles'
+
+const siteUrl =
+  process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'
+
+export default function sitemap(): MetadataRoute.Sitemap {
+  return [
+    {
+      url: siteUrl,
+      lastModified: new Date(),
+      changeFrequency: 'weekly',
+      priority: 1,
+    },
+    {
+      url: `${siteUrl}/articles`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly',
+      priority: 0.8,
+    },
+    ...articles.map((article) => ({
+      url: `${siteUrl}/articles/${article.slug}`,
+      lastModified: new Date(article.publishedAt),
+      changeFrequency: 'monthly' as const,
+      priority: 0.7,
+    })),
+  ]
+}
+```
+
+## 6. Robots
+
+สร้าง `src/app/robots.ts`
+
+```ts
+import type { MetadataRoute } from 'next'
+
+const siteUrl =
+  process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'
+
+export default function robots(): MetadataRoute.Robots {
+  return {
+    rules: {
+      userAgent: '*',
+      allow: '/',
+      disallow: ['/dashboard/', '/api/'],
+    },
+    sitemap: `${siteUrl}/sitemap.xml`,
+  }
+}
+```
+
+Robots เป็นคำแนะนำสำหรับ Crawler ไม่ใช่ระบบรักษาความปลอดภัย Route ที่เป็นข้อมูลลับยังต้องมี Authentication/Authorization
+
+<Callout type="info">
+  SEO ที่ดีเริ่มจากเนื้อหาที่ตอบโจทย์ผู้ใช้ โครงสร้าง Heading ที่ชัดเจน Link ที่มีความหมาย และ Performance ที่ดี Metadata ช่วยอธิบายหน้า แต่ไม่สามารถแทนคุณภาพเนื้อหาได้
+</Callout>
+
+## ตรวจผล
+
+เปิด:
+
+```text
+/articles/server-or-client-component
+/articles/server-or-client-component/opengraph-image
+/sitemap.xml
+/robots.txt
+```
+
+ตรวจ `<head>` ใน Browser DevTools หรือ View Source และใช้เครื่องมือ Social preview ของแพลตฟอร์มที่ต้องการ
+
+## Lab และ Challenge
+
+1. เพิ่มบทความอย่างน้อย 2 เรื่อง
+2. ตรวจว่า title/description ไม่ซ้ำ
+3. เพิ่มหน้า Article index
+4. เพิ่ม `not-found.tsx`
+5. ทดสอบ OG image ของทุก slug
+
+Challenge:
+
+- เพิ่ม JSON-LD `Article`
+- เพิ่ม RSS feed ผ่าน Route Handler
+- Cache การอ่าน Article จาก Database ด้วย React `cache()` เพื่อลด fetch ซ้ำระหว่าง Metadata และ Page
+
+## Definition of Done
+
+- [ ] แต่ละบทความมี Title และ Description เฉพาะ
+- [ ] Canonical URL ถูกต้อง
+- [ ] OG image เปิดได้และอ่านข้อความได้
+- [ ] Sitemap มีทุก public article
+- [ ] Robots ไม่ถูกใช้แทนระบบสิทธิ์
+- [ ] หน้าใช้ Semantic `<article>`, `<header>`, `<time>` และ Heading ที่ถูกลำดับ
+
+## Exit ticket
+
+1. `metadataBase` ทำหน้าที่อะไร
+2. Metadata ใดควรเปลี่ยนตาม slug
+3. Robots สามารถป้องกันคนเปิด Dashboard ได้หรือไม่
+
+## อ่านเพิ่ม
+
+- [Next.js: Metadata and OG Images](https://nextjs.org/docs/app/getting-started/metadata-and-og-images)
+- [Next.js: ImageResponse](https://nextjs.org/docs/app/api-reference/functions/image-response)
+- [Google: SEO Starter Guide](https://developers.google.com/search/docs/fundamentals/seo-starter-guide)

@@ -13,7 +13,6 @@ export default {
   "javascript-functions": "JavaScript Functions",
   api: "API",
   react: "React.js",
-  nextjs: "Next.js",
 
   "course-project": "โปรเจกต์ประจำวิชา",
 };

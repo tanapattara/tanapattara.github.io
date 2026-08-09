@@ -1,0 +1,338 @@
+---
+title: "สัปดาห์ 12: Photo Gallery และ File Upload"
+sidebarTitle: "Photo Gallery และ Upload"
+---
+
+import { Callout } from "nextra/components"
+
+# สัปดาห์ 12: Photo Gallery และ File Upload
+
+โปรเจกต์ประจำคาบคือ **Photo Gallery** ที่ตรวจไฟล์ฝั่ง Server อัปโหลดไป Vercel Blob และแสดงรูปด้วย `next/image`
+
+การบันทึกไฟล์ลง `public/uploads` ระหว่าง Runtime ไม่เหมาะกับ Vercel เพราะ Function filesystem ไม่ใช่พื้นที่เก็บถาวร จึงใช้ Object Storage สำหรับ User upload
+
+## ผลลัพธ์การเรียนรู้
+
+- อธิบายความต่างของ Static asset และ User upload
+- อ่าน `File` จาก `FormData`
+- Validate MIME type, file size และชื่อไฟล์ที่ Server
+- อัปโหลดและ list ไฟล์ด้วย Vercel Blob
+- ใช้ `next/image`, `fill`, `sizes` และ Remote Pattern
+- เลือก Public/Private storage ตามความไวของข้อมูล
+
+## 1. เตรียม Blob Store
+
+1. เชื่อมโปรเจกต์กับ Vercel
+2. เปิด Storage และสร้าง Blob store
+3. เลือก **Public** สำหรับรูปใน Gallery
+4. เชื่อม Store กับ Development, Preview และ Production ตามต้องการ
+5. ดึง Environment Variables ลง Local
+
+```bash
+npm install @vercel/blob
+```
+
+Vercel จะตั้ง `BLOB_READ_WRITE_TOKEN` ให้ โปรเจกต์ Local ต้องมีค่านี้ใน `.env.local`
+
+<Callout type="warning">
+  Public Blob อ่านได้โดยทุกคนที่มี URL เหมาะกับรูปที่ตั้งใจเผยแพร่เท่านั้น เอกสารส่วนตัว หลักฐาน หรือข้อมูลผู้ใช้ควรใช้ Private store และตรวจสิทธิ์ก่อนอ่าน
+</Callout>
+
+## 2. อนุญาต Blob Image Host
+
+แก้ `next.config.ts`
+
+```ts
+import type { NextConfig } from 'next'
+
+const nextConfig: NextConfig = {
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: '*.public.blob.vercel-storage.com',
+        pathname: '/gallery/**',
+      },
+    ],
+  },
+}
+
+export default nextConfig
+```
+
+เปิด Development Server ใหม่หลังแก้ Config
+
+## 3. Server Action สำหรับ Upload
+
+สร้าง `src/app/gallery/actions.ts`
+
+```ts
+'use server'
+
+import { put } from '@vercel/blob'
+import { revalidatePath } from 'next/cache'
+
+export type UploadState = {
+  status: 'idle' | 'error' | 'success'
+  message: string
+}
+
+export const initialUploadState: UploadState = {
+  status: 'idle',
+  message: '',
+}
+
+const allowedTypes = new Set([
+  'image/jpeg',
+  'image/png',
+  'image/webp',
+])
+
+const MAX_FILE_SIZE = 1024 * 1024
+
+function safeFileName(name: string) {
+  return name
+    .toLowerCase()
+    .replace(/[^a-z0-9._-]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+}
+
+export async function uploadPhoto(
+  _previousState: UploadState,
+  formData: FormData,
+): Promise<UploadState> {
+  const value = formData.get('photo')
+
+  if (!(value instanceof File) || value.size === 0) {
+    return { status: 'error', message: 'กรุณาเลือกไฟล์รูปภาพ' }
+  }
+
+  if (!allowedTypes.has(value.type)) {
+    return {
+      status: 'error',
+      message: 'รองรับเฉพาะ JPEG, PNG และ WebP',
+    }
+  }
+
+  if (value.size > MAX_FILE_SIZE) {
+    return {
+      status: 'error',
+      message: 'ไฟล์ต้องมีขนาดไม่เกิน 1 MB',
+    }
+  }
+
+  const fileName = safeFileName(value.name) || `photo-${Date.now()}.jpg`
+
+  try {
+    await put(`gallery/${fileName}`, value, {
+      access: 'public',
+      addRandomSuffix: true,
+      contentType: value.type,
+    })
+  } catch {
+    return {
+      status: 'error',
+      message: 'อัปโหลดไม่สำเร็จ กรุณาลองใหม่',
+    }
+  }
+
+  revalidatePath('/gallery')
+  return { status: 'success', message: 'อัปโหลดรูปสำเร็จ' }
+}
+```
+
+สิ่งสำคัญ:
+
+- `accept` ที่ input ช่วยเลือกไฟล์ แต่ผู้ใช้ส่ง Request เองได้ จึงต้อง validate ที่ Server
+- อย่าใช้ชื่อไฟล์ดิบเป็น path
+- `addRandomSuffix` ป้องกันชนกันเมื่อชื่อเหมือนกัน
+- จำกัดไฟล์ 1 MB เพื่อให้เหมาะกับ Server Action ใน Workshop
+- Production ควรตรวจ magic bytes หรือใช้ image processing service เพิ่มเติม ไม่เชื่อ MIME type อย่างเดียว
+
+## 4. Upload Form
+
+สร้าง `src/app/gallery/upload-form.tsx`
+
+```tsx
+'use client'
+
+import { useActionState, useState } from 'react'
+import {
+  initialUploadState,
+  uploadPhoto,
+} from './actions'
+
+export function UploadForm() {
+  const [state, formAction, isPending] = useActionState(
+    uploadPhoto,
+    initialUploadState,
+  )
+  const [previewUrl, setPreviewUrl] = useState('')
+
+  return (
+    <form action={formAction} className="rounded-2xl border bg-white p-6">
+      <h2 className="text-xl font-semibold">เพิ่มรูป</h2>
+
+      <label htmlFor="photo" className="mt-5 block font-medium">
+        เลือกรูป JPEG, PNG หรือ WebP ไม่เกิน 1 MB
+      </label>
+      <input
+        id="photo"
+        name="photo"
+        type="file"
+        accept="image/jpeg,image/png,image/webp"
+        required
+        className="mt-2 block w-full"
+        onChange={(event) => {
+          const file = event.target.files?.[0]
+          if (previewUrl) URL.revokeObjectURL(previewUrl)
+          setPreviewUrl(file ? URL.createObjectURL(file) : '')
+        }}
+      />
+
+      {previewUrl && (
+        <div className="mt-5">
+          <p className="mb-2 text-sm text-slate-600">ตัวอย่างก่อนอัปโหลด</p>
+          <img
+            src={previewUrl}
+            alt="ตัวอย่างรูปที่เลือก"
+            className="max-h-56 rounded-xl object-contain"
+          />
+        </div>
+      )}
+
+      {state.message && (
+        <p
+          role={state.status === 'error' ? 'alert' : 'status'}
+          className={
+            state.status === 'error'
+              ? 'mt-4 text-red-700'
+              : 'mt-4 text-emerald-700'
+          }
+        >
+          {state.message}
+        </p>
+      )}
+
+      <button
+        disabled={isPending}
+        className="mt-5 rounded-lg bg-indigo-700 px-5 py-2 text-white disabled:opacity-60"
+      >
+        {isPending ? 'กำลังอัปโหลด…' : 'อัปโหลด'}
+      </button>
+    </form>
+  )
+}
+```
+
+Preview ใช้ Blob URL ที่สร้างใน Browser จึงใช้ `<img>` สำหรับข้อมูลชั่วคราวจากเครื่องผู้ใช้ ส่วนรูปที่จัดเก็บและแสดงใน Gallery ใช้ `next/image`
+
+## 5. List รูปและสร้าง Gallery
+
+สร้าง `src/app/gallery/page.tsx`
+
+```tsx
+import { list } from '@vercel/blob'
+import Image from 'next/image'
+import { UploadForm } from './upload-form'
+
+export const metadata = {
+  title: 'Photo Gallery',
+  description: 'ตัวอย่างอัปโหลดและแสดงรูปด้วย Vercel Blob',
+}
+
+export default async function GalleryPage() {
+  const { blobs } = await list({
+    prefix: 'gallery/',
+    limit: 100,
+  })
+
+  const photos = blobs.toSorted(
+    (a, b) => b.uploadedAt.getTime() - a.uploadedAt.getTime(),
+  )
+
+  return (
+    <main className="mx-auto max-w-7xl px-5 py-12">
+      <h1 className="text-4xl font-bold">Photo Gallery</h1>
+
+      <div className="mt-8 grid items-start gap-8 lg:grid-cols-[340px_1fr]">
+        <UploadForm />
+
+        <section aria-labelledby="gallery-title">
+          <h2 id="gallery-title" className="text-2xl font-semibold">
+            รูปทั้งหมด ({photos.length})
+          </h2>
+
+          {photos.length === 0 ? (
+            <div className="mt-5 rounded-2xl border border-dashed p-12 text-center">
+              ยังไม่มีรูป ลองอัปโหลดรูปแรก
+            </div>
+          ) : (
+            <ul className="mt-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+              {photos.map((photo) => (
+                <li key={photo.url}>
+                  <figure>
+                    <div className="relative aspect-square overflow-hidden rounded-2xl bg-slate-100">
+                      <Image
+                        src={photo.url}
+                        alt={`รูปที่อัปโหลดชื่อ ${photo.pathname.split('/').at(-1)}`}
+                        fill
+                        sizes="(max-width: 640px) 100vw, (max-width: 1280px) 50vw, 33vw"
+                        className="object-cover"
+                      />
+                    </div>
+                    <figcaption className="mt-2 truncate text-sm text-slate-500">
+                      {photo.pathname.split('/').at(-1)}
+                    </figcaption>
+                  </figure>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+      </div>
+    </main>
+  )
+}
+```
+
+หาก Gallery มาจากผู้ใช้จริง ควรบันทึก Caption และ Alt text ใน Database แยกจาก Blob เพราะชื่อไฟล์ไม่ใช่คำอธิบายรูปที่ดี
+
+## Server Upload กับ Client Upload
+
+| แบบ | เหมาะกับ |
+| --- | --- |
+| Server upload ด้วย `put` | ไฟล์เล็ก โค้ดง่าย ต้องตรวจที่ Server |
+| Client upload ด้วย `upload` | ไฟล์ใหญ่ ต้องการ progress และส่งตรงเข้า Blob |
+| Private Blob | เอกสารที่ต้องตรวจสิทธิ์ก่อนอ่าน |
+| Public Blob | รูปหรือไฟล์ที่ตั้งใจให้ทุกคนเปิดได้ |
+
+## Lab และ Challenge
+
+1. แสดงขนาดไฟล์และวันอัปโหลด
+2. เพิ่ม caption ที่บังคับกรอก
+3. เพิ่มปุ่มลบโดยใช้ `del()` และตรวจสิทธิ์
+4. ทดลองไฟล์ผิดชนิดและเกินขนาด
+
+Challenge: เปลี่ยนเป็น Client upload พร้อม Progress bar และ Route Handler สำหรับออก upload token
+
+## Definition of Done
+
+- [ ] Token ไม่อยู่ใน Client หรือ Git
+- [ ] Server ตรวจชนิดและขนาดไฟล์
+- [ ] ชื่อไฟล์ถูก sanitize และไม่ชนกัน
+- [ ] Gallery ใช้ `next/image` พร้อม `sizes`
+- [ ] มี Empty, Pending, Error และ Success state
+- [ ] เลือก Public/Private storage ตรงกับข้อมูล
+
+## Exit ticket
+
+1. เพราะเหตุใดเขียนไฟล์ลง `public` ตอน Runtime ไม่เหมาะกับ Vercel
+2. `accept` ที่ input เพียงพอสำหรับความปลอดภัยหรือไม่
+3. Server upload และ Client upload เหมาะกับงานต่างกันอย่างไร
+
+## อ่านเพิ่ม
+
+- [Vercel Blob](https://vercel.com/docs/vercel-blob)
+- [Vercel Blob SDK](https://vercel.com/docs/vercel-blob/using-blob-sdk)
+- [Next.js: Image](https://nextjs.org/docs/app/api-reference/components/image)

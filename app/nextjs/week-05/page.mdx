@@ -1,0 +1,281 @@
+---
+title: "สัปดาห์ 5: Product Finder และ URL State"
+sidebarTitle: "Product Finder และ URL State"
+---
+
+import { Callout } from "nextra/components"
+
+# สัปดาห์ 5: Product Finder และ URL State
+
+โปรเจกต์ประจำคาบคือ **Product Finder** ระบบค้นหา กรอง และแบ่งหน้าสินค้าที่สามารถ Refresh, กดย้อนกลับ และคัดลอก URL ส่งให้ผู้อื่นได้
+
+สัปดาห์ 3 ใช้ `useState` เก็บ Filter ใน Browser แต่สัปดาห์นี้ย้าย state ที่ควรแชร์ได้ไปไว้ใน Query String
+
+```text
+/products?q=desk&category=office&page=2
+```
+
+## ผลลัพธ์การเรียนรู้
+
+- อธิบายความแตกต่างของ local state และ URL state
+- อ่าน `searchParams` ใน Server Page
+- สร้าง GET form ที่ทำงานได้แม้ JavaScript ยังไม่ hydrate
+- กรอง เรียง และแบ่งหน้าโดยไม่แก้ array ต้นฉบับ
+- สร้าง Pagination link ที่รักษา Query String เดิม
+
+## 1. ข้อมูลตัวอย่าง
+
+สร้าง `src/data/products.ts`
+
+```ts
+export type Product = {
+  id: number
+  name: string
+  category: 'office' | 'tech' | 'lifestyle'
+  price: number
+}
+
+export const products: Product[] = [
+  { id: 1, name: 'Standing Desk', category: 'office', price: 12900 },
+  { id: 2, name: 'Desk Lamp', category: 'office', price: 1290 },
+  { id: 3, name: 'Mechanical Keyboard', category: 'tech', price: 3490 },
+  { id: 4, name: 'Wireless Mouse', category: 'tech', price: 1590 },
+  { id: 5, name: 'USB-C Hub', category: 'tech', price: 2190 },
+  { id: 6, name: 'Notebook Set', category: 'lifestyle', price: 390 },
+  { id: 7, name: 'Travel Tumbler', category: 'lifestyle', price: 790 },
+  { id: 8, name: 'Office Chair', category: 'office', price: 7590 },
+  { id: 9, name: 'Web Camera', category: 'tech', price: 2790 },
+  { id: 10, name: 'Canvas Bag', category: 'lifestyle', price: 590 },
+  { id: 11, name: 'Monitor Stand', category: 'office', price: 1890 },
+  { id: 12, name: 'Noise-canceling Headphones', category: 'tech', price: 6490 },
+]
+```
+
+## 2. Pure function สำหรับค้นหา
+
+สร้าง `src/lib/filter-products.ts`
+
+```ts
+import type { Product } from '@/data/products'
+
+export type ProductFilters = {
+  query: string
+  category: string
+  sort: 'name' | 'price-asc' | 'price-desc'
+}
+
+export function filterProducts(
+  products: Product[],
+  filters: ProductFilters,
+) {
+  const query = filters.query.trim().toLowerCase()
+
+  return products
+    .filter((product) => {
+      const matchesQuery = product.name.toLowerCase().includes(query)
+      const matchesCategory =
+        filters.category === 'all' || product.category === filters.category
+      return matchesQuery && matchesCategory
+    })
+    .toSorted((a, b) => {
+      if (filters.sort === 'price-asc') return a.price - b.price
+      if (filters.sort === 'price-desc') return b.price - a.price
+      return a.name.localeCompare(b.name)
+    })
+}
+```
+
+Pure function รับค่าเข้าและคืนค่าออกโดยไม่แก้ array ต้นฉบับ จึงทดสอบง่ายและนำกลับมาใช้ได้หลายที่
+
+## 3. อ่าน Search Parameters
+
+สร้าง `src/app/products/page.tsx`
+
+```tsx
+import Link from 'next/link'
+import { products } from '@/data/products'
+import { filterProducts } from '@/lib/filter-products'
+
+const PAGE_SIZE = 4
+
+type PageProps = {
+  searchParams: Promise<{
+    q?: string
+    category?: string
+    sort?: string
+    page?: string
+  }>
+}
+
+export default async function ProductsPage({ searchParams }: PageProps) {
+  const params = await searchParams
+  const query = params.q ?? ''
+  const category = params.category ?? 'all'
+  const sort =
+    params.sort === 'price-asc' || params.sort === 'price-desc'
+      ? params.sort
+      : 'name'
+
+  const requestedPage = Number(params.page ?? '1')
+  const filtered = filterProducts(products, { query, category, sort })
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))
+  const currentPage = Number.isInteger(requestedPage)
+    ? Math.min(Math.max(requestedPage, 1), totalPages)
+    : 1
+  const start = (currentPage - 1) * PAGE_SIZE
+  const visibleProducts = filtered.slice(start, start + PAGE_SIZE)
+
+  function pageHref(page: number) {
+    const nextParams = new URLSearchParams()
+    if (query) nextParams.set('q', query)
+    if (category !== 'all') nextParams.set('category', category)
+    if (sort !== 'name') nextParams.set('sort', sort)
+    nextParams.set('page', String(page))
+    return `/products?${nextParams.toString()}`
+  }
+
+  return (
+    <main className="mx-auto max-w-6xl px-5 py-12">
+      <h1 className="text-4xl font-bold">Product Finder</h1>
+
+      <form
+        action="/products"
+        method="get"
+        className="mt-8 grid gap-4 rounded-2xl bg-slate-100 p-5 md:grid-cols-4"
+      >
+        <label className="md:col-span-2">
+          <span className="mb-1 block text-sm font-medium">คำค้นหา</span>
+          <input
+            type="search"
+            name="q"
+            defaultValue={query}
+            className="w-full rounded-lg border bg-white px-3 py-2"
+          />
+        </label>
+
+        <label>
+          <span className="mb-1 block text-sm font-medium">หมวดหมู่</span>
+          <select
+            name="category"
+            defaultValue={category}
+            className="w-full rounded-lg border bg-white px-3 py-2"
+          >
+            <option value="all">ทั้งหมด</option>
+            <option value="office">Office</option>
+            <option value="tech">Tech</option>
+            <option value="lifestyle">Lifestyle</option>
+          </select>
+        </label>
+
+        <label>
+          <span className="mb-1 block text-sm font-medium">เรียงตาม</span>
+          <select
+            name="sort"
+            defaultValue={sort}
+            className="w-full rounded-lg border bg-white px-3 py-2"
+          >
+            <option value="name">ชื่อ</option>
+            <option value="price-asc">ราคาน้อยไปมาก</option>
+            <option value="price-desc">ราคามากไปน้อย</option>
+          </select>
+        </label>
+
+        <div className="flex gap-3 md:col-span-4">
+          <button className="rounded-lg bg-indigo-700 px-5 py-2 text-white">
+            ค้นหา
+          </button>
+          <Link href="/products" className="rounded-lg border bg-white px-5 py-2">
+            ล้างตัวกรอง
+          </Link>
+        </div>
+      </form>
+
+      <p role="status" className="my-6 text-sm text-slate-600">
+        พบ {filtered.length} รายการ · หน้า {currentPage} จาก {totalPages}
+      </p>
+
+      {visibleProducts.length === 0 ? (
+        <div className="rounded-2xl border border-dashed p-12 text-center">
+          <h2 className="text-xl font-semibold">ไม่พบสินค้า</h2>
+          <p className="mt-2 text-slate-600">ลองเปลี่ยนคำค้นหาหรือหมวดหมู่</p>
+        </div>
+      ) : (
+        <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          {visibleProducts.map((product) => (
+            <li key={product.id} className="rounded-2xl border p-5">
+              <p className="text-sm uppercase text-indigo-700">
+                {product.category}
+              </p>
+              <h2 className="mt-2 text-lg font-semibold">{product.name}</h2>
+              <p className="mt-4 text-2xl font-bold">
+                {product.price.toLocaleString('th-TH')} บาท
+              </p>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      <nav aria-label="Pagination" className="mt-8 flex justify-center gap-2">
+        {Array.from({ length: totalPages }, (_, index) => index + 1).map(
+          (page) => (
+            <Link
+              key={page}
+              href={pageHref(page)}
+              aria-current={page === currentPage ? 'page' : undefined}
+              className="rounded-lg border px-4 py-2 aria-current:bg-indigo-700 aria-current:text-white"
+            >
+              {page}
+            </Link>
+          ),
+        )}
+      </nav>
+    </main>
+  )
+}
+```
+
+`searchParams` เป็น Promise และค่าทุกตัวจาก URL เป็นข้อมูลที่ผู้ใช้แก้เองได้ จึงต้องมี default และ validate ก่อนใช้
+
+<Callout type="info">
+  Form ใช้ method GET จึงสร้าง Query String อัตโนมัติ และยังค้นหาได้ก่อน JavaScript hydrate นี่คือ Progressive Enhancement แบบพื้นฐาน
+</Callout>
+
+## State ควรอยู่ที่ใด
+
+| ตัวอย่าง | ตำแหน่ง |
+| --- | --- |
+| ช่องค้นหาที่ต้องแชร์และ Bookmark | URL |
+| เปิด/ปิด Modal ชั่วคราว | `useState` |
+| Theme ของอุปกรณ์นี้ | `localStorage` หรือ cookie |
+| User session | Server/session store |
+| รายการสินค้าจากฐานข้อมูล | Server/database |
+
+## Lab และ Challenge
+
+1. เพิ่มช่วงราคาต่ำสุด/สูงสุดใน Query String
+2. เพิ่ม Previous/Next และปิดลิงก์เมื่อสุดขอบ
+3. ทดสอบ `?page=-5`, `?page=abc` และ page ที่เกินจำนวนจริง
+4. เขียน Unit test ให้ `filterProducts`
+
+Challenge: สร้าง Client `InstantSearch` ด้วย `useRouter` และ debounce แต่ยังให้ Server เป็นผู้กรองข้อมูล
+
+## Definition of Done
+
+- [ ] Refresh แล้วยังได้ผลค้นหาเดิม
+- [ ] Back/Forward ของ Browser ทำงานถูกต้อง
+- [ ] คัดลอก URL ไป Tab ใหม่แล้วได้ผลเหมือนเดิม
+- [ ] Parameter ผิดรูปแบบไม่ทำให้หน้า crash
+- [ ] Pagination รักษา q, category และ sort
+- [ ] หน้าว่างมี Empty state
+
+## Exit ticket
+
+1. Filter แบบใดควรอยู่ใน URL
+2. เพราะเหตุใดต้อง validate `searchParams`
+3. GET form ต่างจาก form ที่สร้างข้อมูลใหม่อย่างไร
+
+## อ่านเพิ่ม
+
+- [Next.js: searchParams Page Prop](https://nextjs.org/docs/app/api-reference/file-conventions/page)
+- [Next.js: useSearchParams](https://nextjs.org/docs/app/api-reference/functions/use-search-params)
+- [MDN: URLSearchParams](https://developer.mozilla.org/docs/Web/API/URLSearchParams)

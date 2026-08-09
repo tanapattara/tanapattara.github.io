@@ -1,0 +1,320 @@
+---
+title: "สัปดาห์ 4: Campus Guide และ Routing"
+sidebarTitle: "Campus Guide และ Routing"
+---
+
+import { Callout } from "nextra/components"
+
+# สัปดาห์ 4: Campus Guide และ Routing
+
+โปรเจกต์ประจำคาบคือ **Campus Guide** เว็บไซต์แนะนำสถานที่ในมหาวิทยาลัยหลายหน้า จุดเน้นคือการออกแบบ URL และ Layout ก่อนเขียน UI
+
+## ผลลัพธ์การเรียนรู้
+
+- ออกแบบ Route map จากความต้องการของผู้ใช้
+- ใช้ Nested Route, Dynamic Segment และ Route Group
+- สร้าง Shared Layout และ Navigation ด้วย `Link`
+- ใช้ `generateStaticParams`, `generateMetadata` และ `notFound`
+- แยกข้อมูลออกจาก UI
+
+## Route map
+
+```text
+/                         หน้าแนะนำ
+/places                   รายการสถานที่
+/places/library           รายละเอียดห้องสมุด
+/places/cafeteria         รายละเอียดโรงอาหาร
+/about                    เกี่ยวกับโครงการ
+```
+
+โครงสร้าง:
+
+```text
+src/
+├── app/
+│   └── (public)/
+│       ├── layout.tsx
+│       ├── page.tsx
+│       ├── about/page.tsx
+│       └── places/
+│           ├── page.tsx
+│           └── [slug]/
+│               ├── not-found.tsx
+│               └── page.tsx
+└── data/places.ts
+```
+
+วงเล็บใน `(public)` ใช้จัดกลุ่มไฟล์และเลือก Layout โดย **ไม่ปรากฏใน URL**
+
+## 1. เตรียมข้อมูลสถานที่
+
+สร้าง `src/data/places.ts`
+
+```ts
+export type Place = {
+  slug: string
+  name: string
+  summary: string
+  building: string
+  openHours: string
+  facilities: string[]
+}
+
+export const places: Place[] = [
+  {
+    slug: 'library',
+    name: 'ห้องสมุดกลาง',
+    summary: 'พื้นที่อ่านหนังสือ ห้องประชุมกลุ่ม และฐานข้อมูลออนไลน์',
+    building: 'อาคารทรัพยากรการเรียนรู้ ชั้น 1–5',
+    openHours: 'จันทร์–ศุกร์ 08:00–20:00',
+    facilities: ['Wi-Fi', 'ห้องประชุม', 'ปลั๊กไฟ', 'Printer'],
+  },
+  {
+    slug: 'cafeteria',
+    name: 'โรงอาหาร',
+    summary: 'ร้านอาหารและเครื่องดื่มสำหรับนักศึกษาและบุคลากร',
+    building: 'อาคารอเนกประสงค์ ชั้น 1',
+    openHours: 'ทุกวัน 07:00–18:00',
+    facilities: ['ที่นั่ง 300 ที่', 'จุดเติมน้ำ', 'ทางลาด'],
+  },
+  {
+    slug: 'innovation-lab',
+    name: 'Innovation Lab',
+    summary: 'พื้นที่สร้างต้นแบบ ทำงานกลุ่ม และจัด Workshop',
+    building: 'อาคารวิศวกรรม ชั้น 4',
+    openHours: 'จันทร์–ศุกร์ 09:00–19:00',
+    facilities: ['3D Printer', 'Projector', 'Workshop tools'],
+  },
+]
+
+export function findPlace(slug: string) {
+  return places.find((place) => place.slug === slug)
+}
+```
+
+`slug` เป็นตัวระบุที่เหมาะกับ URL ควรอ่านได้ สั้น และคงที่กว่าชื่อที่แสดงบนหน้า
+
+## 2. Shared Layout
+
+สร้าง `src/app/(public)/layout.tsx`
+
+```tsx
+import Link from 'next/link'
+
+const links = [
+  { href: '/', label: 'หน้าแรก' },
+  { href: '/places', label: 'สถานที่' },
+  { href: '/about', label: 'เกี่ยวกับ' },
+]
+
+export default function PublicLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
+  return (
+    <div className="min-h-screen bg-stone-50 text-slate-900">
+      <header className="border-b bg-white">
+        <nav
+          aria-label="เมนูหลัก"
+          className="mx-auto flex max-w-6xl items-center justify-between px-5 py-4"
+        >
+          <Link href="/" className="text-lg font-bold text-emerald-800">
+            Campus Guide
+          </Link>
+          <ul className="flex gap-5">
+            {links.map((link) => (
+              <li key={link.href}>
+                <Link href={link.href} className="hover:text-emerald-700">
+                  {link.label}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      </header>
+      {children}
+      <footer className="mt-16 border-t py-8 text-center text-sm text-slate-500">
+        ข้อมูลตัวอย่างเพื่อการเรียนรู้
+      </footer>
+    </div>
+  )
+}
+```
+
+Layout จะครอบทุก route ในกลุ่มและไม่ถูกสร้างใหม่ทั้งหมดเมื่อเปลี่ยนหน้าลูก จึงเหมาะกับ Header, Sidebar หรือ Footer ที่ใช้ร่วมกัน
+
+## 3. หน้ารายการ
+
+สร้าง `src/app/(public)/places/page.tsx`
+
+```tsx
+import Link from 'next/link'
+import { places } from '@/data/places'
+
+export const metadata = {
+  title: 'สถานที่ทั้งหมด | Campus Guide',
+  description: 'ข้อมูลสถานที่และบริการภายในมหาวิทยาลัย',
+}
+
+export default function PlacesPage() {
+  return (
+    <main className="mx-auto max-w-6xl px-5 py-12">
+      <p className="text-sm font-semibold text-emerald-700">Explore campus</p>
+      <h1 className="mt-2 text-4xl font-bold">สถานที่ทั้งหมด</h1>
+
+      <ul className="mt-8 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+        {places.map((place) => (
+          <li key={place.slug}>
+            <article className="h-full rounded-2xl border bg-white p-6">
+              <h2 className="text-xl font-semibold">{place.name}</h2>
+              <p className="mt-3 text-slate-600">{place.summary}</p>
+              <Link
+                href={`/places/${place.slug}`}
+                className="mt-6 inline-block font-medium text-emerald-700"
+              >
+                ดูรายละเอียด →
+              </Link>
+            </article>
+          </li>
+        ))}
+      </ul>
+    </main>
+  )
+}
+```
+
+## 4. Dynamic Detail Page
+
+สร้าง `src/app/(public)/places/[slug]/page.tsx`
+
+```tsx
+import type { Metadata } from 'next'
+import Link from 'next/link'
+import { notFound } from 'next/navigation'
+import { findPlace, places } from '@/data/places'
+
+type Props = {
+  params: Promise<{ slug: string }>
+}
+
+export function generateStaticParams() {
+  return places.map((place) => ({ slug: place.slug }))
+}
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { slug } = await params
+  const place = findPlace(slug)
+
+  if (!place) return { title: 'ไม่พบสถานที่' }
+
+  return {
+    title: `${place.name} | Campus Guide`,
+    description: place.summary,
+  }
+}
+
+export default async function PlacePage({ params }: Props) {
+  const { slug } = await params
+  const place = findPlace(slug)
+
+  if (!place) notFound()
+
+  return (
+    <main className="mx-auto max-w-4xl px-5 py-12">
+      <nav aria-label="Breadcrumb" className="mb-8 text-sm text-slate-600">
+        <Link href="/places">สถานที่</Link>
+        <span aria-hidden="true"> / </span>
+        <span aria-current="page">{place.name}</span>
+      </nav>
+
+      <article>
+        <h1 className="text-4xl font-bold">{place.name}</h1>
+        <p className="mt-4 text-lg text-slate-600">{place.summary}</p>
+
+        <dl className="mt-8 grid gap-5 rounded-2xl bg-white p-6 sm:grid-cols-2">
+          <div>
+            <dt className="font-semibold">อาคาร</dt>
+            <dd className="mt-1 text-slate-600">{place.building}</dd>
+          </div>
+          <div>
+            <dt className="font-semibold">เวลาเปิด</dt>
+            <dd className="mt-1 text-slate-600">{place.openHours}</dd>
+          </div>
+        </dl>
+
+        <h2 className="mt-10 text-2xl font-semibold">สิ่งอำนวยความสะดวก</h2>
+        <ul className="mt-4 list-disc space-y-2 pl-6">
+          {place.facilities.map((facility) => (
+            <li key={facility}>{facility}</li>
+          ))}
+        </ul>
+      </article>
+    </main>
+  )
+}
+```
+
+`generateStaticParams` บอกเส้นทางที่รู้ล่วงหน้า ส่วน `generateMetadata` สร้าง title/description ตามข้อมูลแต่ละหน้า ทั้งคู่ทำงานฝั่ง Server
+
+## 5. Not Found
+
+สร้าง `src/app/(public)/places/[slug]/not-found.tsx`
+
+```tsx
+import Link from 'next/link'
+
+export default function PlaceNotFound() {
+  return (
+    <main className="mx-auto max-w-3xl px-5 py-20 text-center">
+      <p className="text-6xl" aria-hidden="true">🧭</p>
+      <h1 className="mt-5 text-3xl font-bold">ไม่พบสถานที่นี้</h1>
+      <p className="mt-3 text-slate-600">
+        ชื่อใน URL อาจไม่ถูกต้อง หรือข้อมูลถูกย้ายแล้ว
+      </p>
+      <Link
+        href="/places"
+        className="mt-7 inline-block rounded-lg bg-emerald-700 px-5 py-3 text-white"
+      >
+        ดูสถานที่ทั้งหมด
+      </Link>
+    </main>
+  )
+}
+```
+
+ทดลอง `/places/unknown-place` และตรวจว่า UI นี้ปรากฏ
+
+## Lab และ Challenge
+
+1. สร้างหน้า `/` และ `/about`
+2. เพิ่มข้อมูลสถานที่อย่างน้อย 3 แห่ง
+3. วาด Route map ลง README
+4. ทดสอบ Breadcrumb และ URL ที่ไม่มีจริง
+
+Challenge:
+
+- เพิ่ม Nested Layout เฉพาะหมวด Places
+- เพิ่ม Catch-all Route สำหรับ `/help/...`
+- เพิ่ม Route Group `(admin)` ที่มี Layout คนละแบบ แต่ยังไม่ต้องทำระบบ Login
+
+## Definition of Done
+
+- [ ] URL สอดคล้องกับ Route map
+- [ ] Shared Layout ไม่ถูกคัดลอกซ้ำในทุก Page
+- [ ] Internal navigation ใช้ `Link`
+- [ ] Dynamic Page await `params`
+- [ ] Route ที่ไม่มีข้อมูลเรียก `notFound()`
+- [ ] แต่ละหน้ามี title และ description
+
+## Exit ticket
+
+1. Folder `(public)` มีผลต่อ URL หรือไม่
+2. Layout ต่างจาก Component ธรรมดาอย่างไร
+3. เหตุใดจึงใช้ slug แทนชื่อภาษาไทยเป็นตัวระบุ
+
+## อ่านเพิ่ม
+
+- [Next.js: Layouts and Pages](https://nextjs.org/docs/app/getting-started/layouts-and-pages)
+- [Next.js: Project Structure](https://nextjs.org/docs/app/getting-started/project-structure)
+- [Next.js: generateStaticParams](https://nextjs.org/docs/app/api-reference/functions/generate-static-params)

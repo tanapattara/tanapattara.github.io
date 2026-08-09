@@ -1,0 +1,394 @@
+---
+title: "สัปดาห์ 14: Release Day, Testing และ Production"
+sidebarTitle: "Testing และ Release"
+---
+
+import { Callout } from "nextra/components"
+
+# สัปดาห์ 14: Release Day, Testing และ Production
+
+โปรเจกต์ประจำคาบคือ **Release Day** เลือกหนึ่งโปรเจกต์จากรายวิชา ตรวจด้วย Automated test และ Manual quality gate สร้าง Preview Deployment ให้เพื่อน Review แล้วจึงปล่อย Production
+
+เป้าหมายไม่ใช่ “Deploy ให้ขึ้น” อย่างเดียว แต่คือสร้างหลักฐานว่าเส้นทางสำคัญทำงาน เข้าถึงได้ และไม่มี Secret หลุด
+
+## ผลลัพธ์การเรียนรู้
+
+- แยก Unit, Component, Integration และ E2E test
+- เขียน Unit test ให้ pure function
+- เขียน E2E test ให้ User flow สำคัญ
+- ตรวจ Accessibility, Responsive, Performance และ Security checklist
+- ใช้ Preview/Production workflow ของ Vercel
+- อ่าน Build log และ Rollback เมื่อ Release ผิดพลาด
+
+## Release pipeline
+
+```text
+Feature branch
+  → lint / type check / unit test
+  → production build
+  → Preview Deployment
+  → peer review + E2E smoke test
+  → merge main
+  → Production Deployment
+  → post-deploy check
+```
+
+## 1. เลือก Test ให้ตรงความเสี่ยง
+
+| Test | เหมาะกับ |
+| --- | --- |
+| Unit | Pure function, reducer, validation |
+| Component | UI interaction ที่ไม่พึ่ง Server มาก |
+| Integration | Form + Action หรือหลาย module ทำงานร่วมกัน |
+| E2E | Login, Checkout, Upload, URL navigation |
+
+Async Server Components ยังไม่เหมาะกับ Unit test ทุกเครื่องมือ จึงควรทดสอบ Data function แยกและใช้ E2E ตรวจ User flow จริง
+
+## 2. ติดตั้ง Vitest
+
+```bash
+npm install --save-dev vitest jsdom vite-tsconfig-paths @testing-library/react @testing-library/jest-dom @testing-library/user-event
+```
+
+สร้าง `vitest.config.mts`
+
+```ts
+import { defineConfig } from 'vitest/config'
+import tsconfigPaths from 'vite-tsconfig-paths'
+
+export default defineConfig({
+  plugins: [tsconfigPaths()],
+  test: {
+    environment: 'jsdom',
+    setupFiles: ['./vitest.setup.ts'],
+    coverage: {
+      reporter: ['text', 'html'],
+    },
+  },
+})
+```
+
+สร้าง `vitest.setup.ts`
+
+```ts
+import '@testing-library/jest-dom/vitest'
+```
+
+เพิ่ม scripts ใน `package.json`
+
+```json
+{
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
+  }
+}
+```
+
+หากใช้ Coverage ให้ติดตั้ง package ที่ Vitest แนะนำเมื่อรันครั้งแรก
+
+## 3. Unit Test ตัวกรองสินค้า
+
+สร้าง `src/lib/filter-products.test.ts`
+
+```ts
+import { describe, expect, it } from 'vitest'
+import type { Product } from '@/data/products'
+import { filterProducts } from '@/lib/filter-products'
+
+const products: Product[] = [
+  { id: 1, name: 'Desk Lamp', category: 'office', price: 1200 },
+  { id: 2, name: 'Keyboard', category: 'tech', price: 3200 },
+  { id: 3, name: 'Office Chair', category: 'office', price: 7000 },
+]
+
+describe('filterProducts', () => {
+  it('ค้นหาโดยไม่สนตัวพิมพ์เล็กใหญ่', () => {
+    const result = filterProducts(products, {
+      query: 'DESK',
+      category: 'all',
+      sort: 'name',
+    })
+
+    expect(result.map((item) => item.id)).toEqual([1])
+  })
+
+  it('กรองหมวดหมู่และเรียงราคาจากมากไปน้อย', () => {
+    const result = filterProducts(products, {
+      query: '',
+      category: 'office',
+      sort: 'price-desc',
+    })
+
+    expect(result.map((item) => item.id)).toEqual([3, 1])
+  })
+
+  it('ไม่แก้ array ต้นฉบับ', () => {
+    const originalOrder = products.map((item) => item.id)
+
+    filterProducts(products, {
+      query: '',
+      category: 'all',
+      sort: 'price-desc',
+    })
+
+    expect(products.map((item) => item.id)).toEqual(originalOrder)
+  })
+})
+```
+
+Test ที่ดีระบุพฤติกรรม ไม่ผูกกับรายละเอียดภายในจน refactor ไม่ได้
+
+## 4. Unit Test Reducer
+
+สร้าง `src/state/cart-reducer.test.ts`
+
+```ts
+import { describe, expect, it } from 'vitest'
+import {
+  cartReducer,
+  initialCartState,
+} from '@/state/cart-reducer'
+
+const keyboard = {
+  id: 'keyboard',
+  name: 'Keyboard',
+  price: 3490,
+}
+
+describe('cartReducer', () => {
+  it('เพิ่มสินค้าใหม่ด้วย quantity 1', () => {
+    const result = cartReducer(initialCartState, {
+      type: 'add',
+      product: keyboard,
+    })
+
+    expect(result.items).toEqual([{ ...keyboard, quantity: 1 }])
+  })
+
+  it('เพิ่ม quantity เมื่อเพิ่มสินค้าซ้ำ', () => {
+    const once = cartReducer(initialCartState, {
+      type: 'add',
+      product: keyboard,
+    })
+    const twice = cartReducer(once, {
+      type: 'add',
+      product: keyboard,
+    })
+
+    expect(twice.items[0].quantity).toBe(2)
+  })
+
+  it('ลบสินค้าเมื่อ quantity ลดเหลือศูนย์', () => {
+    const state = {
+      items: [{ ...keyboard, quantity: 1 }],
+    }
+    const result = cartReducer(state, {
+      type: 'decrease',
+      productId: keyboard.id,
+    })
+
+    expect(result.items).toEqual([])
+  })
+})
+```
+
+## 5. E2E ด้วย Playwright
+
+ติดตั้งตาม Wizard:
+
+```bash
+npm init playwright@latest
+```
+
+เลือก TypeScript และติดตั้ง Browser ตามคำแนะนำ จากนั้นสร้าง `tests/pokemon.spec.ts`
+
+```ts
+import { expect, test } from '@playwright/test'
+
+test('ผู้ใช้ค้นหาและบันทึก Pokémon ที่ชอบได้', async ({ page }) => {
+  await page.goto('/pokemon')
+
+  await page.getByLabel('ค้นหาชื่อ').fill('pika')
+  await expect(page.getByRole('link', { name: /pikachu/i })).toBeVisible()
+
+  await page.getByRole('button', { name: /เพิ่ม pikachu ในรายการโปรด/i }).click()
+  await page.reload()
+
+  await page.getByLabel('แสดงเฉพาะรายการโปรด').check()
+  await expect(page.getByRole('link', { name: /pikachu/i })).toBeVisible()
+})
+```
+
+ตั้ง `baseURL` ใน `playwright.config.ts`
+
+```ts
+import { defineConfig, devices } from '@playwright/test'
+
+export default defineConfig({
+  testDir: './tests',
+  use: {
+    baseURL: process.env.PLAYWRIGHT_BASE_URL ?? 'http://localhost:3000',
+    trace: 'on-first-retry',
+  },
+  projects: [
+    { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
+    { name: 'mobile', use: { ...devices['Pixel 7'] } },
+  ],
+})
+```
+
+Run:
+
+```bash
+npm run dev
+npx playwright test
+```
+
+สำหรับ Preview Deployment:
+
+```bash
+PLAYWRIGHT_BASE_URL=https://preview-url.vercel.app npx playwright test
+```
+
+บน PowerShell:
+
+```powershell
+$env:PLAYWRIGHT_BASE_URL="https://preview-url.vercel.app"
+npx playwright test
+```
+
+## 6. Accessibility Checklist
+
+ตรวจด้วย Keyboard:
+
+- ใช้ `Tab` ไปถึงทุก interactive element
+- Focus indicator มองเห็นชัด
+- เปิด/ปิด Modal และกลับ focus ถูกตำแหน่ง
+- ไม่ติด Keyboard trap
+- Enter/Space ใช้ปุ่มได้ตามมาตรฐาน
+
+ตรวจโครงสร้าง:
+
+- หน้าใช้ `lang="th"`
+- มี `<main>` หนึ่งส่วนหลัก
+- Heading ไม่ข้ามระดับโดยไม่มีเหตุผล
+- Form มี Label และ Error เชื่อมด้วย ARIA
+- รูปที่มีความหมายมี Alt; รูปตกแต่งใช้ alt ว่าง
+- สีข้อความและพื้นหลังมี Contrast เพียงพอ
+- Loading/Error message ประกาศด้วย `role="status"` หรือ `role="alert"` ตามความเร่งด่วน
+
+## 7. Performance และ Build Gate
+
+```bash
+npm run lint
+npm run test
+npm run build
+```
+
+ใช้ Lighthouse ตรวจ Mobile อย่างน้อย:
+
+- Performance
+- Accessibility
+- Best Practices
+- SEO
+
+อย่าไล่คะแนน 100 โดยทำลาย UX ให้บันทึกปัญหา ผลกระทบ และสิ่งที่แก้ เช่น:
+
+| ปัญหา | หลักฐาน | วิธีแก้ |
+| --- | --- | --- |
+| LCP image ช้า | Lighthouse ระบุรูป Hero | ใช้ `next/image`, `sizes`, priority เฉพาะภาพแรก |
+| Layout shift | Card เปลี่ยนขนาดหลังโหลด | จองพื้นที่ด้วย aspect ratio/Skeleton |
+| JS มากเกิน | Client boundary ใหญ่ | ย้ายส่วน static กลับ Server |
+
+## 8. Environment และ Security Audit
+
+ก่อน Push:
+
+```bash
+git status
+git diff --cached
+```
+
+ตรวจว่าไม่มี:
+
+- `.env.local`
+- API key, Database URL, OAuth Secret, Blob token
+- ข้อมูลส่วนตัวหรือไฟล์ทดสอบจริง
+- `console.log` ที่พิมพ์ Session หรือ Form data
+- Service-role key ใน Client code
+
+ทุก Server Action ต้องตรวจ:
+
+1. Authentication
+2. Authorization
+3. Validation
+4. Error handling
+5. Revalidation หลัง Mutation
+
+## 9. Preview → Production
+
+Workflow ที่แนะนำ:
+
+```bash
+git switch -c feature/release
+git add .
+git commit -m "release: prepare final project"
+git push -u origin feature/release
+```
+
+1. เปิด Pull Request
+2. รอ Vercel สร้าง Preview URL
+3. รัน Smoke/E2E test กับ Preview
+4. ให้เพื่อน Review ตาม Checklist
+5. แก้ปัญหาและ Push ซ้ำ
+6. Merge เข้า `main`
+7. รอ Production Deployment
+8. เปิด Production URL และตรวจ flow สำคัญอีกครั้ง
+
+ถ้า Production มีปัญหา:
+
+- ตรวจ Deployment log และ Runtime log
+- Rollback ไป deployment ที่ดีล่าสุด
+- แก้ใน branch ใหม่และผ่าน Quality gate ก่อน deploy ซ้ำ
+
+<Callout type="warning">
+  Preview และ Production อาจใช้ Environment Variables คนละชุด อย่าทดสอบเฉพาะ Local และสมมติว่า Production จะเหมือนกัน
+</Callout>
+
+## Final release checklist
+
+- [ ] Feature หลักทำงานตาม User flow
+- [ ] Empty, Loading, Error และ Not Found พร้อม
+- [ ] Unit test ของ business logic ผ่าน
+- [ ] E2E smoke test ของ flow สำคัญผ่าน
+- [ ] Keyboard และ Mobile ใช้งานได้
+- [ ] Lighthouse ไม่มีปัญหารุนแรงที่ยังไม่อธิบาย
+- [ ] Lint, Test และ Production build ผ่าน
+- [ ] Git ไม่มี Secret หรือข้อมูลส่วนตัว
+- [ ] Preview ผ่าน Peer review
+- [ ] Production URL และ README เป็นปัจจุบัน
+- [ ] มีแผน Rollback
+
+## การนำเสนอ 5 นาที
+
+1. ปัญหาที่โปรเจกต์แก้
+2. User flow หลัก
+3. Server/Client boundary ที่สำคัญ
+4. ปัญหาที่เจอและวิธีพิสูจน์ว่าแก้แล้ว
+5. สิ่งที่จะทำต่อหากมีเวลาอีกหนึ่งสัปดาห์
+
+## Exit ticket
+
+1. Unit test และ E2E test ป้องกันความเสี่ยงคนละแบบอย่างไร
+2. เพราะเหตุใด Preview Deployment จึงควรมาก่อน Production
+3. ถ้า Production มีปัญหา สิ่งแรกที่ควรทำคืออะไร
+
+## อ่านเพิ่ม
+
+- [Next.js: Testing](https://nextjs.org/docs/app/guides/testing)
+- [Playwright](https://playwright.dev/docs/intro)
+- [Vitest](https://vitest.dev/guide/)
+- [Vercel: Git Deployments](https://vercel.com/docs/git)
+- [WebAIM: Keyboard Accessibility](https://webaim.org/techniques/keyboard/)

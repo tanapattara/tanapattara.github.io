@@ -1,0 +1,342 @@
+---
+title: "สัปดาห์ 10: API Disaster Lab และ Error Handling"
+sidebarTitle: "Error Handling"
+---
+
+import { Callout } from "nextra/components"
+
+# สัปดาห์ 10: API Disaster Lab และ Error Handling
+
+โปรเจกต์ประจำคาบคือ **API Disaster Lab** หน้าเดียวที่จำลอง Success, Slow, Empty, Not Found และ Server Error เพื่อให้ผู้เรียนออกแบบประสบการณ์ครบทุกสถานะ
+
+เว็บที่ดีไม่ได้มีเฉพาะ Happy path ผู้ใช้ต้องเข้าใจว่าเกิดอะไรขึ้น รออยู่หรือไม่ และควรทำอะไรต่อเมื่อระบบผิดพลาด
+
+## ผลลัพธ์การเรียนรู้
+
+- แยก Expected error ออกจาก Uncaught exception
+- ใช้ `loading.tsx`, `error.tsx` และ `not-found.tsx`
+- สร้าง Empty state และ Retry
+- คืน HTTP status ที่เหมาะสมจาก Route Handler
+- ไม่เปิดเผยรายละเอียดภายในระบบผ่าน Error message
+
+## สถานการณ์ทดลอง
+
+```text
+/disaster?mode=success
+/disaster?mode=slow
+/disaster?mode=empty
+/disaster?mode=notfound
+/disaster?mode=error
+```
+
+## 1. Data Function จำลอง API
+
+สร้าง `src/lib/disaster.ts`
+
+```ts
+import 'server-only'
+
+export type DisasterMode =
+  | 'success'
+  | 'slow'
+  | 'empty'
+  | 'notfound'
+  | 'error'
+
+export type DemoItem = {
+  id: number
+  title: string
+}
+
+const demoItems: DemoItem[] = [
+  { id: 1, title: 'ออกแบบ Loading state' },
+  { id: 2, title: 'สร้าง Empty state' },
+  { id: 3, title: 'ทดสอบ Error recovery' },
+]
+
+export function isDisasterMode(value: string): value is DisasterMode {
+  return ['success', 'slow', 'empty', 'notfound', 'error'].includes(value)
+}
+
+export async function getDemoItems(
+  mode: DisasterMode,
+): Promise<DemoItem[] | null> {
+  if (mode === 'slow') {
+    await new Promise((resolve) => setTimeout(resolve, 2500))
+    return demoItems
+  }
+
+  if (mode === 'empty') return []
+  if (mode === 'notfound') return null
+
+  if (mode === 'error') {
+    throw new Error('SIMULATED_UPSTREAM_FAILURE')
+  }
+
+  return demoItems
+}
+```
+
+การจำลองข้อผิดพลาดทำให้ทดสอบได้ซ้ำโดยไม่ต้องรอ API ภายนอกพังจริง
+
+## 2. Route Handler สำหรับทดลอง HTTP
+
+สร้าง `src/app/api/disaster/route.ts`
+
+```ts
+import {
+  getDemoItems,
+  isDisasterMode,
+} from '@/lib/disaster'
+
+export async function GET(request: Request) {
+  const modeValue = new URL(request.url).searchParams.get('mode') ?? 'success'
+
+  if (!isDisasterMode(modeValue)) {
+    return Response.json(
+      { message: 'mode ไม่ถูกต้อง' },
+      { status: 400 },
+    )
+  }
+
+  try {
+    const items = await getDemoItems(modeValue)
+
+    if (items === null) {
+      return Response.json({ message: 'ไม่พบข้อมูล' }, { status: 404 })
+    }
+
+    return Response.json({ items })
+  } catch {
+    return Response.json(
+      { message: 'ระบบไม่พร้อมใช้งาน กรุณาลองใหม่' },
+      { status: 503 },
+    )
+  }
+}
+```
+
+ทดลองผ่าน Browser หรือ API client แล้วเปรียบเทียบ status:
+
+```text
+/api/disaster?mode=success
+/api/disaster?mode=notfound
+/api/disaster?mode=error
+```
+
+Route Handler จัด Expected HTTP response เอง ส่วน Page สามารถปล่อย exception ให้ Error Boundary รับ
+
+## 3. Page พร้อม Mode Switcher
+
+สร้าง `src/app/disaster/page.tsx`
+
+```tsx
+import Link from 'next/link'
+import { notFound } from 'next/navigation'
+import {
+  getDemoItems,
+  isDisasterMode,
+  type DisasterMode,
+} from '@/lib/disaster'
+
+const modes: { value: DisasterMode; label: string }[] = [
+  { value: 'success', label: 'Success' },
+  { value: 'slow', label: 'Slow' },
+  { value: 'empty', label: 'Empty' },
+  { value: 'notfound', label: 'Not found' },
+  { value: 'error', label: 'Error' },
+]
+
+type PageProps = {
+  searchParams: Promise<{ mode?: string }>
+}
+
+export default async function DisasterPage({ searchParams }: PageProps) {
+  const { mode: modeValue = 'success' } = await searchParams
+  const mode = isDisasterMode(modeValue) ? modeValue : 'success'
+  const items = await getDemoItems(mode)
+
+  if (items === null) notFound()
+
+  return (
+    <main className="mx-auto max-w-4xl px-5 py-12">
+      <p className="text-sm font-semibold text-orange-700">Failure workshop</p>
+      <h1 className="mt-2 text-4xl font-bold">API Disaster Lab</h1>
+
+      <nav aria-label="เลือกสถานการณ์" className="mt-8 flex flex-wrap gap-2">
+        {modes.map((item) => (
+          <Link
+            key={item.value}
+            href={`/disaster?mode=${item.value}`}
+            aria-current={mode === item.value ? 'page' : undefined}
+            className="rounded-full border px-4 py-2 aria-current:bg-orange-700 aria-current:text-white"
+          >
+            {item.label}
+          </Link>
+        ))}
+      </nav>
+
+      <section className="mt-10" aria-labelledby="result-title">
+        <h2 id="result-title" className="text-2xl font-semibold">
+          ผลลัพธ์: {mode}
+        </h2>
+
+        {items.length === 0 ? (
+          <div className="mt-5 rounded-2xl border border-dashed p-10 text-center">
+            <p className="text-4xl" aria-hidden="true">📭</p>
+            <h3 className="mt-4 text-xl font-semibold">ยังไม่มีข้อมูล</h3>
+            <p className="mt-2 text-slate-600">
+              เริ่มสร้างรายการแรก หรือกลับมาตรวจสอบภายหลัง
+            </p>
+          </div>
+        ) : (
+          <ul className="mt-5 space-y-3">
+            {items.map((item) => (
+              <li key={item.id} className="rounded-xl border bg-white p-4">
+                {item.title}
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+    </main>
+  )
+}
+```
+
+## 4. Loading UI
+
+สร้าง `src/app/disaster/loading.tsx`
+
+```tsx
+export default function Loading() {
+  return (
+    <main className="mx-auto max-w-4xl px-5 py-12" aria-busy="true">
+      <p className="sr-only" role="status">กำลังโหลดข้อมูล</p>
+      <div className="h-5 w-32 animate-pulse rounded bg-slate-200" />
+      <div className="mt-3 h-12 w-80 max-w-full animate-pulse rounded bg-slate-200" />
+      <div className="mt-10 space-y-3">
+        {[1, 2, 3].map((item) => (
+          <div key={item} className="h-16 animate-pulse rounded-xl bg-slate-200" />
+        ))}
+      </div>
+    </main>
+  )
+}
+```
+
+Skeleton ควรมีขนาดใกล้ของจริงเพื่อไม่ให้ Layout กระโดดเมื่อข้อมูลมา
+
+## 5. Error Boundary และ Retry
+
+สร้าง `src/app/disaster/error.tsx`
+
+```tsx
+'use client'
+
+import { useEffect } from 'react'
+
+type ErrorProps = {
+  error: Error & { digest?: string }
+  unstable_retry: () => void
+}
+
+export default function ErrorPage({
+  error,
+  unstable_retry,
+}: ErrorProps) {
+  useEffect(() => {
+    console.error('Disaster route failed', error)
+  }, [error])
+
+  return (
+    <main className="mx-auto max-w-3xl px-5 py-20 text-center">
+      <p className="text-6xl" aria-hidden="true">⚠️</p>
+      <h1 className="mt-5 text-3xl font-bold">โหลดข้อมูลไม่สำเร็จ</h1>
+      <p className="mt-3 text-slate-600">
+        ระบบอาจขัดข้องชั่วคราว กรุณาลองอีกครั้ง
+      </p>
+      {error.digest && (
+        <p className="mt-2 font-mono text-xs text-slate-500">
+          Reference: {error.digest}
+        </p>
+      )}
+      <button
+        type="button"
+        onClick={() => unstable_retry()}
+        className="mt-7 rounded-lg bg-orange-700 px-5 py-3 text-white"
+      >
+        ลองอีกครั้ง
+      </button>
+    </main>
+  )
+}
+```
+
+`error.tsx` ต้องเป็น Client Component เพราะปุ่ม Retry มี event handler และ Error Boundary ทำงานฝั่ง React client เมื่อ recovery
+
+<Callout type="warning">
+  UI ไม่ควรแสดง Stack trace, SQL, Secret, internal URL หรือข้อความ exception ดิบแก่ผู้ใช้ ให้แสดงข้อความที่ทำอะไรต่อได้ และส่งรายละเอียดไป Logging/Monitoring แยกต่างหาก
+</Callout>
+
+## 6. Not Found UI
+
+สร้าง `src/app/disaster/not-found.tsx`
+
+```tsx
+import Link from 'next/link'
+
+export default function NotFound() {
+  return (
+    <main className="mx-auto max-w-3xl px-5 py-20 text-center">
+      <h1 className="text-3xl font-bold">404 · ไม่พบชุดข้อมูล</h1>
+      <p className="mt-3 text-slate-600">
+        Resource นี้อาจถูกลบหรือ URL ไม่ถูกต้อง
+      </p>
+      <Link href="/disaster" className="mt-7 inline-block text-orange-700">
+        กลับไปสถานการณ์ Success
+      </Link>
+    </main>
+  )
+}
+```
+
+## Expected error กับ Exception
+
+| เหตุการณ์ | วิธีจัดการ |
+| --- | --- |
+| Form ไม่ผ่าน Validation | คืน state และข้อความใกล้ field |
+| ไม่พบ Resource | `notFound()` หรือ HTTP 404 |
+| ไม่มีสิทธิ์ | 401/403 หรือ redirect ตาม UX |
+| API ภายนอกไม่พร้อม | ข้อความ Retry หรือ HTTP 502/503 |
+| Bug ที่ไม่คาดคิด | Throw ให้ Error Boundary และ log |
+
+## Lab และ Challenge
+
+1. ทดลองทุก mode และบันทึกผล
+2. ทำให้ Error retry แล้วกลับเป็น Success
+3. เพิ่ม Offline message ฝั่ง Client
+4. ตรวจ Keyboard focus หลังเกิด Error
+
+Challenge: สร้าง `global-error.tsx` และอธิบายความต่างจาก route-level `error.tsx`
+
+## Definition of Done
+
+- [ ] Slow mode แสดง Loading UI
+- [ ] Empty ไม่ถูกแสดงเหมือน Error
+- [ ] Not Found ใช้ 404 experience
+- [ ] Exception ถูกจับโดย `error.tsx`
+- [ ] ผู้ใช้มีปุ่ม Retry หรือทางกลับ
+- [ ] Error message ไม่เปิดเผยรายละเอียดภายใน
+
+## Exit ticket
+
+1. Empty state ต่างจาก Error state อย่างไร
+2. Error ใดควร throw และ Error ใดควรคืนเป็น state
+3. เหตุใด Skeleton ควรมีขนาดใกล้เนื้อหาจริง
+
+## อ่านเพิ่ม
+
+- [Next.js: Error Handling](https://nextjs.org/docs/app/getting-started/error-handling)
+- [Next.js: notFound](https://nextjs.org/docs/app/api-reference/functions/not-found)
+- [MDN: HTTP Status Codes](https://developer.mozilla.org/docs/Web/HTTP/Reference/Status)

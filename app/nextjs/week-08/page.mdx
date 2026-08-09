@@ -1,0 +1,254 @@
+---
+title: "สัปดาห์ 8: Members Only และ Authentication"
+sidebarTitle: "Authentication"
+---
+
+import { Callout } from "nextra/components"
+
+# สัปดาห์ 8: Members Only และ Authentication
+
+โปรเจกต์ประจำคาบคือ **Members Only** ผู้ใช้เข้าสู่ระบบด้วย GitHub ก่อนเปิด Dashboard ได้ พร้อมปุ่ม Logout และตัวอย่างตรวจสิทธิ์ใน Page
+
+ตัวอย่างใช้ Auth.js และ GitHub OAuth เพื่อลดการเก็บ Password เอง ผู้เรียนยังต้องเข้าใจว่า Authentication คือการยืนยันตัวตน ส่วน Authorization คือการตัดสินว่าตัวตนนั้นทำอะไรได้
+
+## ผลลัพธ์การเรียนรู้
+
+- อธิบาย Authentication, Session และ Authorization
+- ตั้งค่า OAuth โดยไม่เปิดเผย Client Secret
+- อ่าน Session ใน Server Component
+- ป้องกัน Route ด้วย `proxy.ts`
+- ตรวจสิทธิ์ซ้ำใกล้ Data Access และ Server Action
+
+## 1. ติดตั้ง Auth.js
+
+```bash
+npm install next-auth
+```
+
+สร้าง OAuth App ใน GitHub และกำหนด callback สำหรับ Local:
+
+```text
+http://localhost:3000/api/auth/callback/github
+```
+
+สร้าง `.env.local`
+
+```dotenv
+AUTH_SECRET=ค่าสุ่มที่ยาวและคาดเดาไม่ได้
+AUTH_GITHUB_ID=GitHub_OAuth_Client_ID
+AUTH_GITHUB_SECRET=GitHub_OAuth_Client_Secret
+```
+
+เมื่อ Deploy ให้เพิ่ม callback ของ Production เช่น:
+
+```text
+https://your-project.vercel.app/api/auth/callback/github
+```
+
+<Callout type="warning">
+  `AUTH_GITHUB_SECRET` และ `AUTH_SECRET` ห้ามใช้ `NEXT_PUBLIC_` และห้าม commit ลง Git หากเคยเผยแพร่ Secret ให้ revoke/rotate ทันที ไม่ใช่เพียงลบออกจาก commit ล่าสุด
+</Callout>
+
+## 2. Auth Configuration
+
+สร้าง `src/auth.ts`
+
+```ts
+import NextAuth from 'next-auth'
+import GitHub from 'next-auth/providers/github'
+
+export const { auth, handlers, signIn, signOut } = NextAuth({
+  providers: [GitHub],
+  pages: {
+    signIn: '/login',
+  },
+  callbacks: {
+    authorized({ auth, request }) {
+      const isDashboard = request.nextUrl.pathname.startsWith('/dashboard')
+      if (isDashboard) return Boolean(auth?.user)
+      return true
+    },
+  },
+})
+```
+
+Auth.js อ่าน Environment Variables ตามชื่อ Provider และจัดการ OAuth callback, session cookie และ CSRF protection ให้
+
+## 3. Route Handler ของ Auth.js
+
+สร้าง `src/app/api/auth/[...nextauth]/route.ts`
+
+```ts
+import { handlers } from '@/auth'
+
+export const { GET, POST } = handlers
+```
+
+`[...nextauth]` เป็น Catch-all Segment เพราะระบบ Auth ใช้หลาย URL ใต้ `/api/auth`
+
+## 4. Proxy สำหรับ Route Protection
+
+สร้าง `src/proxy.ts` ให้อยู่ระดับเดียวกับ `src/app`
+
+```ts
+export { auth as proxy } from '@/auth'
+
+export const config = {
+  matcher: ['/dashboard/:path*'],
+}
+```
+
+Next.js 16 เปลี่ยนชื่อ file convention จาก `middleware.ts` เป็น `proxy.ts` แต่ config matcher ยัง export ด้วยชื่อ `config`
+
+Proxy ช่วย redirect ตั้งแต่ก่อน render หน้า แต่ไม่ควรเป็นด่านเดียวสำหรับข้อมูลสำคัญ ต้องตรวจ Session ใน Page, Action หรือ Data Access ด้วย
+
+## 5. Login Page
+
+สร้าง `src/app/login/page.tsx`
+
+```tsx
+import { redirect } from 'next/navigation'
+import { auth, signIn } from '@/auth'
+
+export default async function LoginPage() {
+  const session = await auth()
+  if (session?.user) redirect('/dashboard')
+
+  return (
+    <main className="mx-auto max-w-md px-5 py-20">
+      <section className="rounded-2xl border bg-white p-8 shadow-sm">
+        <h1 className="text-3xl font-bold">Members Only</h1>
+        <p className="mt-3 text-slate-600">
+          เข้าสู่ระบบเพื่อเปิด Dashboard ส่วนตัว
+        </p>
+
+        <form
+          action={async () => {
+            'use server'
+            await signIn('github', { redirectTo: '/dashboard' })
+          }}
+        >
+          <button className="mt-8 w-full rounded-lg bg-slate-950 px-5 py-3 font-medium text-white">
+            Continue with GitHub
+          </button>
+        </form>
+      </section>
+    </main>
+  )
+}
+```
+
+## 6. Protected Dashboard
+
+สร้าง `src/app/dashboard/page.tsx`
+
+```tsx
+import { redirect } from 'next/navigation'
+import { auth, signOut } from '@/auth'
+
+export default async function DashboardPage() {
+  const session = await auth()
+
+  if (!session?.user) {
+    redirect('/login')
+  }
+
+  return (
+    <main className="mx-auto max-w-5xl px-5 py-12">
+      <p className="text-sm font-semibold text-indigo-700">Private area</p>
+      <h1 className="mt-2 text-4xl font-bold">
+        สวัสดี {session.user.name ?? 'สมาชิก'}
+      </h1>
+      <p className="mt-3 text-slate-600">{session.user.email}</p>
+
+      <section className="mt-10 rounded-2xl bg-indigo-50 p-6">
+        <h2 className="text-xl font-semibold">ข้อมูลสำหรับสมาชิก</h2>
+        <p className="mt-2">
+          เนื้อหานี้ render หลัง Server ตรวจ Session แล้ว
+        </p>
+      </section>
+
+      <form
+        className="mt-8"
+        action={async () => {
+          'use server'
+          await signOut({ redirectTo: '/login' })
+        }}
+      >
+        <button className="rounded-lg border px-5 py-2">ออกจากระบบ</button>
+      </form>
+    </main>
+  )
+}
+```
+
+## 7. ตรวจสิทธิ์ใน Server Action
+
+ตัวอย่าง Action ที่ปลอดภัยกว่าการเชื่อ Proxy อย่างเดียว:
+
+```ts
+'use server'
+
+import { auth } from '@/auth'
+import { getSql } from '@/lib/db'
+
+export async function createPrivateTask(formData: FormData) {
+  const session = await auth()
+
+  if (!session?.user?.email) {
+    throw new Error('Unauthorized')
+  }
+
+  const titleValue = formData.get('title')
+  const title = typeof titleValue === 'string' ? titleValue.trim() : ''
+  if (title.length < 2) throw new Error('Invalid title')
+
+  const sql = getSql()
+  await sql`
+    INSERT INTO tasks (title, owner_email)
+    VALUES (${title}, ${session.user.email})
+  `
+}
+```
+
+การซ่อนปุ่มด้วย CSS หรือไม่ render ปุ่มให้ Guest เป็นเพียง UX ไม่ใช่ Authorization เพราะผู้โจมตีส่ง Request เองได้
+
+## Authentication กับ Authorization
+
+| คำถาม | ตัวอย่าง |
+| --- | --- |
+| คุณคือใคร | Login ด้วย GitHub |
+| คุณยัง Login อยู่หรือไม่ | Session cookie |
+| คุณเปิด Dashboard ได้หรือไม่ | ต้องมี Session |
+| คุณแก้ Task นี้ได้หรือไม่ | `task.owner_email === session.user.email` |
+| คุณเข้าหน้า Admin ได้หรือไม่ | Role หรือ Allowlist |
+
+## Lab และ Challenge
+
+1. ทดลองเปิด `/dashboard` ใน Incognito
+2. Login, Refresh และ Logout
+3. เพิ่มหน้า `/admin` ที่อนุญาตเฉพาะอีเมลใน allowlist
+4. ตรวจ Cookie ใน DevTools โดยไม่แก้ค่า
+
+Challenge: เพิ่ม `owner_email` ใน Task Board และบังคับให้ผู้ใช้เห็น/แก้เฉพาะงานของตนเอง
+
+## Definition of Done
+
+- [ ] Secret ไม่อยู่ใน Git หรือ Client bundle
+- [ ] Login และ OAuth callback ทำงาน
+- [ ] Guest เข้า Dashboard ไม่ได้
+- [ ] User ที่ Login แล้วเห็นชื่อหรืออีเมลของตน
+- [ ] Logout ลบ Session และกลับ Login
+- [ ] Action สำคัญตรวจ Session ภายใน Action
+
+## Exit ticket
+
+1. Authentication ต่างจาก Authorization อย่างไร
+2. เพราะเหตุใด Proxy ไม่ควรเป็นด่านเดียว
+3. ถ้า OAuth Secret หลุดต้องทำอะไร
+
+## อ่านเพิ่ม
+
+- [Auth.js](https://authjs.dev/)
+- [Next.js: Authentication](https://nextjs.org/docs/app/guides/authentication)
+- [Next.js: Proxy](https://nextjs.org/docs/app/api-reference/file-conventions/proxy)

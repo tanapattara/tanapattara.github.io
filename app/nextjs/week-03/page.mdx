@@ -1,0 +1,470 @@
+---
+title: "สัปดาห์ 3: Server/Client Components, Hooks และ Favorite"
+sidebarTitle: "Server/Client และ Hooks"
+---
+
+import { Callout } from "nextra/components"
+
+# สัปดาห์ 3: Server/Client Components, Hooks และ Favorite
+
+สัปดาห์นี้เปลี่ยน Pokémon Explorer เป็น **Smart Pokédex** โดยแบ่งงานระหว่าง Server และ Browser ให้เหมาะสม เพิ่ม Search, Type Filter, List/Grid View และ Favorite ที่จำค่าได้หลัง Refresh
+
+หัวใจของบทไม่ใช่การใส่ `'use client'` ให้เว็บทำงาน แต่คือการตอบได้ว่า **ข้อมูลและพฤติกรรมแต่ละส่วนควรอยู่ที่ใด**
+
+## ผลลัพธ์การเรียนรู้
+
+- แยกความรับผิดชอบของ Server และ Client Component
+- Fetch ข้อมูลใน Server Component แล้วส่ง Props ที่ serialize ได้
+- ใช้ `useState`, `useMemo` และ `useEffect` ตามหน้าที่
+- แยก Custom Hook สำหรับ `localStorage`
+- สร้าง Search, Filter และ List/Grid โดยไม่แก้ข้อมูลต้นฉบับ
+- ป้องกันปัญหา Hydration จาก browser-only API
+
+## ตารางตัดสินใจ
+
+| ความต้องการ | ตำแหน่งที่เหมาะ |
+| --- | --- |
+| อ่าน External API เพื่อ render หน้า | Server Component หรือ server-only function |
+| ใช้ API key หรือ Secret | Server เท่านั้น |
+| คลิกปุ่ม พิมพ์ช่องค้นหา | Client Component |
+| ใช้ `useState`, `useEffect` | Client Component |
+| ใช้ `localStorage`, `window` | Client Component หลัง mount |
+| แปลงข้อมูลโดยไม่ต้องมี interaction | Server หรือ pure function |
+
+## โครงสร้างหลัง Refactor
+
+```text
+src/
+├── app/pokemon/page.tsx              Server Component
+├── components/
+│   ├── pokemon-explorer.tsx          Client Component
+│   └── pokemon-card.tsx              Client subtree
+├── hooks/use-favorites.ts            Custom Hook
+├── lib/pokemon.ts                     server-only data function
+└── types/pokemon.ts
+```
+
+## 1. เพิ่ม Type สำหรับ Card
+
+เพิ่มใน `src/types/pokemon.ts`
+
+```ts
+export type PokemonCardData = {
+  id: number
+  name: string
+  imageUrl: string
+  types: string[]
+}
+```
+
+Props ที่ส่งจาก Server ไป Client ควรเป็น string, number, boolean, null, plain object หรือ array อย่าส่ง `Date`, `Map`, `Set`, class instance หรือ callback ปกติข้าม boundary
+
+## 2. สร้าง server-only data function
+
+สร้าง `src/lib/pokemon.ts`
+
+```ts
+import 'server-only'
+import type { PokemonCardData } from '@/types/pokemon'
+
+type PokeApiList = {
+  results: { name: string; url: string }[]
+}
+
+type PokeApiDetail = {
+  id: number
+  name: string
+  sprites: {
+    other: {
+      'official-artwork': {
+        front_default: string | null
+      }
+    }
+  }
+  types: {
+    type: { name: string }
+  }[]
+}
+
+export async function getPokemonCards(limit = 24): Promise<PokemonCardData[]> {
+  const listResponse = await fetch(
+    `https://pokeapi.co/api/v2/pokemon?limit=${limit}`,
+    { next: { revalidate: 60 * 60 } },
+  )
+
+  if (!listResponse.ok) {
+    throw new Error('โหลดรายการ Pokémon ไม่สำเร็จ')
+  }
+
+  const list = (await listResponse.json()) as PokeApiList
+
+  const details = await Promise.all(
+    list.results.map(async ({ name }) => {
+      const response = await fetch(
+        `https://pokeapi.co/api/v2/pokemon/${encodeURIComponent(name)}`,
+        { next: { revalidate: 60 * 60 } },
+      )
+
+      if (!response.ok) {
+        throw new Error(`โหลด ${name} ไม่สำเร็จ`)
+      }
+
+      return (await response.json()) as PokeApiDetail
+    }),
+  )
+
+  return details.map((pokemon) => ({
+    id: pokemon.id,
+    name: pokemon.name,
+    imageUrl: pokemon.sprites.other['official-artwork'].front_default ?? '',
+    types: pokemon.types.map((item) => item.type.name),
+  }))
+}
+```
+
+ใช้ `Promise.all` เพื่อเริ่ม Request รายละเอียดพร้อมกัน ถ้าเขียน `await` ใน loop ทีละตัวจะเกิด data waterfall และใช้เวลารวมมากกว่า
+
+<Callout type="info">
+  `server-only` ช่วยให้ Build แจ้งเตือนหากเผลอนำ data function นี้ไป import ใน Client Component จึงลดความเสี่ยงที่ Secret หรือ library ฝั่ง Server จะหลุดเข้า Client bundle
+</Callout>
+
+## 3. Server Page ส่งข้อมูลเริ่มต้น
+
+แก้ `src/app/pokemon/page.tsx`
+
+```tsx
+import { PokemonExplorer } from '@/components/pokemon-explorer'
+import { getPokemonCards } from '@/lib/pokemon'
+
+export const metadata = {
+  title: 'Smart Pokédex',
+  description: 'ค้นหา กรอง และบันทึก Pokémon ที่ชอบ',
+}
+
+export default async function PokemonPage() {
+  const pokemon = await getPokemonCards(24)
+
+  return (
+    <main className="mx-auto max-w-7xl px-5 py-12">
+      <h1 className="text-4xl font-bold">Smart Pokédex</h1>
+      <p className="mb-8 mt-3 text-slate-600">
+        ข้อมูลโหลดจาก Server ส่วนตัวกรองทำงานใน Browser
+      </p>
+      <PokemonExplorer initialPokemon={pokemon} />
+    </main>
+  )
+}
+```
+
+ไฟล์นี้ไม่มี `'use client'` จึงเป็น Server Component และเป็น `async` ได้ ส่วน Client Component ห้ามประกาศเป็น async
+
+## 4. Custom Hook สำหรับ Favorite
+
+สร้าง `src/hooks/use-favorites.ts`
+
+```ts
+'use client'
+
+import { useEffect, useMemo, useState } from 'react'
+
+const STORAGE_KEY = 'pokedex:favorites'
+
+export function useFavorites() {
+  const [ids, setIds] = useState<number[]>([])
+  const [ready, setReady] = useState(false)
+
+  useEffect(() => {
+    try {
+      const saved = window.localStorage.getItem(STORAGE_KEY)
+      if (saved) {
+        const parsed: unknown = JSON.parse(saved)
+        if (Array.isArray(parsed) && parsed.every(Number.isInteger)) {
+          setIds(parsed)
+        }
+      }
+    } catch {
+      setIds([])
+    } finally {
+      setReady(true)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!ready) return
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(ids))
+  }, [ids, ready])
+
+  function toggle(id: number) {
+    setIds((current) =>
+      current.includes(id)
+        ? current.filter((item) => item !== id)
+        : [...current, id],
+    )
+  }
+
+  const favoriteIds = useMemo(() => new Set(ids), [ids])
+
+  return { favoriteIds, toggle, ready }
+}
+```
+
+เหตุผลที่ไม่อ่าน `localStorage` ระหว่าง render:
+
+1. Server ไม่มี `window`
+2. HTML รอบแรกจาก Server กับ Browser อาจไม่ตรงกัน
+3. จะเกิด Hydration mismatch
+
+เราเริ่มด้วย array ว่างเหมือนกันทั้งสองฝั่ง แล้วอ่านค่าหลัง Component mount ด้วย `useEffect`
+
+## 5. สร้าง Pokémon Card
+
+สร้าง `src/components/pokemon-card.tsx`
+
+```tsx
+'use client'
+
+import Image from 'next/image'
+import Link from 'next/link'
+import type { PokemonCardData } from '@/types/pokemon'
+
+type Props = {
+  pokemon: PokemonCardData
+  favorite: boolean
+  favoriteReady: boolean
+  view: 'grid' | 'list'
+  onToggleFavorite: (id: number) => void
+}
+
+export function PokemonCard({
+  pokemon,
+  favorite,
+  favoriteReady,
+  view,
+  onToggleFavorite,
+}: Props) {
+  return (
+    <article
+      className={
+        view === 'grid'
+          ? 'rounded-2xl border bg-white p-5 shadow-sm'
+          : 'flex items-center gap-5 rounded-2xl border bg-white p-4'
+      }
+    >
+      <Image
+        src={pokemon.imageUrl}
+        alt={`ภาพ ${pokemon.name}`}
+        width={view === 'grid' ? 240 : 112}
+        height={view === 'grid' ? 240 : 112}
+        className={
+          view === 'grid'
+            ? 'mx-auto aspect-square object-contain'
+            : 'h-28 w-28 object-contain'
+        }
+      />
+
+      <div className={view === 'grid' ? 'mt-3' : 'min-w-0 flex-1'}>
+        <p className="text-sm text-slate-500">#{pokemon.id}</p>
+        <Link
+          href={`/pokemon/${pokemon.name}`}
+          className="text-xl font-semibold capitalize hover:text-indigo-700"
+        >
+          {pokemon.name}
+        </Link>
+        <p className="mt-1 text-sm capitalize text-slate-600">
+          {pokemon.types.join(' · ')}
+        </p>
+      </div>
+
+      <button
+        type="button"
+        disabled={!favoriteReady}
+        aria-pressed={favorite}
+        aria-label={
+          favorite
+            ? `นำ ${pokemon.name} ออกจากรายการโปรด`
+            : `เพิ่ม ${pokemon.name} ในรายการโปรด`
+        }
+        onClick={() => onToggleFavorite(pokemon.id)}
+        className="rounded-full border px-3 py-2 text-xl disabled:opacity-40"
+      >
+        {favorite ? '♥' : '♡'}
+      </button>
+    </article>
+  )
+}
+```
+
+ปุ่ม Favorite ไม่ควรซ้อนอยู่ข้างใน `<Link>` เพราะจะกลายเป็น interactive element ซ้อนกันและสร้างพฤติกรรม Keyboard/Click ที่สับสน
+
+## 6. Search, Filter และ View State
+
+สร้าง `src/components/pokemon-explorer.tsx`
+
+```tsx
+'use client'
+
+import { useMemo, useState } from 'react'
+import { PokemonCard } from '@/components/pokemon-card'
+import { useFavorites } from '@/hooks/use-favorites'
+import type { PokemonCardData } from '@/types/pokemon'
+
+type Props = {
+  initialPokemon: PokemonCardData[]
+}
+
+export function PokemonExplorer({ initialPokemon }: Props) {
+  const [query, setQuery] = useState('')
+  const [type, setType] = useState('all')
+  const [view, setView] = useState<'grid' | 'list'>('grid')
+  const [favoritesOnly, setFavoritesOnly] = useState(false)
+  const { favoriteIds, toggle, ready } = useFavorites()
+
+  const types = useMemo(
+    () =>
+      Array.from(new Set(initialPokemon.flatMap((pokemon) => pokemon.types)))
+        .sort(),
+    [initialPokemon],
+  )
+
+  const filteredPokemon = useMemo(() => {
+    const normalizedQuery = query.trim().toLowerCase()
+
+    return initialPokemon.filter((pokemon) => {
+      const matchesName = pokemon.name.includes(normalizedQuery)
+      const matchesType = type === 'all' || pokemon.types.includes(type)
+      const matchesFavorite =
+        !favoritesOnly || favoriteIds.has(pokemon.id)
+
+      return matchesName && matchesType && matchesFavorite
+    })
+  }, [favoriteIds, favoritesOnly, initialPokemon, query, type])
+
+  return (
+    <section>
+      <div className="grid gap-4 rounded-2xl bg-slate-100 p-4 md:grid-cols-4">
+        <label className="md:col-span-2">
+          <span className="mb-1 block text-sm font-medium">ค้นหาชื่อ</span>
+          <input
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder="เช่น pika"
+            className="w-full rounded-lg border bg-white px-3 py-2"
+          />
+        </label>
+
+        <label>
+          <span className="mb-1 block text-sm font-medium">ประเภท</span>
+          <select
+            value={type}
+            onChange={(event) => setType(event.target.value)}
+            className="w-full rounded-lg border bg-white px-3 py-2"
+          >
+            <option value="all">ทั้งหมด</option>
+            {types.map((item) => (
+              <option key={item} value={item}>{item}</option>
+            ))}
+          </select>
+        </label>
+
+        <div>
+          <span className="mb-1 block text-sm font-medium">รูปแบบ</span>
+          <div className="flex gap-2">
+            {(['grid', 'list'] as const).map((item) => (
+              <button
+                key={item}
+                type="button"
+                aria-pressed={view === item}
+                onClick={() => setView(item)}
+                className="rounded-lg border bg-white px-3 py-2 capitalize aria-pressed:bg-indigo-700 aria-pressed:text-white"
+              >
+                {item}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <label className="flex items-center gap-2 md:col-span-4">
+          <input
+            type="checkbox"
+            checked={favoritesOnly}
+            onChange={(event) => setFavoritesOnly(event.target.checked)}
+          />
+          แสดงเฉพาะรายการโปรด
+        </label>
+      </div>
+
+      <p role="status" className="my-5 text-sm text-slate-600">
+        พบ {filteredPokemon.length} รายการ
+      </p>
+
+      {filteredPokemon.length === 0 ? (
+        <div className="rounded-2xl border border-dashed p-10 text-center">
+          ไม่พบ Pokémon ตามเงื่อนไข
+        </div>
+      ) : (
+        <div
+          className={
+            view === 'grid'
+              ? 'grid gap-5 sm:grid-cols-2 lg:grid-cols-4'
+              : 'space-y-4'
+          }
+        >
+          {filteredPokemon.map((pokemon) => (
+            <PokemonCard
+              key={pokemon.id}
+              pokemon={pokemon}
+              favorite={favoriteIds.has(pokemon.id)}
+              favoriteReady={ready}
+              view={view}
+              onToggleFavorite={toggle}
+            />
+          ))}
+        </div>
+      )}
+    </section>
+  )
+}
+```
+
+## Hook แต่ละตัวทำหน้าที่อะไร
+
+| Hook | ใช้ในงานนี้ |
+| --- | --- |
+| `useState` | เก็บค่าที่ผู้ใช้เปลี่ยน เช่น query, type, view |
+| `useMemo` | คำนวณ types และรายการที่กรองจาก state เดิม |
+| `useEffect` | Synchronize React state กับระบบภายนอกคือ `localStorage` |
+
+อย่าใช้ `useEffect` เพื่อคำนวณ `filteredPokemon` เพราะค่านั้นคำนวณได้ระหว่าง render และไม่ใช่ side effect
+
+## Lab และ Challenge
+
+1. เพิ่ม Sort ตาม ID หรือชื่อ
+2. เพิ่มปุ่ม Clear filters
+3. แสดงจำนวน Favorite
+4. ทำให้ View mode จำค่าใน `localStorage`
+5. ทดสอบข้อมูลใน DevTools → Application → Local Storage
+
+Challenge: ย้าย query และ type ไปเก็บใน URL เพื่อให้แชร์ผลค้นหาได้ แล้วเปรียบเทียบกับสัปดาห์ 5
+
+## Definition of Done
+
+- [ ] Page fetch ข้อมูลที่ Server
+- [ ] Interactive subtree เท่านั้นที่มี `'use client'`
+- [ ] Props ที่ส่งเข้า Client serialize ได้
+- [ ] Search และ Type filter ใช้งานร่วมกัน
+- [ ] สลับ List/Grid โดยไม่ fetch ใหม่
+- [ ] Favorite ยังอยู่หลัง Refresh
+- [ ] ไม่มี Hydration warning
+- [ ] Empty state แสดงเมื่อไม่พบข้อมูล
+
+## Exit ticket
+
+1. ถ้าใส่ `'use client'` ที่หน้า Page ทั้งหมดจะมีผลอย่างไร
+2. เพราะเหตุใด `localStorage` ต้องอ่านใน `useEffect`
+3. Derived state ต่างจาก source state อย่างไร
+
+## อ่านเพิ่ม
+
+- [Next.js: Server and Client Components](https://nextjs.org/docs/app/getting-started/server-and-client-components)
+- [React: Choosing the State Structure](https://react.dev/learn/choosing-the-state-structure)
+- [React: You Might Not Need an Effect](https://react.dev/learn/you-might-not-need-an-effect)

@@ -1,0 +1,328 @@
+---
+title: "สัปดาห์ 7: Task Board และ PostgreSQL"
+sidebarTitle: "Task Board และ Database"
+---
+
+import { Callout } from "nextra/components"
+
+# สัปดาห์ 7: Task Board และ PostgreSQL
+
+โปรเจกต์ประจำคาบคือ **Task Board** ที่เพิ่ม เปลี่ยนสถานะ และลบงานได้ ข้อมูลยังอยู่หลัง Refresh เพราะบันทึกใน PostgreSQL
+
+บทนี้ใช้ Neon Postgres ผ่าน Vercel Marketplace และ `@neondatabase/serverless` เพื่อให้ใช้งานได้ทั้ง Local, Preview และ Production
+
+## ผลลัพธ์การเรียนรู้
+
+- อธิบาย Table, Row, Column, Primary Key และ Constraint
+- เก็บ Connection String ใน Environment Variable
+- อ่านและเขียนข้อมูลด้วย Parameterized SQL
+- ใช้ Server Actions ทำ CRUD
+- เรียก `revalidatePath` หลัง Mutation
+- แยก Database layer ออกจาก Page และ Component
+
+## 1. เตรียม Database
+
+1. เชื่อมโปรเจกต์กับ Vercel
+2. เปิด Marketplace และติดตั้ง Neon
+3. เลือก Environment ที่ต้องการ
+4. ดึง Environment Variables ลงเครื่อง หรือสร้าง `.env.local`
+
+```bash
+npm install @neondatabase/serverless
+```
+
+ตัวอย่าง `.env.local`
+
+```dotenv
+DATABASE_URL=postgresql://USER:PASSWORD@HOST/DATABASE?sslmode=require
+```
+
+<Callout type="warning">
+  ห้าม commit `.env.local` และห้ามใส่ `NEXT_PUBLIC_` หน้า `DATABASE_URL` เพราะ Connection String เป็น Secret
+</Callout>
+
+## 2. สร้าง Table
+
+รัน SQL ใน Neon SQL Editor:
+
+```sql
+CREATE TABLE IF NOT EXISTS tasks (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  title VARCHAR(120) NOT NULL CHECK (char_length(title) >= 2),
+  status VARCHAR(20) NOT NULL DEFAULT 'todo'
+    CHECK (status IN ('todo', 'doing', 'done')),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS tasks_status_created_at_idx
+ON tasks (status, created_at DESC);
+```
+
+อธิบาย:
+
+- UUID ลดการเดา ID ต่อเนื่อง
+- `NOT NULL` ป้องกันข้อมูลที่จำเป็นหาย
+- `CHECK` ป้องกัน status ที่ระบบไม่รู้จัก
+- Index ช่วย Query ที่กรอง status และเรียงวันเวลา
+
+เพิ่มข้อมูลทดลอง:
+
+```sql
+INSERT INTO tasks (title, status)
+VALUES
+  ('ออกแบบหน้า Dashboard', 'todo'),
+  ('เชื่อมต่อฐานข้อมูล', 'doing'),
+  ('สร้าง Profile บน Vercel', 'done');
+```
+
+## 3. Database Client แบบ Lazy
+
+สร้าง `src/lib/db.ts`
+
+```ts
+import 'server-only'
+import { neon, type NeonQueryFunction } from '@neondatabase/serverless'
+
+let sqlClient: NeonQueryFunction<false, false> | null = null
+
+export function getSql() {
+  if (sqlClient) return sqlClient
+
+  const databaseUrl = process.env.DATABASE_URL
+  if (!databaseUrl) {
+    throw new Error('DATABASE_URL is not configured')
+  }
+
+  sqlClient = neon(databaseUrl)
+  return sqlClient
+}
+```
+
+สร้าง Client เมื่อมีการใช้งานจริง แทนการเรียก `neon(process.env.DATABASE_URL!)` ที่ top level ซึ่งอาจทำให้ Build ล้มเหลวตอน Environment ยังไม่ถูกตั้งค่า
+
+## 4. Data Access Functions
+
+สร้าง `src/lib/tasks.ts`
+
+```ts
+import 'server-only'
+import { getSql } from '@/lib/db'
+
+export type TaskStatus = 'todo' | 'doing' | 'done'
+
+export type Task = {
+  id: string
+  title: string
+  status: TaskStatus
+  created_at: string
+}
+
+export async function getTasks(): Promise<Task[]> {
+  const sql = getSql()
+  const rows = await sql`
+    SELECT id, title, status, created_at
+    FROM tasks
+    ORDER BY
+      CASE status
+        WHEN 'doing' THEN 1
+        WHEN 'todo' THEN 2
+        ELSE 3
+      END,
+      created_at DESC
+  `
+
+  return rows as Task[]
+}
+```
+
+ใช้ Tagged Template `${value}` ของ Neon เพื่อส่ง parameter แยกจาก SQL ช่วยป้องกัน SQL Injection อย่าประกอบ SQL ด้วย string จากผู้ใช้
+
+## 5. CRUD ด้วย Server Actions
+
+สร้าง `src/app/tasks/actions.ts`
+
+```ts
+'use server'
+
+import { revalidatePath } from 'next/cache'
+import { getSql } from '@/lib/db'
+import type { TaskStatus } from '@/lib/tasks'
+
+const validStatuses: TaskStatus[] = ['todo', 'doing', 'done']
+
+export async function createTask(formData: FormData) {
+  const titleValue = formData.get('title')
+  const title = typeof titleValue === 'string' ? titleValue.trim() : ''
+
+  if (title.length < 2 || title.length > 120) {
+    throw new Error('ชื่องานต้องมี 2–120 ตัวอักษร')
+  }
+
+  const sql = getSql()
+  await sql`INSERT INTO tasks (title) VALUES (${title})`
+  revalidatePath('/tasks')
+}
+
+export async function updateTaskStatus(id: string, formData: FormData) {
+  const value = formData.get('status')
+  const status = typeof value === 'string' ? value : ''
+
+  if (!validStatuses.includes(status as TaskStatus)) {
+    throw new Error('สถานะไม่ถูกต้อง')
+  }
+
+  const sql = getSql()
+  await sql`
+    UPDATE tasks
+    SET status = ${status}
+    WHERE id = ${id}
+  `
+  revalidatePath('/tasks')
+}
+
+export async function deleteTask(id: string) {
+  const sql = getSql()
+  await sql`DELETE FROM tasks WHERE id = ${id}`
+  revalidatePath('/tasks')
+}
+```
+
+Parameterized SQL จะส่ง `id`, `title`, `status` เป็นข้อมูล ไม่ใช่ส่วนหนึ่งของคำสั่ง SQL
+
+## 6. Task Board Page
+
+สร้าง `src/app/tasks/page.tsx`
+
+```tsx
+import {
+  createTask,
+  deleteTask,
+  updateTaskStatus,
+} from './actions'
+import { getTasks, type TaskStatus } from '@/lib/tasks'
+
+const columns: { status: TaskStatus; title: string }[] = [
+  { status: 'todo', title: 'To do' },
+  { status: 'doing', title: 'Doing' },
+  { status: 'done', title: 'Done' },
+]
+
+export default async function TasksPage() {
+  const tasks = await getTasks()
+
+  return (
+    <main className="mx-auto max-w-7xl px-5 py-12">
+      <h1 className="text-4xl font-bold">Task Board</h1>
+
+      <form action={createTask} className="mt-8 flex max-w-xl gap-3">
+        <label className="sr-only" htmlFor="title">ชื่องานใหม่</label>
+        <input
+          id="title"
+          name="title"
+          required
+          minLength={2}
+          maxLength={120}
+          placeholder="เพิ่มงานใหม่"
+          className="min-w-0 flex-1 rounded-lg border px-3 py-2"
+        />
+        <button className="rounded-lg bg-indigo-700 px-5 text-white">
+          เพิ่ม
+        </button>
+      </form>
+
+      <div className="mt-10 grid gap-5 lg:grid-cols-3">
+        {columns.map((column) => {
+          const columnTasks = tasks.filter(
+            (task) => task.status === column.status,
+          )
+
+          return (
+            <section
+              key={column.status}
+              aria-labelledby={`${column.status}-title`}
+              className="rounded-2xl bg-slate-100 p-4"
+            >
+              <h2 id={`${column.status}-title`} className="text-xl font-semibold">
+                {column.title} ({columnTasks.length})
+              </h2>
+
+              <ul className="mt-4 space-y-3">
+                {columnTasks.map((task) => {
+                  const updateWithId = updateTaskStatus.bind(null, task.id)
+                  const deleteWithId = deleteTask.bind(null, task.id)
+
+                  return (
+                    <li key={task.id} className="rounded-xl bg-white p-4 shadow-sm">
+                      <p className="font-medium">{task.title}</p>
+                      <div className="mt-4 flex flex-wrap gap-2">
+                        <form action={updateWithId}>
+                          <select
+                            name="status"
+                            defaultValue={task.status}
+                            aria-label={`สถานะของ ${task.title}`}
+                            className="rounded border px-2 py-1 text-sm"
+                          >
+                            <option value="todo">To do</option>
+                            <option value="doing">Doing</option>
+                            <option value="done">Done</option>
+                          </select>
+                          <button className="ml-2 text-sm text-indigo-700">
+                            บันทึก
+                          </button>
+                        </form>
+                        <form action={deleteWithId}>
+                          <button className="text-sm text-red-700">ลบ</button>
+                        </form>
+                      </div>
+                    </li>
+                  )
+                })}
+              </ul>
+            </section>
+          )
+        })}
+      </div>
+    </main>
+  )
+}
+```
+
+`bind` ใช้ผูก ID ที่ Server รู้เข้ากับ Action ส่วนค่าจากช่อง Form จะตามมาเป็น `FormData`
+
+<Callout type="warning">
+  เวอร์ชันในคาบนี้ยังไม่มี Authentication ผู้ใช้อินเทอร์เน็ตทุกคนจึงแก้ Task ได้ ห้ามนำขึ้น Production เป็นระบบจริงจนกว่าจะตรวจ Session และสิทธิ์ในทุก Action สัปดาห์ 8 จะเติมส่วนนี้
+</Callout>
+
+## Lab และ Challenge
+
+1. เพิ่ม Due date และ Priority
+2. แสดง Empty state ในแต่ละคอลัมน์
+3. คืนข้อความ Validation ด้วย `useActionState` แทนการ throw
+4. ตรวจ SQL Editor หลัง Create/Update/Delete
+
+Challenge:
+
+- เพิ่ม `owner_id` แล้วแสดงเฉพาะงานของผู้ใช้
+- เพิ่ม Optimistic UI ด้วย `useOptimistic`
+- เพิ่ม Transaction เมื่อ Mutation ต้องแก้หลาย Table
+
+## Definition of Done
+
+- [ ] Secret อยู่ใน `.env.local`
+- [ ] Table มี Primary Key และ Constraint
+- [ ] SQL ใช้ Parameter ไม่ต่อ string จากผู้ใช้
+- [ ] Create, Read, Update, Delete ทำงาน
+- [ ] หน้า refresh หลัง Mutation
+- [ ] Database code อยู่ใน server-only module
+
+## Exit ticket
+
+1. Constraint ใน Database ต่างจาก Form validation อย่างไร
+2. เพราะเหตุใดต้อง `revalidatePath` หลังแก้ข้อมูล
+3. SQL Injection เกิดจากรูปแบบโค้ดใด
+
+## อ่านเพิ่ม
+
+- [Neon Serverless Driver](https://neon.com/docs/serverless/serverless-driver)
+- [Next.js: Updating Data](https://nextjs.org/docs/app/getting-started/updating-data)
+- [PostgreSQL: Constraints](https://www.postgresql.org/docs/current/ddl-constraints.html)

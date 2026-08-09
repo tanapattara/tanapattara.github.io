@@ -9,6 +9,7 @@ export default {
   flutter: "Flutter",
   "native-mobile": "Native Mobile",
   typescript: "TypeScript",
+  nextjs: "Next.js Project-based (14 สัปดาห์)",
   react: "React",
   react_native: "React Native",
   unity2d: "Unity 2D",

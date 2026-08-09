@@ -1,0 +1,430 @@
+---
+title: "สัปดาห์ 11: Mini Shopping Cart และ Global State"
+sidebarTitle: "Shopping Cart และ Global State"
+---
+
+import { Callout } from "nextra/components"
+
+# สัปดาห์ 11: Mini Shopping Cart และ Global State
+
+โปรเจกต์ประจำคาบคือร้านค้าขนาดเล็กที่ Product Card หลายตัวเพิ่มสินค้าเข้าสู่ Cart Summary เดียวกัน ผู้เรียนจะใช้ Context และ `useReducer` จัดการ state ที่หลาย Component ต้องใช้ร่วมกัน
+
+## ผลลัพธ์การเรียนรู้
+
+- แยก local state และ shared/global state
+- ออกแบบ Reducer ด้วย Discriminated Union
+- สร้าง Context Provider และ Custom Hook
+- คำนวณ Derived State โดยไม่เก็บค่าซ้ำ
+- จำกัด Client boundary ให้อยู่เฉพาะส่วนร้านค้า
+
+## โครงสร้าง
+
+```text
+src/
+├── app/shop/
+│   ├── layout.tsx
+│   └── page.tsx
+├── components/shop/
+│   ├── cart-summary.tsx
+│   └── product-card.tsx
+├── data/shop-products.ts
+└── state/
+    ├── cart-context.tsx
+    └── cart-reducer.ts
+```
+
+## 1. ข้อมูลสินค้า
+
+สร้าง `src/data/shop-products.ts`
+
+```ts
+export type ShopProduct = {
+  id: string
+  name: string
+  price: number
+}
+
+export const shopProducts: ShopProduct[] = [
+  { id: 'keyboard', name: 'Mechanical Keyboard', price: 3490 },
+  { id: 'mouse', name: 'Wireless Mouse', price: 1590 },
+  { id: 'headphones', name: 'Studio Headphones', price: 4290 },
+  { id: 'hub', name: 'USB-C Hub', price: 2190 },
+]
+```
+
+## 2. Cart Reducer
+
+สร้าง `src/state/cart-reducer.ts`
+
+```ts
+import type { ShopProduct } from '@/data/shop-products'
+
+export type CartItem = ShopProduct & {
+  quantity: number
+}
+
+export type CartState = {
+  items: CartItem[]
+}
+
+export type CartAction =
+  | { type: 'add'; product: ShopProduct }
+  | { type: 'increase'; productId: string }
+  | { type: 'decrease'; productId: string }
+  | { type: 'remove'; productId: string }
+  | { type: 'clear' }
+
+export const initialCartState: CartState = {
+  items: [],
+}
+
+export function cartReducer(
+  state: CartState,
+  action: CartAction,
+): CartState {
+  switch (action.type) {
+    case 'add': {
+      const existing = state.items.find(
+        (item) => item.id === action.product.id,
+      )
+
+      if (existing) {
+        return {
+          items: state.items.map((item) =>
+            item.id === action.product.id
+              ? { ...item, quantity: item.quantity + 1 }
+              : item,
+          ),
+        }
+      }
+
+      return {
+        items: [...state.items, { ...action.product, quantity: 1 }],
+      }
+    }
+
+    case 'increase':
+      return {
+        items: state.items.map((item) =>
+          item.id === action.productId
+            ? { ...item, quantity: item.quantity + 1 }
+            : item,
+        ),
+      }
+
+    case 'decrease':
+      return {
+        items: state.items
+          .map((item) =>
+            item.id === action.productId
+              ? { ...item, quantity: item.quantity - 1 }
+              : item,
+          )
+          .filter((item) => item.quantity > 0),
+      }
+
+    case 'remove':
+      return {
+        items: state.items.filter((item) => item.id !== action.productId),
+      }
+
+    case 'clear':
+      return initialCartState
+
+    default:
+      return state
+  }
+}
+```
+
+Reducer ต้องเป็น pure function:
+
+- ไม่แก้ `state.items` เดิม
+- ไม่เรียก API หรือ `localStorage`
+- ไม่สร้างค่าที่สุ่ม
+- ผลลัพธ์ขึ้นกับ state และ action ที่รับ
+
+## 3. Context Provider
+
+สร้าง `src/state/cart-context.tsx`
+
+```tsx
+'use client'
+
+import {
+  createContext,
+  useContext,
+  useMemo,
+  useReducer,
+} from 'react'
+import type { ShopProduct } from '@/data/shop-products'
+import {
+  cartReducer,
+  initialCartState,
+  type CartState,
+} from './cart-reducer'
+
+type CartContextValue = {
+  state: CartState
+  itemCount: number
+  total: number
+  add: (product: ShopProduct) => void
+  increase: (productId: string) => void
+  decrease: (productId: string) => void
+  remove: (productId: string) => void
+  clear: () => void
+}
+
+const CartContext = createContext<CartContextValue | null>(null)
+
+export function CartProvider({ children }: { children: React.ReactNode }) {
+  const [state, dispatch] = useReducer(cartReducer, initialCartState)
+
+  const value = useMemo<CartContextValue>(() => {
+    const itemCount = state.items.reduce(
+      (sum, item) => sum + item.quantity,
+      0,
+    )
+    const total = state.items.reduce(
+      (sum, item) => sum + item.price * item.quantity,
+      0,
+    )
+
+    return {
+      state,
+      itemCount,
+      total,
+      add: (product) => dispatch({ type: 'add', product }),
+      increase: (productId) => dispatch({ type: 'increase', productId }),
+      decrease: (productId) => dispatch({ type: 'decrease', productId }),
+      remove: (productId) => dispatch({ type: 'remove', productId }),
+      clear: () => dispatch({ type: 'clear' }),
+    }
+  }, [state])
+
+  return <CartContext.Provider value={value}>{children}</CartContext.Provider>
+}
+
+export function useCart() {
+  const context = useContext(CartContext)
+  if (!context) {
+    throw new Error('useCart must be used inside CartProvider')
+  }
+  return context
+}
+```
+
+`itemCount` และ `total` เป็น Derived State จึงคำนวณจาก `items` ไม่เก็บแยกใน Reducer เพราะค่าซ้ำอาจไม่ตรงกัน
+
+## 4. จำกัด Provider เฉพาะ Route ที่ใช้
+
+สร้าง `src/app/shop/layout.tsx`
+
+```tsx
+import { CartProvider } from '@/state/cart-context'
+
+export default function ShopLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
+  return <CartProvider>{children}</CartProvider>
+}
+```
+
+Provider ยิ่งอยู่ลึกเท่าใด ส่วน static ที่อยู่นอก subtree ยิ่งมีโอกาส optimize ได้ และ Context ไม่รั่วไปส่วนที่ไม่ต้องใช้
+
+## 5. Product Card
+
+สร้าง `src/components/shop/product-card.tsx`
+
+```tsx
+'use client'
+
+import type { ShopProduct } from '@/data/shop-products'
+import { useCart } from '@/state/cart-context'
+
+export function ProductCard({ product }: { product: ShopProduct }) {
+  const { add } = useCart()
+
+  return (
+    <article className="rounded-2xl border bg-white p-5">
+      <div
+        aria-hidden="true"
+        className="aspect-video rounded-xl bg-gradient-to-br from-indigo-100 to-cyan-100"
+      />
+      <h2 className="mt-4 text-xl font-semibold">{product.name}</h2>
+      <p className="mt-2 text-2xl font-bold">
+        {product.price.toLocaleString('th-TH')} บาท
+      </p>
+      <button
+        type="button"
+        onClick={() => add(product)}
+        className="mt-5 w-full rounded-lg bg-indigo-700 px-4 py-2 text-white"
+      >
+        เพิ่มลงตะกร้า
+      </button>
+    </article>
+  )
+}
+```
+
+## 6. Cart Summary
+
+สร้าง `src/components/shop/cart-summary.tsx`
+
+```tsx
+'use client'
+
+import { useCart } from '@/state/cart-context'
+
+export function CartSummary() {
+  const {
+    state,
+    itemCount,
+    total,
+    increase,
+    decrease,
+    remove,
+    clear,
+  } = useCart()
+
+  return (
+    <aside className="rounded-2xl bg-slate-950 p-6 text-white">
+      <div className="flex items-center justify-between">
+        <h2 className="text-2xl font-semibold">ตะกร้า</h2>
+        <span aria-live="polite">{itemCount} ชิ้น</span>
+      </div>
+
+      {state.items.length === 0 ? (
+        <p className="mt-6 text-slate-300">ยังไม่มีสินค้าในตะกร้า</p>
+      ) : (
+        <>
+          <ul className="mt-5 divide-y divide-slate-700">
+            {state.items.map((item) => (
+              <li key={item.id} className="py-4">
+                <div className="flex justify-between gap-3">
+                  <div>
+                    <p className="font-medium">{item.name}</p>
+                    <p className="text-sm text-slate-300">
+                      {item.price.toLocaleString('th-TH')} บาท
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => remove(item.id)}
+                    aria-label={`นำ ${item.name} ออกจากตะกร้า`}
+                    className="text-sm text-red-300"
+                  >
+                    ลบ
+                  </button>
+                </div>
+
+                <div className="mt-3 flex items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={() => decrease(item.id)}
+                    aria-label={`ลดจำนวน ${item.name}`}
+                    className="h-8 w-8 rounded border"
+                  >
+                    −
+                  </button>
+                  <span aria-live="polite">{item.quantity}</span>
+                  <button
+                    type="button"
+                    onClick={() => increase(item.id)}
+                    aria-label={`เพิ่มจำนวน ${item.name}`}
+                    className="h-8 w-8 rounded border"
+                  >
+                    +
+                  </button>
+                </div>
+              </li>
+            ))}
+          </ul>
+
+          <div className="mt-6 flex justify-between text-xl font-bold">
+            <span>รวม</span>
+            <span>{total.toLocaleString('th-TH')} บาท</span>
+          </div>
+          <button
+            type="button"
+            onClick={clear}
+            className="mt-5 text-sm text-slate-300 underline"
+          >
+            ล้างตะกร้า
+          </button>
+        </>
+      )}
+    </aside>
+  )
+}
+```
+
+## 7. Shop Page
+
+สร้าง `src/app/shop/page.tsx`
+
+```tsx
+import { CartSummary } from '@/components/shop/cart-summary'
+import { ProductCard } from '@/components/shop/product-card'
+import { shopProducts } from '@/data/shop-products'
+
+export default function ShopPage() {
+  return (
+    <main className="mx-auto max-w-7xl px-5 py-12">
+      <h1 className="text-4xl font-bold">Mini Shop</h1>
+      <div className="mt-8 grid items-start gap-8 lg:grid-cols-[1fr_360px]">
+        <section
+          aria-label="รายการสินค้า"
+          className="grid gap-5 sm:grid-cols-2"
+        >
+          {shopProducts.map((product) => (
+            <ProductCard key={product.id} product={product} />
+          ))}
+        </section>
+        <CartSummary />
+      </div>
+    </main>
+  )
+}
+```
+
+<Callout type="info">
+  Context ไม่ใช่ Database และข้อมูลจะหายเมื่อ Refresh ในบทนี้ ซึ่งตั้งใจให้โฟกัส Global Client State หากต้องการจำข้าม Session ให้เลือก `localStorage` สำหรับเครื่องเดียว หรือ Database สำหรับข้อมูลที่ต้องติดตามผู้ใช้หลายอุปกรณ์
+</Callout>
+
+## Lab และ Challenge
+
+1. จำกัดจำนวนสินค้าไม่เกิน 10 ชิ้น
+2. เพิ่มส่วนลด 10% เมื่อยอดเกินเงื่อนไข
+3. เขียน Unit test ให้ Reducer
+4. แยก Currency formatter เป็น utility
+
+Challenge:
+
+- Sync cart กับ `localStorage`
+- สร้าง Cart Drawer ที่เปิด/ปิดด้วย local state
+- ส่ง Order ไป Server Action โดย Server คำนวณราคาใหม่จาก Product ID ห้ามเชื่อ total จาก Client
+
+## Definition of Done
+
+- [ ] Product Card หลายตัวใช้ Cart เดียวกัน
+- [ ] Reducer ไม่ mutate state
+- [ ] Action มี Type ชัดเจน
+- [ ] Quantity ไม่ต่ำกว่า 0
+- [ ] Total คำนวณจาก items ไม่เก็บค่าซ้ำ
+- [ ] Provider ครอบเฉพาะ Shop subtree
+- [ ] ปุ่ม icon มี accessible name
+
+## Exit ticket
+
+1. เมื่อใดควรใช้ Context แทน Props
+2. เพราะเหตุใด Total ไม่ควรเก็บใน State แยก
+3. Reducer ที่ดีควรมีคุณสมบัติอะไร
+
+## อ่านเพิ่ม
+
+- [React: Scaling Up with Reducer and Context](https://react.dev/learn/scaling-up-with-reducer-and-context)
+- [React: useReducer](https://react.dev/reference/react/useReducer)
+- [React: useContext](https://react.dev/reference/react/useContext)

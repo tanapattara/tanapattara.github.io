@@ -1,0 +1,306 @@
+---
+title: "สัปดาห์ 1: My Profile และ Vercel"
+sidebarTitle: "Profile และ Vercel"
+---
+
+import { Callout } from "nextra/components"
+
+# สัปดาห์ 1: My Profile และ Vercel
+
+โจทย์ประจำคาบคือสร้างเว็บไซต์แนะนำตัวหนึ่งหน้า ตั้งแต่โปรเจกต์ว่างจนมี URL ที่ผู้อื่นเปิดดูได้ ผู้เรียนจะได้เห็นวงจรพัฒนาเว็บครบชุดตั้งแต่ **แก้โค้ด → ดูผลในเครื่อง → commit → push → deploy**
+
+## ผลลัพธ์การเรียนรู้
+
+เมื่อจบคาบ ผู้เรียนสามารถ:
+
+- สร้าง Next.js App Router project ด้วย TypeScript
+- อธิบายหน้าที่ของ `src/app`, `public`, `page.tsx`, `layout.tsx` และ `package.json`
+- สร้าง Component ที่รับ Props และใช้ `next/image`
+- จัดหน้า Profile แบบ responsive
+- ส่งโค้ดขึ้น GitHub และ deploy ไป Vercel
+
+## แผนเวลาในคาบ
+
+| เวลา | กิจกรรม |
+| --- | --- |
+| 0:00–0:20 | ดูตัวอย่าง Profile และวาด wireframe |
+| 0:20–0:45 | สร้างโปรเจกต์และสำรวจโครงสร้าง |
+| 0:45–1:20 | Live coding Profile Card |
+| 1:20–2:15 | ผู้เรียนปรับข้อมูล รูป และ responsive layout |
+| 2:15–2:45 | GitHub และ Vercel |
+| 2:45–3:00 | Peer review และ Exit ticket |
+
+## 1. เตรียมเครื่องมือ
+
+ตรวจสอบ Node.js และ Git:
+
+```bash
+node --version
+npm --version
+git --version
+```
+
+สร้างโปรเจกต์:
+
+```bash
+npx create-next-app@latest my-profile --ts --tailwind --eslint --app --src-dir --import-alias "@/*"
+cd my-profile
+npm run dev
+```
+
+เปิด `http://localhost:3000` แล้วแก้ `src/app/page.tsx` เพื่อทดสอบ Hot Reload
+
+<Callout type="info">
+  ถ้าเครื่องของผู้เรียนใช้ Next.js คนละรุ่น ให้ถือ `package.json` และข้อความจาก Terminal เป็นข้อมูลหลัก ตัวอย่างชุดนี้ใช้ App Router และรูปแบบ async request APIs ของ Next.js รุ่นปัจจุบัน
+</Callout>
+
+## 2. อ่านโครงสร้างพื้นฐาน
+
+```text
+my-profile/
+├── public/                 รูปและไฟล์ static
+├── src/
+│   └── app/
+│       ├── globals.css     CSS ส่วนกลาง
+│       ├── layout.tsx      Root layout และ metadata
+│       └── page.tsx        หน้า /
+├── package.json            dependencies และ scripts
+├── next.config.ts          การตั้งค่า Next.js
+└── tsconfig.json           การตั้งค่า TypeScript
+```
+
+กติกาสำคัญ:
+
+- โฟลเดอร์ใน `app` สร้าง route segment
+- Route จะเปิดเป็นหน้าเว็บเมื่อมี `page.tsx`
+- Root `layout.tsx` ต้องมี `<html>` และ `<body>`
+- ไฟล์ใน `public` เรียกจาก URL ที่ขึ้นต้นด้วย `/`
+- Component เป็น Server Component โดยค่าเริ่มต้น ยังไม่ต้องใส่ `'use client'` ถ้าไม่มี Hook, event handler หรือ browser API
+
+## 3. เตรียมรูปและชนิดข้อมูล
+
+นำรูปของตนเองใส่ที่ `public/profile.jpg` แล้วสร้าง `src/types/profile.ts`
+
+```ts
+export type Profile = {
+  name: string
+  role: string
+  bio: string
+  location: string
+  skills: string[]
+  links: {
+    label: string
+    href: string
+  }[]
+}
+```
+
+Type ทำหน้าที่เหมือนสัญญาระหว่างข้อมูลกับ UI ถ้าเขียนชื่อ field ผิด TypeScript จะเตือนก่อนเปิดเว็บจริง
+
+## 4. สร้าง Profile Card
+
+สร้าง `src/components/profile-card.tsx`
+
+```tsx
+import Image from 'next/image'
+import type { Profile } from '@/types/profile'
+
+type ProfileCardProps = {
+  profile: Profile
+}
+
+export function ProfileCard({ profile }: ProfileCardProps) {
+  return (
+    <article className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-xl">
+      <div className="grid md:grid-cols-[280px_1fr]">
+        <div className="relative min-h-72 bg-slate-100">
+          <Image
+            src="/profile.jpg"
+            alt={`ภาพโปรไฟล์ของ ${profile.name}`}
+            fill
+            priority
+            sizes="(max-width: 768px) 100vw, 280px"
+            className="object-cover"
+          />
+        </div>
+
+        <div className="p-8 md:p-10">
+          <p className="text-sm font-semibold uppercase tracking-wider text-indigo-600">
+            {profile.role}
+          </p>
+          <h1 className="mt-2 text-4xl font-bold tracking-tight text-slate-950">
+            {profile.name}
+          </h1>
+          <p className="mt-2 text-sm text-slate-500">{profile.location}</p>
+          <p className="mt-6 leading-7 text-slate-700">{profile.bio}</p>
+
+          <ul aria-label="ทักษะ" className="mt-6 flex flex-wrap gap-2">
+            {profile.skills.map((skill) => (
+              <li
+                key={skill}
+                className="rounded-full bg-indigo-50 px-3 py-1 text-sm text-indigo-700"
+              >
+                {skill}
+              </li>
+            ))}
+          </ul>
+
+          <nav aria-label="ช่องทางติดต่อ" className="mt-8 flex flex-wrap gap-4">
+            {profile.links.map((link) => (
+              <a
+                key={link.href}
+                href={link.href}
+                target="_blank"
+                rel="noreferrer"
+                className="font-medium text-indigo-700 underline-offset-4 hover:underline"
+              >
+                {link.label}
+              </a>
+            ))}
+          </nav>
+        </div>
+      </div>
+    </article>
+  )
+}
+```
+
+ประเด็นอภิปราย:
+
+- ทำไมใช้ `<article>` แทน `<div>` ทุกจุด
+- ทำไม `alt` ต้องบอกความหมายของรูป
+- `fill` ต้องมี parent ที่กำหนดตำแหน่งและขนาด
+- `sizes` ช่วย Browser เลือกไฟล์ภาพที่เหมาะกับหน้าจอ
+- `key` ควรเป็นค่าที่คงที่ ไม่ใช้ index หากรายการเปลี่ยนได้
+
+## 5. ประกอบหน้า Profile
+
+แทนที่ `src/app/page.tsx`
+
+```tsx
+import { ProfileCard } from '@/components/profile-card'
+import type { Profile } from '@/types/profile'
+
+const profile: Profile = {
+  name: 'ชื่อ นามสกุล',
+  role: 'Frontend Developer in Training',
+  bio: 'ฉันสนใจการสร้างเว็บที่ใช้งานง่าย เข้าถึงได้ และช่วยแก้ปัญหาให้ผู้ใช้จริง',
+  location: 'Bangkok, Thailand',
+  skills: ['HTML', 'CSS', 'JavaScript', 'TypeScript', 'React'],
+  links: [
+    { label: 'GitHub', href: 'https://github.com/username' },
+    { label: 'Email', href: 'mailto:student@example.com' },
+  ],
+}
+
+export default function HomePage() {
+  return (
+    <main className="min-h-screen bg-slate-950 px-5 py-12 md:py-20">
+      <div className="mx-auto max-w-5xl">
+        <p className="mb-5 text-sm font-medium text-indigo-300">
+          My first Next.js project
+        </p>
+        <ProfileCard profile={profile} />
+      </div>
+    </main>
+  )
+}
+```
+
+ตั้งค่า Metadata ที่ `src/app/layout.tsx`
+
+```tsx
+import type { Metadata } from 'next'
+import './globals.css'
+
+export const metadata: Metadata = {
+  title: 'ชื่อของฉัน | Profile',
+  description: 'เว็บไซต์แนะนำตัวและผลงานของชื่อของฉัน',
+}
+
+export default function RootLayout({
+  children,
+}: Readonly<{ children: React.ReactNode }>) {
+  return (
+    <html lang="th">
+      <body>{children}</body>
+    </html>
+  )
+}
+```
+
+## 6. ตรวจงานก่อน Deploy
+
+```bash
+npm run lint
+npm run build
+```
+
+ตรวจหน้าจออย่างน้อย 3 ขนาด:
+
+- Mobile ประมาณ 375px
+- Tablet ประมาณ 768px
+- Desktop 1280px ขึ้นไป
+
+ใช้ Keyboard กด `Tab` ตรวจว่าลิงก์ทุกอันเข้าถึงได้ และเปิด Browser Console ตรวจว่าไม่มี error
+
+## 7. GitHub และ Vercel
+
+สร้าง repository ว่างบน GitHub แล้วรัน:
+
+```bash
+git add .
+git commit -m "feat: create personal profile"
+git branch -M main
+git remote add origin https://github.com/USERNAME/my-profile.git
+git push -u origin main
+```
+
+จากนั้น:
+
+1. เข้าสู่ Vercel ด้วยบัญชี GitHub
+2. เลือก **Add New Project**
+3. Import repository `my-profile`
+4. ตรวจว่า Framework Preset เป็น Next.js
+5. กด Deploy และรอให้สถานะเป็น Ready
+6. เปิด Production URL และทดสอบอีกครั้ง
+
+เมื่อเชื่อม Git แล้ว การ push ไป branch อื่นจะได้ Preview Deployment ส่วน `main` ใช้เป็น Production branch ได้
+
+## Lab และ Challenge
+
+งานที่ต้องทำ:
+
+1. เปลี่ยนข้อมูล รูป สี และข้อความให้เป็นของตนเอง
+2. เพิ่มส่วน “โปรเจกต์ที่อยากทำ” อย่างน้อย 2 รายการ
+3. เพิ่ม focus style ที่มองเห็นชัดให้ลิงก์
+4. ส่ง GitHub URL และ Vercel URL
+
+Challenge:
+
+- เพิ่ม `SkillBadge` Component
+- เพิ่มหน้า `/about` และใช้ `Link` เชื่อมจากหน้าแรก
+- ทดลองสร้าง branch `feature/about` แล้วดู Preview Deployment
+
+## Definition of Done
+
+- [ ] หน้า Profile ใช้ข้อมูลจริงของผู้เรียน
+- [ ] Layout ไม่ล้นจอที่ 375px
+- [ ] รูปใช้ `next/image` และมี `alt`
+- [ ] Heading เรียงลำดับสมเหตุผล
+- [ ] `npm run lint` และ `npm run build` ผ่าน
+- [ ] โค้ดอยู่บน GitHub โดยไม่มี Secret
+- [ ] Production URL เปิดได้จากอุปกรณ์อื่น
+
+## Exit ticket
+
+1. `page.tsx` ต่างจาก `layout.tsx` อย่างไร
+2. เหตุใด Component นี้ยังไม่ต้องมี `'use client'`
+3. GitHub และ Vercel ทำหน้าที่ต่างกันอย่างไร
+
+## อ่านเพิ่ม
+
+- [Next.js: Installation](https://nextjs.org/docs/app/getting-started/installation)
+- [Next.js: Project Structure](https://nextjs.org/docs/app/getting-started/project-structure)
+- [Next.js: Image Optimization](https://nextjs.org/docs/app/getting-started/images)
+- [Vercel: Deploying Git Repositories](https://vercel.com/docs/git)

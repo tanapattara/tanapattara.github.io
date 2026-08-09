@@ -1,0 +1,110 @@
+---
+title: "Next.js Project-based Learning"
+sidebarTitle: "ภาพรวมรายวิชา"
+asIndexPage: true
+---
+
+import { Callout, Cards } from "nextra/components"
+
+# Next.js Project-based Learning — 14 สัปดาห์
+
+เอกสารประกอบการสอนชุดนี้ออกแบบให้ผู้เรียน **เรียนรู้ด้วยการสร้างโปรเจกต์ในคาบ** ทุกสัปดาห์ แต่ละบทเริ่มจากปัญหาที่พบในงานจริง แล้วค่อยนำแนวคิดของ Next.js, React และ Web Platform มาใช้แก้ปัญหา
+
+สามสัปดาห์แรกสร้างพื้นฐานด้วย Profile และ Pokémon Explorer หลังจากนั้นเปลี่ยนโจทย์ทุกสัปดาห์เพื่อให้ผู้เรียนได้เห็นรูปแบบของเว็บแอปหลายประเภท เช่น ระบบค้นหา ฟอร์ม ฐานข้อมูล Authentication Dashboard ตะกร้าสินค้า อัปโหลดรูป และการเตรียมเว็บขึ้น Production
+
+<Callout type="info">
+  ตัวอย่างใช้ Next.js App Router รุ่นปัจจุบัน จึงเขียน `params` และ `searchParams` เป็น Promise, ใช้ `proxy.ts` สำหรับ Next.js 16 ขึ้นไป และแยก Server/Client Component ตามหน้าที่จริง หากโปรเจกต์ของผู้เรียนใช้คนละเวอร์ชัน ให้ตรวจ `package.json` ก่อนคัดลอกโค้ด
+</Callout>
+
+## รูปแบบหนึ่งคาบ
+
+ตัวอย่างเวลาเรียน 3 ชั่วโมง:
+
+| เวลา | กิจกรรม |
+| --- | --- |
+| 15 นาที | เปิดโจทย์ ดูตัวอย่างผลลัพธ์ และตั้งคำถามก่อนเรียน |
+| 30 นาที | อธิบายแนวคิดที่จำเป็น |
+| 30 นาที | Live coding เฉพาะแกนสำคัญ |
+| 75 นาที | ผู้เรียนสร้างโปรเจกต์ตามขั้นตอน |
+| 15 นาที | Challenge หรืองานต่อยอด |
+| 15 นาที | Demo, Peer review และ Exit ticket |
+
+ผู้สอนไม่จำเป็นต้องพิมพ์โค้ดทุกบรรทัดแทนผู้เรียน ควรหยุดเป็นช่วง ๆ ให้ผู้เรียนทำนายผล อธิบายเหตุผล และแก้ข้อผิดพลาดจากข้อความใน Terminal หรือ Browser Console
+
+## ผลลัพธ์การเรียนรู้ปลายรายวิชา
+
+ผู้เรียนสามารถ:
+
+- สร้างและเผยแพร่ Next.js App Router project
+- อธิบายหน้าที่ของ `page.tsx`, `layout.tsx`, `route.ts`, `loading.tsx`, `error.tsx` และ `not-found.tsx`
+- เลือกใช้ Server Component, Client Component, Server Action และ Route Handler ได้เหมาะสม
+- ใช้ React Hooks จัดการ local state, derived state, URL state และ global state
+- อ่านและเขียนข้อมูลผ่าน API และฐานข้อมูลอย่างปลอดภัย
+- สร้างระบบสมาชิก อัปโหลดไฟล์ และจัดการ environment variables
+- ออกแบบ loading, empty, error และ recovery experience
+- ปรับ Metadata, Accessibility, Performance และทดสอบเส้นทางสำคัญก่อน release
+
+## แผน 14 สัปดาห์
+
+| สัปดาห์ | โปรเจกต์ | แกนความรู้ | ผลงานจบคาบ |
+| --- | --- | --- | --- |
+| 1 | My Profile | โครงสร้าง Next.js, Component, Image, Git, Vercel | Profile URL ที่เปิดบน Vercel ได้ |
+| 2 | Pokémon Explorer | HTTP, JSON, Route Handler, Dynamic Route | รายการและหน้ารายละเอียด Pokémon |
+| 3 | Smart Pokédex | Server/Client, Hooks, Filter, List/Grid, Local Storage | Pokédex ที่ค้นหาและบันทึก Favorite |
+| 4 | Campus Guide | Nested Route, Layout, Route Group, Metadata | เว็บแนะนำสถานที่หลายหน้า |
+| 5 | Product Finder | `searchParams`, Query String, Pagination | ผลค้นหาที่แชร์ URL ได้ |
+| 6 | Event Registration | Server Action, Validation, Pending State | ฟอร์มลงทะเบียนพร้อม feedback |
+| 7 | Task Board | PostgreSQL, SQL, CRUD, Revalidation | กระดานงานที่เก็บข้อมูลจริง |
+| 8 | Members Only | Auth.js, OAuth, Session, Protected Route | Dashboard ที่ต้องเข้าสู่ระบบ |
+| 9 | Live Dashboard | Parallel Fetch, Suspense, Cache Components | Dashboard ที่ stream แต่ละ widget |
+| 10 | API Disaster Lab | Loading, Empty, Error, 404, Retry | เว็บที่รับมือ API ผิดพลาดได้ |
+| 11 | Mini Shopping Cart | Context, `useReducer`, Derived State | ตะกร้าสินค้าข้าม Component |
+| 12 | Photo Gallery | `next/image`, File Validation, Vercel Blob | แกลเลอรีที่อัปโหลดภาพจริง |
+| 13 | Shareable Article | Metadata, OG Image, Sitemap, Robots | บทความที่แชร์บน Social ได้สวย |
+| 14 | Release Day | Test, Accessibility, Lighthouse, Preview/Production | เว็บผ่าน Quality gate และ Deploy |
+
+## วิธีใช้เอกสาร
+
+ทุกสัปดาห์ประกอบด้วย:
+
+1. เป้าหมายและโจทย์ประจำคาบ
+2. Starter checklist และโครงสร้างไฟล์
+3. ขั้นตอนพร้อมตัวอย่างโค้ด
+4. คำอธิบายว่าโค้ดทำงานที่ Server หรือ Browser
+5. Lab และ Challenge
+6. Definition of Done
+7. คำถาม Exit ticket และเอกสารอ่านเพิ่ม
+
+<Callout type="warning">
+  ค่า Secret เช่น Database URL, OAuth Client Secret และ Blob token ต้องอยู่ใน `.env.local` หรือ Environment Variables ของผู้ให้บริการ ห้าม commit ลง Git และห้ามตั้งชื่อด้วย `NEXT_PUBLIC_` เว้นแต่ค่านั้นออกแบบมาให้เปิดเผยกับ Browser
+</Callout>
+
+## บทเรียน
+
+<Cards>
+  <Cards.Card title="สัปดาห์ 1 · My Profile" href="/nextjs/week-01" />
+  <Cards.Card title="สัปดาห์ 2 · Pokémon Explorer" href="/nextjs/week-02" />
+  <Cards.Card title="สัปดาห์ 3 · Smart Pokédex" href="/nextjs/week-03" />
+  <Cards.Card title="สัปดาห์ 4 · Campus Guide" href="/nextjs/week-04" />
+  <Cards.Card title="สัปดาห์ 5 · Product Finder" href="/nextjs/week-05" />
+  <Cards.Card title="สัปดาห์ 6 · Event Registration" href="/nextjs/week-06" />
+  <Cards.Card title="สัปดาห์ 7 · Task Board" href="/nextjs/week-07" />
+  <Cards.Card title="สัปดาห์ 8 · Members Only" href="/nextjs/week-08" />
+  <Cards.Card title="สัปดาห์ 9 · Live Dashboard" href="/nextjs/week-09" />
+  <Cards.Card title="สัปดาห์ 10 · API Disaster Lab" href="/nextjs/week-10" />
+  <Cards.Card title="สัปดาห์ 11 · Mini Shopping Cart" href="/nextjs/week-11" />
+  <Cards.Card title="สัปดาห์ 12 · Photo Gallery" href="/nextjs/week-12" />
+  <Cards.Card title="สัปดาห์ 13 · Shareable Article" href="/nextjs/week-13" />
+  <Cards.Card title="สัปดาห์ 14 · Release Day" href="/nextjs/week-14" />
+</Cards>
+
+## การประเมินที่แนะนำ
+
+| รายการ | น้ำหนัก |
+| --- | ---: |
+| ผลงานและ Exit ticket รายสัปดาห์ | 30% |
+| Checkpoint หลังสัปดาห์ 3, 7 และ 11 | 30% |
+| Quality gate และ Production release | 25% |
+| การอธิบายเหตุผลและ Code review | 15% |
+
+ให้คะแนนทั้ง “ผลลัพธ์ที่ทำงานได้” และ “เหตุผลในการออกแบบ” เช่น เหตุใด Component นี้ต้องเป็น Client Component เหตุใด state นี้ควรอยู่ใน URL และเหตุใด Secret จึงต้องอยู่ฝั่ง Server

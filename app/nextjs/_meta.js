@@ -1,0 +1,16 @@
+export default {
+  "week-01": "สัปดาห์ 1 · Profile และ Vercel",
+  "week-02": "สัปดาห์ 2 · PokéAPI และ Route Handler",
+  "week-03": "สัปดาห์ 3 · Server/Client, Hooks และ Favorite",
+  "week-04": "สัปดาห์ 4 · Campus Guide และ Routing",
+  "week-05": "สัปดาห์ 5 · Product Finder และ URL State",
+  "week-06": "สัปดาห์ 6 · Form และ Server Actions",
+  "week-07": "สัปดาห์ 7 · Task Board และ Database",
+  "week-08": "สัปดาห์ 8 · Authentication",
+  "week-09": "สัปดาห์ 9 · Dashboard, Cache และ Streaming",
+  "week-10": "สัปดาห์ 10 · Error Handling",
+  "week-11": "สัปดาห์ 11 · Shopping Cart และ Global State",
+  "week-12": "สัปดาห์ 12 · Photo Gallery และ Upload",
+  "week-13": "สัปดาห์ 13 · Metadata และ SEO",
+  "week-14": "สัปดาห์ 14 · Testing และ Release",
+}
