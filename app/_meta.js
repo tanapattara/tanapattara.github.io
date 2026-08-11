@@ -11,7 +11,7 @@ export default {
   typescript: "TypeScript",
   nextjs: "Next.js Project-based (14 สัปดาห์)",
   react: "React",
-  react_native: "React Native",
+  react_native: "React Native + Expo (14 สัปดาห์)",
   unity2d: "Unity 2D",
   "it-security": "IT Security & Laws",
 };

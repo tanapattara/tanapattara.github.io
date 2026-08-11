@@ -1,48 +1,17 @@
 ---
-title: "Installation and Setup with Expo"
-sidebarTitle: "Installation and Setup with Expo"
+title: "ติดตั้งและตั้งค่า Expo (URL เดิม)"
+sidebarTitle: "ติดตั้งและตั้งค่า Expo"
 ---
 
-# Installation and Setup with Expo
+# ติดตั้งและตั้งค่า Expo
 
-## Installation with Expo
+บทติดตั้งเดิมถูกรวมไว้ใน [สัปดาห์ 1](/react_native/week-01) เพื่อไม่ให้มีขั้นตอนซ้ำหรือโครงสร้าง `App.js` ที่ขัดกับ Expo Router
 
-https://docs.expo.dev/
-
-```bash
-npx create-expo-app@latest --template blank ./
-```
-
-สำหรับเท็มแพลต สามารถเลือกเพิ่มเติมได้ดังนี้
-
-| **Template** | **Description** |
-| --- | --- |
-| [`default`](https://github.com/expo/expo/tree/main/templates/expo-template-default) | Default template. Designed to build multi-screen apps. Includes recommended tools such as Expo CLI, Expo Router library and TypeScript configuration enabled. Suitable for most apps. |
-| [`blank`](https://github.com/expo/expo/tree/main/templates/expo-template-blank) | Installs minimum required npm dependencies without configuring navigation. |
-| [`blank-typescript`](https://github.com/expo/expo/tree/main/templates/expo-template-blank-typescript) | A Blank template with TypeScript enabled. |
-| [`tabs`](https://github.com/expo/expo/tree/main/templates/expo-template-tabs) | Installs and configures file-based routing with Expo Router and TypeScript enabled. |
-| [`bare-minimum`](https://github.com/expo/expo/tree/main/templates/expo-template-bare-minimum) | A Blank template with native directories (**android** and **ios**) generated. Runs [`npx expo prebuild`](https://docs.expo.dev/workflow/prebuild/) during the setup. |
-
-ตั้งค่า environment สำหรับทดสอบ expo เลือกอุปกรณ์ที่ต้องการจะทำการทดสอบ แล้วทำการติดตั้ง expo go จาก store ของอุปกรณ์ที่ต้องการทดสอบ
-
-https://docs.expo.dev/get-started/set-up-your-environment/
-
-หลังจากติดตั้ง expo go app แล้ว ให้ทำการใช้คำสั่ง
+Template เริ่มต้นที่แนะนำคือค่า default ของ `create-expo-app` ซึ่งมี TypeScript และ Expo Router พร้อมใช้งาน:
 
 ```bash
+npx create-expo-app@latest campus-events
 npx expo start
 ```
 
-เราจะได้ qr code มาเพื่อทำการใช้แอพ expo go ที่ติดตั้งแล้วโทรศัพท์ของเรา แสกนเพื่อเปิดแอพสำหรับทดสอบของเรา
-
-ที่มือถือเมื่อเปิดแอพ expo go อยู่สามารถเขย่าเพื่อเปิดเมนูได้
-
-กด `ctrl+c` เพื่อที่ Terminal เพื่อปิดการทำงานของ
-
-Structure
-
-เราจะได้แอพจาก React Native ที่มีโครงสร้างประกอบไปด้วย
-
-- โฟลเดอร์ assets เอาไว้เก็บไฟล์ทรัพยากร รูปภาพ และอื่น ๆ
-- `node_modules` เอาไว้เก็บไลบราลี่จาก node
-- `App.js` คอมโพเน้นเริ่มแรกที่ expo สร้างไว้ให้เรา โดยจะเรียกไปใช้งานร่วมกับ `index.js`
+เมื่อต้องติดตั้ง Expo module ให้ใช้ `npx expo install <package>` เพื่อเลือกเวอร์ชันที่เข้ากับ Expo SDK ของโปรเจกต์

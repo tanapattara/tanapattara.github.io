@@ -1,56 +1,8 @@
 ---
-title: "Page and Navigation with Expo Router"
-sidebarTitle: "Page and Navigation with Expo Router"
+title: "Page Navigation (URL เดิม)"
+sidebarTitle: "Page Navigation"
 ---
 
-# Page and Navigation with Expo Router
+# Page Navigation
 
-เราจะทำการเพิ่มหน้าใหม่ให้กับแอพของเรา โดยสร้างไฟล์ใหม่ชื่อ `about.jsx` เพื่อใช้แทนหน้า about ของเรา สร้างเอาไว้ในตำแหน่งเดียวกับ `index.jsx` นั่นคือในโฟลเดอร์ `app` 
-
-`app/index.jsx`
-
-```jsx
-import { StyleSheet, View, Text } from "react-native";
-
-const About = () => {
-  return (
-    <View style={styles.container}>
-      <Text style={styles.title}>About Page</Text>
-    </View>
-  );
-};
-
-export default About;
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1, // Takes up all available space
-    backgroundColor: "#fff", // White background color
-    alignItems: "center", // Centers content horizontally
-    justifyContent: "flex-start", // Centers content vertically
-    paddingVertical: 20,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: "bold",
-    marginBottom: 10,
-  },
-});
-
-```
-
-กลับไปที่หน้าแรก เราจะทำการเพิ่มลิงค์เพื่อให้สามารถเปลี่ยนหน้า หรือทำทางผู้ใช้งานไปยังหน้าที่กำหนด โดยใช้งานคอมโพเนนท์ที่ชื่อว่า `Link`
-
-`app/index.jsx`
-
-```jsx
-import { Link } from "expo-router";
-
-//...
-
-<Link href="/about" style={styles.button}>
-	Go to About Page
-</Link>
-```
-
-จะเห็นได้ว่า เราใส่เส้นทางใน `href` เพื่อนำทางไปยังหน้าที่เราต้องการ ตอนนี้เรามีไฟล์ `about.jsx` อยู่ในตำแหน่งเดียวกันกับไฟล์ `index.jsx` เราสามารถนำทางไปยังหน้าดังกล่าวโดยใช้เส้นทาง `/about`
+เนื้อหานี้ถูกรวมไว้ใน [สัปดาห์ 4: Expo Router และ Navigation](/react_native/week-04) เพื่อให้ `Link`, `router.push`, Dynamic routes, Stack, Tabs และ Deep links อยู่ในเส้นทางการเรียนเดียวและใช้ `.tsx` ทั้งหมด

@@ -1,0 +1,124 @@
+---
+title: "สัปดาห์ 8: Authentication และ Mobile Security"
+sidebarTitle: "Authentication และ Security"
+---
+
+import { Callout } from "nextra/components";
+
+# สัปดาห์ 8: Authentication และ Mobile Security
+
+สัปดาห์นี้เพิ่ม Login, Session restoration และ protected routes โดยแยก Authentication (ผู้ใช้คือใคร) ออกจาก Authorization (ผู้ใช้ทำสิ่งนี้ได้หรือไม่)
+
+## ผลลัพธ์การเรียนรู้
+
+- อธิบาย session, access token, refresh token และ token expiry
+- เก็บ token ใน SecureStore และฟื้น session เมื่อเปิดแอป
+- ป้องกัน route และตรวจสิทธิ์ซ้ำที่ API
+- จัดการ logout, token หมดอายุ และ failed refresh
+- อธิบายข้อจำกัดของ biometrics และความเสี่ยงพื้นฐานของ mobile app
+
+## Authentication flow
+
+```text
+เปิดแอป → อ่าน token จาก SecureStore
+  ├─ ไม่มี token → Anonymous routes
+  ├─ token ใช้ได้ → Authenticated routes
+  └─ tokenหมดอายุ → refresh
+       ├─ สำเร็จ → บันทึก token ใหม่
+       └─ ล้มเหลว → ล้าง session และไป Login
+```
+
+อย่าเก็บรหัสผ่านของผู้ใช้ไว้ในเครื่องหลังส่ง Login และอย่าบันทึก token ลง log, crash report หรือ URL
+
+## Session Provider
+
+```tsx
+type SessionState =
+  | { status: 'loading' }
+  | { status: 'anonymous' }
+  | { status: 'authenticated'; accessToken: string; user: User };
+
+async function restoreSession(): Promise<SessionState> {
+  const token = await SecureStore.getItemAsync('session/access-token');
+  if (!token) return { status: 'anonymous' };
+
+  const user = await getCurrentUser(token);
+  return { status: 'authenticated', accessToken: token, user };
+}
+```
+
+จัดการกรณี token ใช้ไม่ได้ด้วยการลบ token และกลับสู่ anonymous state ไม่ปล่อยให้แอปค้างที่ loading
+
+## Protected route ด้วย Expo Router
+
+ตรวจ session ที่ layout ของ route group และใช้ `Redirect` เมื่อ state พร้อมแล้ว
+
+```tsx
+import { Redirect, Slot } from 'expo-router';
+
+export default function ProtectedLayout() {
+  const { session } = useSession();
+
+  if (session.status === 'loading') return <SessionLoading />;
+  if (session.status === 'anonymous') return <Redirect href="/login" />;
+  return <Slot />;
+}
+```
+
+การซ่อนปุ่มหรือ redirect ใน client ไม่ใช่ authorization ฝั่ง server API ต้องตรวจ token และสิทธิ์ทุก request
+
+## Biometrics ใช้ตรงไหน
+
+Biometrics ยืนยันว่าผู้ใช้เครื่องผ่านการตรวจของระบบปฏิบัติการ เหมาะกับการปลดล็อก session ที่มีอยู่ ไม่ใช่หลักฐานแทน backend login
+
+```bash
+npx expo install expo-local-authentication
+```
+
+<Callout type="warning">
+  Face ID บน iOS ต้องใช้ Development Build และตั้ง usage description ให้ถูกต้อง ต้องมี fallback เมื่อเครื่องไม่รองรับ ผู้ใช้ยังไม่ลงทะเบียน หรือผู้ใช้กดยกเลิก
+</Callout>
+
+## Security checklist เบื้องต้น
+
+- ใช้ HTTPS และไม่ปิด certificate validation
+- เก็บ secret ฝั่ง server ไม่ใส่ใน `EXPO_PUBLIC_` variables
+- ตรวจ authorization ที่ API
+- ลดข้อมูลส่วนบุคคลใน local storage และ log
+- ล้าง session เมื่อ logout และกำหนดพฤติกรรมเมื่อ token หมดอายุ
+- อัปเดต dependencies อย่างมีเหตุผลและตรวจ advisory
+
+## Lab 8 — Login และ Protected registration
+
+1. สร้าง Login form และเรียก authentication API จำลอง
+2. เก็บ token ใน SecureStore
+3. Restore session เมื่อเปิดแอป
+4. ป้องกัน Event Registration route
+5. เพิ่ม logout และจำลอง token หมดอายุ
+6. ทดลอง biometric unlock เป็นงานต่อยอด
+
+## สิ่งที่ส่ง
+
+- Authentication/authorization flow diagram
+- วิดีโอ Login → Register → Restart → Restore → Logout
+- Threat checklist อย่างน้อย 6 ข้อ
+
+## Definition of Done
+
+- [ ] ไม่มี token/password ใน source code หรือ log
+- [ ] Protected screen ไม่กระพริบให้เห็นก่อนตรวจ session เสร็จ
+- [ ] API ตรวจสิทธิ์แม้ client ซ่อนปุ่มแล้ว
+- [ ] Logout ล้าง token และ state ที่เกี่ยวข้อง
+- [ ] มี fallback เมื่อ biometric ใช้ไม่ได้หรือถูกยกเลิก
+
+## Exit ticket
+
+1. Authentication และ Authorization ต่างกันอย่างไร?
+2. เหตุใด Protected route ฝั่ง client จึงไม่พอ?
+3. Biometrics ป้องกันภัยคุกคามใดและไม่ป้องกันอะไร?
+
+## อ่านเพิ่ม
+
+- [Expo SecureStore](https://docs.expo.dev/versions/latest/sdk/securestore/)
+- [Expo Router: Authentication](https://docs.expo.dev/router/advanced/authentication/)
+- [Expo LocalAuthentication](https://docs.expo.dev/versions/latest/sdk/local-authentication/)

@@ -10,7 +10,7 @@ sidebarTitle: "Location and Map"
 ในการปฏิบัติตามบทเรียนนี้ จำเป็นต้องมีการติดตั้งและตั้งค่าเครื่องมือดังต่อไปนี้:
 
 - **Node.js** และ **npm** (หรือ yarn)
-- **Expo CLI**: `npm install -g expo-cli`
+- **Expo CLI**: เรียกผ่าน `npx expo` โดยไม่ติดตั้งแบบ global
 - **Expo Go App**: ติดตั้งบนอุปกรณ์ทดสอบ (iOS หรือ Android)
 - **ไลบรารีที่เกี่ยวข้อง**:
     - `expo-location`: สำหรับการเข้าถึงข้อมูลตำแหน่ง
@@ -49,9 +49,9 @@ npx expo install react-native-maps
 
 แอปพลิเคชันจำเป็นต้องได้รับอนุญาตจากผู้ใช้ก่อนจึงจะสามารถเข้าถึงข้อมูลตำแหน่งได้ เราจะใช้ `expo-location` ในการจัดการส่วนนี้
 
-ในไฟล์ `App.js` (หรือไฟล์หลักของแอปพลิเคชัน) ให้เพิ่มโค้ดเพื่อขออนุญาตเมื่อแอปพลิเคชันเริ่มทำงาน
+ในโปรเจกต์รายวิชาให้เพิ่มโค้ดใน route component เช่น `app/(tabs)/events/map.tsx`
 
-**ตัวอย่างโค้ด: `App.js`**
+**ตัวอย่างโค้ด: `app/(tabs)/events/map.tsx`**
 
 ```tsx
 import React, { useState, useEffect } from 'react';
@@ -116,7 +116,7 @@ const styles = StyleSheet.create({
 
 หลังจากที่ได้ข้อมูลตำแหน่งแล้ว ขั้นตอนต่อไปคือการนำไปแสดงผลบนแผนที่โดยใช้ `react-native-maps`
 
-**ตัวอย่างโค้ด: `App.js` (ฉบับปรับปรุง)**
+**ตัวอย่างโค้ด: `app/(tabs)/events/map.tsx` (ฉบับปรับปรุง)**
 
 ```tsx
 import React, { useState, useEffect } from 'react';

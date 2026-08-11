@@ -1,46 +1,64 @@
 ---
-title: การเขียนโปรแกรมบนอุปกรณ์เคลื่อนที่ด้วย React Native
+title: การพัฒนาแอปมือถือด้วย React Native และ Expo
 sidebarTitle: React Native
 asIndexPage: true
 ---
 
-import { Cards } from "nextra/components";
+import { Callout, Cards } from "nextra/components";
 
-# การเขียนโปรแกรมบนอุปกรณ์เคลื่อนที่ด้วย React Native
+# React Native + Expo + TypeScript — 14 สัปดาห์
 
-## React Native คืออะไร
+หลักสูตรแบบ Project-based Learning สำหรับพัฒนาแอปมือถือข้ามแพลตฟอร์ม ตั้งแต่การเตรียมเครื่องมือจนถึงการสร้าง Preview/Production Build ผู้เรียนจะพัฒนา **Campus Events Mobile** จาก codebase เดียวต่อเนื่องตลอดภาคการศึกษา
 
-React Native คือ Framework สำหรับพัฒนาแอปพลิเคชันบนอุปกรณ์เคลื่อนที่ (Mobile Application) ที่สามารถทำงานได้ทั้งบน **iOS** และ **Android** จากโค้ดชุดเดียวกัน พัฒนาโดย Meta (Facebook) และเผยแพร่เป็น Open Source ในปี ค.ศ. 2015 โดยใช้ภาษา **JavaScript** ร่วมกับไลบรารี **React** เป็นพื้นฐาน
+<Callout type="info">
+  Technology baseline ของรายวิชาคือ React Native, Expo, TypeScript และ Expo Router ตัวอย่างทุกบทใช้ `.tsx`, `npx expo` และ `npx expo install`
+</Callout>
 
-ความแตกต่างจาก WebView-based framework อื่น ๆ คือ React Native แปลง Component ที่เขียนด้วย JavaScript ให้กลายเป็น Native UI Component ของแต่ละแพลตฟอร์ม ทำให้ได้ประสิทธิภาพและหน้าตาที่ใกล้เคียงกับแอปพลิเคชันที่เขียนด้วยภาษา Native (Swift / Kotlin) อย่างแท้จริง
+## รูปแบบการเรียน
 
-## ทำไมต้องเรียน React Native
+แต่ละสัปดาห์ใช้เวลาประมาณ 3 ชั่วโมง: บรรยายและสาธิต 1 ชั่วโมง ปฏิบัติการ 2 ชั่วโมง ทุก Lab เพิ่มความสามารถให้ Campus Events Mobile เว้นแต่ระบุว่าเป็นแบบฝึกสั้น
 
-- **Cross-platform** — เขียนโค้ดครั้งเดียว รันได้ทั้ง iOS และ Android
-- **ใช้ TypeScript** — ภาษาที่ type-safe ช่วยลด bugs และเพิ่มประสิทธิภาพการพัฒนา
-- **Hot Reload** — เห็นผลการเปลี่ยนแปลงทันทีโดยไม่ต้องรีสตาร์ทแอป
-- **Ecosystem ขนาดใหญ่** — มี Library และ Community พร้อมรองรับการพัฒนา
-- **ใช้งานจริงในองค์กรชั้นนำ** — เช่น Meta, Microsoft, Shopify, Discord
+## เส้นทางการเรียน 14 สัปดาห์
 
-## เนื้อหาในส่วนนี้
-
-หัวข้อต่าง ๆ ในส่วนนี้ถูกแบ่งออกเป็นบทเรียนย่อย เหมาะสำหรับนักศึกษาที่เริ่มต้นจนถึงระดับกลาง โดยเรียงลำดับจากพื้นฐานไปสู่การประยุกต์ใช้งานจริง ดังนี้
-
-| บท | หัวข้อ | สิ่งที่จะได้เรียนรู้ |
+| สัปดาห์ | หัวข้อ | ผลงานปลายคาบ |
 | --- | --- | --- |
-| 1 | การเริ่มต้นและติดตั้ง | ติดตั้ง Environment, สร้างโปรเจกต์แรกด้วย TypeScript |
-| 2 | Core Components | View, Text, Image, TextInput, Button |
-| 3 | การจัดรูปแบบและ Styling | StyleSheet, Flexbox, Responsive Design |
-| 4 | Navigation | React Navigation, Stack, Tab, Drawer |
-| 5 | State Management | useState, useReducer, Context API |
-| 6 | API และ Networking | fetch, axios, REST API |
-| 7 | Local Storage | AsyncStorage, SecureStore |
-| 8 | Workshop | แอปพลิเคชันตัวอย่างแบบครบวงจร |
+| 1 | Mobile, React Native, Expo และ TypeScript | โปรเจกต์และหน้า Profile |
+| 2 | Components, Props, State และ Events | `EventCard` ที่นำกลับมาใช้ซ้ำได้ |
+| 3 | Styling, Responsive UI และ Lists | รายการกิจกรรมพร้อม Loading/Empty/Error |
+| 4 | Expo Router และ Navigation | Events, Detail, Favorites และ Profile routes |
+| 5 | Forms และ State Management | Search, Favorite และ Registration form |
+| 6 | REST API และ Networking | โหลด/รีเฟรชกิจกรรมและส่ง Registration |
+| 7 | Storage และ Offline-first | Favorite ถาวรและ Offline event list |
+| 8 | Authentication และ Mobile Security | Session และ Protected registration route |
+| 9 | Camera, Image Picker และ Permissions | ถ่าย/เลือกรูปกิจกรรมพร้อม Preview |
+| 10 | Location และ Maps | ตำแหน่งปัจจุบันและหมุดสถานที่จัดงาน |
+| 11 | Notifications และ Platform APIs | Event reminder ที่เปิด Detail ด้วย deep link |
+| 12 | Architecture, Performance และ Accessibility | Refactor และ Quality audit |
+| 13 | Testing และ Debugging | Test suite และ EAS Preview Build |
+| 14 | Build, Release และ Presentation | Production candidate และการนำเสนอ |
+
+## บทเรียน
+
+<Cards>
+  <Cards.Card title="สัปดาห์ 1 · เริ่มต้น React Native และ Expo" href="/react_native/week-01" />
+  <Cards.Card title="สัปดาห์ 2 · Components, Props และ State" href="/react_native/week-02" />
+  <Cards.Card title="สัปดาห์ 3 · Styling และ Responsive UI" href="/react_native/week-03" />
+  <Cards.Card title="สัปดาห์ 4 · Expo Router" href="/react_native/week-04" />
+  <Cards.Card title="สัปดาห์ 5 · Forms และ State" href="/react_native/week-05" />
+  <Cards.Card title="สัปดาห์ 6 · REST API" href="/react_native/week-06" />
+  <Cards.Card title="สัปดาห์ 7 · Storage และ Offline" href="/react_native/week-07" />
+  <Cards.Card title="สัปดาห์ 8 · Authentication และ Security" href="/react_native/week-08" />
+  <Cards.Card title="สัปดาห์ 9 · Camera และ Image Picker" href="/react_native/week-09" />
+  <Cards.Card title="สัปดาห์ 10 · Location และ Maps" href="/react_native/week-10" />
+  <Cards.Card title="สัปดาห์ 11 · Notifications" href="/react_native/week-11" />
+  <Cards.Card title="สัปดาห์ 12 · Architecture และ Quality" href="/react_native/week-12" />
+  <Cards.Card title="สัปดาห์ 13 · Testing และ Debugging" href="/react_native/week-13" />
+  <Cards.Card title="สัปดาห์ 14 · Build และ Release" href="/react_native/week-14" />
+</Cards>
 
 ## โปรเจกต์ประจำวิชา
 
-พัฒนา **Campus Events Mobile** แบบต่อเนื่อง 9 Milestones ตั้งแต่ Expo Setup, Core Components, Navigation, State, REST API, Offline Storage, Authentication, Camera/Location ไปจนถึง Testing และ EAS Build โดยแต่ละช่วงส่งงานที่ใช้งานต่อจาก Milestone ก่อนหน้า
-
 <Cards>
-  <Cards.Card title="Campus Events Mobile — Project Milestones" href="/react_native/course-project" />
+  <Cards.Card title="Campus Events Mobile · 12 Milestones" href="/react_native/course-project" />
+  <Cards.Card title="แบบฝึกเสริม Todo App · สัปดาห์ 5–7" href="/react_native/workshop" />
 </Cards>

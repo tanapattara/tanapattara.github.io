@@ -1,78 +1,10 @@
 ---
-title: "Expo Router"
+title: "Expo Router (URL เดิม)"
 sidebarTitle: "Expo Router"
 ---
 
 # Expo Router
 
-## Install expo-router
+บท Expo Router, Page Navigation, Layouts/Stack และ Navigation เดิมถูกรวมเป็น [สัปดาห์ 4: Expo Router และ Navigation](/react_native/week-04)
 
-https://docs.expo.dev/router/installation/#manual-installation
-
-```bash
-npx expo install expo-router react-native-safe-area-context react-native-screens expo-linking expo-constants expo-status-bar
-```
-
-Setup entry point
-
-`package.json`
-
-```json
-{
-  "name": "profileapp",
-  "version": "1.0.0",
-  "main": "expo-router/entry",
-  //...
-}
-```
-
-modify project configuration
-
-`app.json`
-
-```json
-{
-  "expo": {
-    "scheme": "profileapp",
-    //...
-  }
-}
-```
-
-ตอนนี้เราได้ทำการติดตั้งและทำการเรียกใช้ expo-router โดยกำหนดให้เรียกใช้ทั้งโปรเจคของเรา เรียบร้อยแล้ว
-
-ทำการลบไฟล์ที่อยู่ด้านนอกคือ `App.js` และ `index.js` ออก
-
-เราจะย้ายไฟล์ `index.js` เข้าไปอยู่ในโฟลเดอร์ที่สร้างใหม่ชื่อ app เพื่อเป็นการปรับโครงสร้างของแอพ และเพื่อให้ง่ายต่อการจัดการ 
-
-`app/index.jsx`
-
-```jsx
-import { Text, View } from "react-native";
-
-const Home = () => {
-  return (
-    <View>
-      <Text style={styles.text}>Hello world</Text>
-    </View>
-  );
-};
-
-export default Home; 
-```
-
-`app/_layout.js`
-
-```jsx
-import { Stack } from "expo-router";
-
-export default function Layout() {
-  return (
-    <Stack>
-      <Stack.Screen name="index" options={{ title: "Profile" }} />
-    </Stack>
-  );
-}
-```
-
-ทดสอบการทำงาน เราจะได้หน้าจอของเราเป็นคำว่า Hello world พร้อมกับหัวข้อด้านบนว่า Profile
+บทใหม่ใช้ file-based routing เป็นแนวทางหลัก พร้อม routes `/events`, `/events/[id]`, `/favorites`, `/profile`, Dynamic parameters และ Deep links โดย React Navigation อธิบายในฐานะกลไกพื้นฐานของ Expo Router

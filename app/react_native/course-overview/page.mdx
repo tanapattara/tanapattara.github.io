@@ -1,38 +1,54 @@
 ---
-title: "Hybrid Mobile Application Programming"
-sidebarTitle: "คำอธิบายรายวิชา"
+title: "ภาพรวมรายวิชา Mobile Application Development"
+sidebarTitle: "ภาพรวมและคำอธิบายรายวิชา"
 ---
 
-import { Cards } from "nextra/components";
+import { Callout, Cards } from "nextra/components";
 
-# Hybrid Mobile Application Programming
+# ภาพรวมรายวิชา Mobile Application Development
 
-with React Native
+รายวิชานี้มุ่งพัฒนาแอปมือถือข้ามแพลตฟอร์มด้วย **React Native + Expo + TypeScript + Expo Router** ผ่านการสร้าง Campus Events Mobile อย่างต่อเนื่อง 14 สัปดาห์ ผู้เรียนจะเชื่อมโยงแนวคิด UI, Navigation, State, Networking, Offline data, Security, Device APIs, Testing และ Release เข้ากับผลิตภัณฑ์เดียว
 
-**คำอธิบายรายวิชา(ไทย) :**
+## คำอธิบายรายวิชา
 
-สถาปัตยกรรมฮาร์ดแวร์ คุณลักษณะและข้อจํากัดของอุปกรณ์เคลื่อนที่ เครื่องมือและภาษาที่ใช้สําหรับพัฒนาโปรแกรมประยุกต์บนอุปกรณ์เคลื่อนที่หลากหลายแพลตฟอร์ม การพัฒนาโปรแกรมประยุกต์บนอุปกรณ์เคลื่อนที่โดยใช้ภาษาหลากหลายแพลตฟอร์ม กระบวนการพัฒนาโปรแกรมประยุกต์บนอุปกรณ์เคลื่อนที่หลากหลายแพลตฟอร์ม การใช้หน่วยความจําและส่วนเก็บบันทึกข้อมูล การขออนุญาตและการเข้าถึงส่วนฮาร์ดแวร์ ส่วนติดต่อกับผู้ใช้ การสื่อสารเครือข่ายกับภายนอก การเชื่อมโยงกับระบบเครืองแม่ข่าย การทดสอบโปรแกรมประยุกต์บนอุปกรณ์เคลื่อนที่โดยใช้ระบบคอมพิวเตอร์ ประเด็นด้านความมั่นคง การฝึกปฏิบัติ
+ศึกษาสถาปัตยกรรม คุณลักษณะ และข้อจำกัดของอุปกรณ์เคลื่อนที่ กระบวนการพัฒนาแอปข้ามแพลตฟอร์ม ส่วนติดต่อผู้ใช้ การจัดการสถานะและข้อมูลถาวร การสื่อสารกับบริการภายนอก การขอสิทธิ์และเข้าถึงความสามารถของอุปกรณ์ ความมั่นคงปลอดภัย การทดสอบ การปรับประสิทธิภาพ และกระบวนการสร้างรุ่นสำหรับเผยแพร่ พร้อมฝึกปฏิบัติผ่านโครงงาน
 
-**คำอธิบายรายวิชา(อังกฤษ) :**
+## ผลลัพธ์การเรียนรู้
 
-Hardware architecture, characteristics and limitations of mobile devices, tools and languages for cross platform mobile application development, cross platform language programing, cross platform application development process for mobile devices, how to use memory and data store, user permission and hardware access permission, user interface, communication with external systems, interfacing with server,, mobile application testing using computer system simulation, security issues, hands-on practice
+เมื่อจบรายวิชา ผู้เรียนสามารถ:
+
+- ออกแบบและพัฒนาแอป React Native ด้วย Expo และ TypeScript
+- จัดโครงสร้างเส้นทางด้วย Expo Router และอธิบาย Stack, Tabs, Dynamic route และ Deep link
+- จัดการ Form, State, REST API, Cache และ Offline experience อย่างเป็นระบบ
+- เลือกใช้ AsyncStorage, SecureStore และ SQLite ให้ตรงกับชนิดข้อมูล
+- ขอ Permission และใช้ Camera, Image Picker, Location, Maps และ Notifications โดยมี UX เมื่อผู้ใช้ปฏิเสธ
+- ป้องกัน Route, รักษา Session และอธิบายขอบเขตของ Biometrics
+- ตรวจคุณภาพด้าน Testing, Performance, Accessibility และ Security
+- สร้าง Development, Preview และ Production Build รวมถึงวางแผน EAS Update
+
+## การจัดเวลาและการประเมิน
+
+| ส่วน | เวลา/น้ำหนักแนะนำ |
+| --- | ---: |
+| บรรยายและสาธิต | ประมาณ 1 ชั่วโมงต่อสัปดาห์ |
+| Lab และ Project studio | ประมาณ 2 ชั่วโมงต่อสัปดาห์ |
+| งานสะสมรายสัปดาห์ | 35% |
+| Project checkpoints | 30% |
+| Final build และการนำเสนอ | 25% |
+| การอธิบายเหตุผลและ Code review | 10% |
+
+<Callout type="warning">
+  ห้ามเก็บรหัสผ่าน, access token, API secret หรือข้อมูลส่วนบุคคลจริงไว้ใน source code, log หรือ repository สาธารณะ
+</Callout>
+
+## เครื่องมือหลัก
+
+- Node.js รุ่น LTS, Git และโปรแกรมแก้ไขโค้ด
+- Android Studio Emulator หรืออุปกรณ์ Android จริง
+- Expo Go สำหรับบทพื้นฐาน และ Development Build เมื่อใช้ความสามารถที่ Expo Go ไม่รองรับ
+- Expo CLI ผ่าน `npx expo` และ EAS CLI ผ่าน `npx eas-cli@latest`
 
 <Cards>
-  <Cards.Card title="Installation and setup" href="/react_native/expo-installation" />
-  <Cards.Card title="Expo-router" href="/react_native/expo-router" />
-  <Cards.Card title="Components and Style" href="/react_native/components-style" />
-  <Cards.Card title="Building" href="/react_native/building" />
-  <Cards.Card title="Page and Navigation" href="/react_native/page-navigation" />
-  <Cards.Card title="Layouts and Stack" href="/react_native/layouts-stack" />
-  <Cards.Card title="Camera" href="/react_native/camera" />
-  <Cards.Card title="location and map" href="/react_native/location-map" />
-  <Cards.Card title="Local Authentication" href="/react_native/local-authentication" />
-</Cards>
-
-## โปรเจกต์ประจำวิชา
-
-นำบทเรียนทั้งหมดมาพัฒนา Campus Events Mobile แบบสะสมผลงาน ตั้งแต่ UI และ Navigation ไปจนถึง API, Offline, Authentication, Device Permissions, Testing และ Release Build
-
-<Cards>
-  <Cards.Card title="ดูรายละเอียด Milestones" href="/react_native/course-project" />
+  <Cards.Card title="เริ่มสัปดาห์ 1" href="/react_native/week-01" />
+  <Cards.Card title="แผน Campus Events Mobile" href="/react_native/course-project" />
 </Cards>

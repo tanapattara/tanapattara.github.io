@@ -21,11 +21,11 @@ npx create-expo-app@latest camera-app --template blank-typescript
 npx expo install expo-camera expo-media-library
 ```
 
-การใช้ `npx expo install` จะช่วยให้เราได้เวอร์ชันของ Library ที่เข้ากันได้กับ Expo SDK ของโปรเจกต์เราโดยอัตโนมัติ
+การใช้ `npx expo install` จะช่วยให้เราได้เวอร์ชันของ Library ที่เข้ากันได้กับ Expo SDK ของโปรเจกต์เราโดยอัตโนมัติ เนื้อหาหลักของรายวิชาอยู่ใน [สัปดาห์ 9](/react_native/week-09)
 
 ## การขออนุญาตใช้งาน (Requesting Permissions)
 
-แอปพลิเคชันที่ดีจะต้องขออนุญาตผู้ใช้งานก่อนเข้าถึงฮาร์ดแวร์ส่วนตัวอย่างกล้องและพื้นที่จัดเก็บข้อมูลเสมอครับ เราจะเขียนโค้ดในไฟล์ `App.js` เพื่อจัดการส่วนนี้
+แอปพลิเคชันต้องขออนุญาตผู้ใช้ก่อนเข้าถึงกล้องและคลังรูปภาพ โดยเพิ่มโค้ดใน route component เช่น `app/events/photo.tsx`
 
 ### การขออนุญาตใช้กล้องและคลังรูปภาพ
 
@@ -92,7 +92,7 @@ const styles = StyleSheet.create({
 
 เมื่อได้รับอนุญาตแล้ว เราจะแสดงผลภาพจากกล้องและสร้างปุ่มสำหรับถ่ายภาพ เราต้องสร้าง `reference` ไปยัง Camera component เพื่อจะสั่งให้มันถ่ายภาพได้ครับ
 
-อัปเดตโค้ดใน `App.js` ต่อจากเดิม:
+อัปเดตโค้ดใน `app/events/photo.tsx` ต่อจากเดิม:
 
 ```tsx
 // ... (import statements และส่วนของ permission)
@@ -177,7 +177,7 @@ const styles = StyleSheet.create({
 
 หลังจากถ่ายภาพและแสดงตัวอย่างแล้ว ขั้นตอนสุดท้ายคือการเพิ่มปุ่มเพื่อให้ผู้ใช้สามารถบันทึกภาพลงในคลังรูปภาพของเครื่อง และปุ่มสำหรับกลับไปถ่ายใหม่
 
-อัปเดตโค้ดใน `App.js` ส่วนสุดท้าย:
+อัปเดตโค้ดใน `app/events/photo.tsx` ส่วนสุดท้าย:
 
 ```tsx
 // ... (import, state, useEffect, takePicture function)

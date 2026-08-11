@@ -5,24 +5,22 @@ sidebarTitle: "Building with Expo EAS"
 
 # Building with Expo EAS
 
-สำหรับการสร้างไฟล์สำหรับติดตั้ง Android เราจะใช้ Expo EAS ในการสร้างไฟล์ ทำการติดตั้ง `expo/eas-cli` โดยใช้ npm
+เนื้อหาการสร้าง Development, Preview และ Production Build รวมถึง EAS Update ถูกรวมไว้ใน [สัปดาห์ 14](/react_native/week-14) หน้านี้เก็บไว้เพื่อรักษา URL เดิม
 
 https://expo.dev/eas
 
-```bash
-npm install -g eas-cli
-```
+ไม่จำเป็นต้องติดตั้ง EAS CLI แบบ global ให้เรียกเวอร์ชันล่าสุดผ่าน `npx`:
 
 หลังจากทำการติดตั้งแล้ว เราจะต้องทำการลงชื่อเข้าใช้งาน โดยมีอีเมลและพาสเวอร์สำหรับเข้าสู่ระบบของ `eas`
 
 ```bash
-eas login
+npx eas-cli@latest login
 ```
 
 ทำการตั้งค่าโปรเจคของเราโดยใช้คำสั่ง
 
 ```bash
-eas build:configure
+npx eas-cli@latest build:configure
 ```
 
 `app.json` ทำการเพิ่ม `bundleIdentifier` สำหรับ ios และ `package` สำหรับแอนดรอย
@@ -49,7 +47,7 @@ eas build:configure
 build app โดยใช้คำสั่ง
 
 ```bash
-eas build --platform all
-eas build --platform android
-eas build --platform ios
+npx eas-cli@latest build --platform all --profile preview
+npx eas-cli@latest build --platform android --profile production
+npx eas-cli@latest build --platform ios --profile production
 ```

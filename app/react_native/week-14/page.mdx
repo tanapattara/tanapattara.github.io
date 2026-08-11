@@ -1,0 +1,144 @@
+---
+title: "สัปดาห์ 14: Build, Release และ Presentation"
+sidebarTitle: "Build, Release และ Presentation"
+---
+
+import { Callout } from "nextra/components";
+
+# สัปดาห์ 14: Build, Release และ Presentation
+
+สัปดาห์สุดท้ายเปลี่ยน Campus Events Mobile จากโปรเจกต์ที่รันในเครื่องให้เป็น release candidate ที่ทำซ้ำได้ มี configuration, version, assets, environment และหลักฐานการทดสอบครบ
+
+## ผลลัพธ์การเรียนรู้
+
+- ตั้งค่า app identity, icon, splash, scheme และ permissions
+- แยก Development, Preview และ Production profiles
+- จัดการ environment variables โดยไม่ฝัง secret ใน client
+- สร้าง Android/iOS build ด้วย EAS
+- อธิบายขอบเขตและความเสี่ยงของ EAS Update
+- นำเสนอผลิตภัณฑ์พร้อมหลักฐานคุณภาพและ known issues
+
+## Configuration ที่ต้อง freeze
+
+| รายการ | ตัวอย่าง |
+| --- | --- |
+| App name | Campus Events |
+| Android package | `th.ac.example.campusevents` |
+| iOS bundle ID | `th.ac.example.campusevents` |
+| Scheme | `campusevents` |
+| Version | `1.0.0` |
+| Build number/versionCode | เพิ่มทุกครั้งที่ส่ง store build |
+
+ตรวจ icon, adaptive icon, splash, permission descriptions และ deep link scheme บนเครื่องจริง
+
+## EAS profiles
+
+```json
+{
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal"
+    },
+    "preview": {
+      "distribution": "internal"
+    },
+    "production": {
+      "autoIncrement": true
+    }
+  }
+}
+```
+
+| Profile | ใช้เมื่อ | ผู้ใช้หลัก |
+| --- | --- | --- |
+| Development | พัฒนา/debug native modules | นักพัฒนา |
+| Preview | UAT/ตรวจงานก่อน release | ทีม ผู้สอน ผู้ทดสอบ |
+| Production | ส่ง store หรือ release จริง | ผู้ใช้ปลายทาง |
+
+## Build commands
+
+ไม่จำเป็นต้องติดตั้ง EAS CLI แบบ global
+
+```bash
+npx eas-cli@latest login
+npx eas-cli@latest build:configure
+npx eas-cli@latest build --platform android --profile preview
+npx eas-cli@latest build --platform android --profile production
+```
+
+iOS production build ต้องมี Apple Developer account และ signing ที่เหมาะสม หากรายวิชาเน้น Android ให้ส่ง iOS configuration/release plan แทน artifact ตามทรัพยากรที่มี
+
+## Environment และ Secrets
+
+- ค่า `EXPO_PUBLIC_*` จะอ่านได้จาก client bundle จึงไม่ใช่ secret
+- แยก API URL ของ preview/production
+- เก็บ server secret ที่ backend หรือ secret manager
+- ตรวจว่า log, source map, test account และ debug menu ไม่เปิดเผยข้อมูลเกินจำเป็น
+
+## EAS Update
+
+EAS Update ส่ง JavaScript/assets ที่เข้ากันกับ native runtime เดิมได้ เหมาะกับ bug fix ในส่วน JS แต่ไม่แทน store build เมื่อเปลี่ยน native dependency, permission, app identity หรือ native configuration
+
+```bash
+npx eas-cli@latest update --channel preview --message "แก้ empty state"
+```
+
+<Callout type="warning">
+  ก่อน OTA update ต้องตรวจ runtime compatibility, rollback plan และนโยบายของแพลตฟอร์ม อย่าใช้ Update เพื่อหลบกระบวนการตรวจของ store
+</Callout>
+
+## Release checklist
+
+- [ ] Typecheck, lint, tests และ Expo Doctor ผ่าน
+- [ ] Clean install และ migration จากรุ่นก่อนทำงาน
+- [ ] Login, Offline, Permission denied, Notification และ Deep link ผ่าน smoke test
+- [ ] Preview และ Production ใช้ environment ที่ถูกต้อง
+- [ ] Version/build number และ release notes ถูกต้อง
+- [ ] ไม่มี secret, debug endpoint หรือ test data หลุดไปใน build
+- [ ] Privacy/permission descriptions ตรงกับพฤติกรรมจริง
+- [ ] README ระบุ setup, architecture, environments, tests และ known issues
+
+## Lab 14 — Release candidate และ Final presentation
+
+1. ตรวจ app configuration และ assets
+2. สร้าง Preview หรือ Production candidate
+3. สาธิต OTA update บน preview channel
+4. ทำ smoke test บน clean install
+5. นำเสนอ Campus Events Mobile 6–8 นาที
+
+### โครงสร้างการนำเสนอ
+
+1. ปัญหาและผู้ใช้เป้าหมาย
+2. Flow หลัก: ค้นหา → Favorite → Login → Register
+3. Offline และ Device features
+4. Architecture, Testing และ Accessibility evidence
+5. Build/release workflow
+6. Known issues และสิ่งที่จะพัฒนาต่อ
+
+## สิ่งที่ส่ง
+
+- Installable build หรือ EAS link
+- Release notes และ test report
+- Source repository/tag และ README
+- วิดีโอ/สไลด์การนำเสนอ
+
+## Definition of Done
+
+- [ ] Clean install เปิดและทำ flow หลักได้
+- [ ] Release candidate ตรงกับ commit/tag ที่ส่ง
+- [ ] OTA demo ไม่เปลี่ยน native compatibility
+- [ ] ผู้ตรวจเริ่มโปรเจกต์ตาม README ได้
+- [ ] ทีมอธิบาย trade-offs และ known issues ได้ตรงไปตรงมา
+
+## Exit ticket
+
+1. การเปลี่ยนแปลงใดต้องสร้าง native build ใหม่?
+2. Preview และ Production profile ควรต่างกันอย่างไร?
+3. หลักฐานใดทำให้ผู้ตรวจเชื่อว่า release พร้อมใช้งาน?
+
+## อ่านเพิ่ม
+
+- [EAS Build](https://docs.expo.dev/build/introduction/)
+- [EAS Update](https://docs.expo.dev/eas-update/introduction/)
+- [Expo: App stores build](https://docs.expo.dev/deploy/build-project/)

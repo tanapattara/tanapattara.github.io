@@ -1,350 +1,336 @@
 ---
-title: "โปรเจกต์ประจำวิชา Hybrid Mobile"
-sidebarTitle: "โปรเจกต์ประจำวิชา"
+title: "Campus Events Mobile — โปรเจกต์ประจำวิชา"
+sidebarTitle: "โปรเจกต์ Campus Events Mobile"
 ---
 
-# โปรเจกต์ประจำวิชา Hybrid Mobile
+import { Callout } from "nextra/components";
 
-โปรเจกต์ประจำวิชาคือ **Campus Events Mobile** แอปค้นหาและเข้าร่วมกิจกรรมมหาวิทยาลัย พัฒนาด้วย React Native, Expo และ TypeScript โดยต่อยอด codebase เดียวตั้งแต่ UI พื้นฐานจนเป็นแอปที่เชื่อม API ทำงาน Offline ใช้ Camera/Location และสร้าง Release Build ด้วย EAS
+# Campus Events Mobile — โปรเจกต์ประจำวิชา
 
-## ความสามารถเมื่อเสร็จสมบูรณ์
+ผู้เรียนพัฒนาแอปค้นหา บันทึก และลงทะเบียนกิจกรรมมหาวิทยาลัยจาก codebase เดียวตลอด 14 สัปดาห์ แต่ละ Milestone เพิ่มความสามารถที่ใช้ต่อในสัปดาห์ถัดไป ไม่สร้างแอปใหม่แยกกันทุกครั้ง
 
-- แสดงรายการและรายละเอียดกิจกรรม
+## Product scope
+
+- ดูรายการและรายละเอียดกิจกรรม
 - ค้นหา กรอง และบันทึกรายการโปรด
-- สมัครสมาชิก Login และรักษา Session
-- โหลดข้อมูลจาก REST API และจัดการ Error/Retry
-- อ่านข้อมูลล่าสุดได้เมื่อ Offline
-- แนบรูปจาก Camera และตำแหน่งจัดกิจกรรม
-- รองรับ Permission denied และข้อจำกัดของแต่ละแพลตฟอร์ม
-- มี Unit/Component/E2E tests และ Android build สำหรับติดตั้ง
+- Login/Logout และลงทะเบียนกิจกรรมผ่าน protected route
+- ทำงานกับ REST API และแสดง cache เมื่อ Offline
+- ถ่าย/เลือกรูป เลือกสถานที่ และตั้ง Event reminder
+- รองรับ Loading, Empty, Error, Permission denied และ Accessibility
+- มี Test suite, Preview Build และ Production release plan
 
-## Technology Baseline
+## Technology baseline
 
 ```text
-React Native + Expo + TypeScript
-Expo Router
-fetch หรือ HTTP client ที่ทีมเลือก
-AsyncStorage + SecureStore
-Expo Camera/Image Picker + Location
-EAS Build
+React Native + Expo + TypeScript + Expo Router
+fetch + typed service/repository
+AsyncStorage + SecureStore + SQLite introduction
+Expo Camera/Image Picker + Location + Notifications
+EAS Development / Preview / Production + EAS Update
 ```
 
-หากเปลี่ยน library ต้องอธิบายเหตุผลและตรวจว่าใช้งานใน Expo development build หรือ Native project ที่เลือกได้
+## แบบจำลองข้อมูลหลัก
 
-## Data Model
-
-```typescript
+```tsx
 export type CampusEvent = {
   id: string;
   title: string;
   description: string;
+  startsAt: string; // ISO 8601
+  imageUrl?: string;
   location: {
     name: string;
     latitude: number;
     longitude: number;
   };
-  startsAt: string;
-  imageUrl?: string;
-  isFavorite: boolean;
 };
 ```
 
-ใช้ ISO 8601 string สำหรับเวลาที่ส่งผ่าน API และแปลงเป็น `Date` เมื่อจำเป็นต้อง format ใน UI
+## Milestone 1 — Setup
 
-## Milestone 0 — Product Brief และ Expo Setup
+### เป้าหมายการเรียนรู้
 
-### เนื้อหาที่ใช้
+เข้าใจ mobile architecture, Expo workflow และ TypeScript baseline
 
-ลักษณะอุปกรณ์ Mobile, Cross-platform development, Expo และ TypeScript
+### ความสามารถที่ต้องมี
 
-### งานที่ต้องทำ
-
-1. กำหนด Persona นักศึกษาและผู้จัดกิจกรรม
-2. เขียน User Stories อย่างน้อย 6 รายการ
-3. วาด User Flow: เปิดแอป → ค้นหา → ดูรายละเอียด → Favorite/ลงทะเบียน
-4. สร้าง Expo project ด้วย TypeScript และ Git repository
-5. ทดสอบบน Android Emulator และอุปกรณ์จริงอย่างน้อยหนึ่งเครื่อง
-
-```bash
-npx create-expo-app@latest campus-events
-cd campus-events
-npx expo start
-```
+- สร้าง Expo Router project และ Profile screen
+- รันบน Android emulator/อุปกรณ์จริง
+- มี Product brief, persona, user stories และ user flow
 
 ### สิ่งที่ส่ง
 
-Product brief, User flow, URL repository และภาพแอปทำงานบนอุปกรณ์
+Repository, README, Product brief, User flow และภาพแอปบนอุปกรณ์
 
-### เกณฑ์ผ่าน
+### Checklist
 
-- [ ] โปรเจกต์เริ่มได้จากคำสั่งใน README
-- [ ] มี `.gitignore` และไม่มี secret/ไฟล์ build ใน repository
-- [ ] User stories สอดคล้องกับ scope ที่ทำได้จริง
+- [ ] เริ่มได้ด้วยคำสั่งใน README
+- [ ] ไม่มี secret/build artifact ใน Git
+- [ ] User stories อย่างน้อย 6 รายการอยู่ใน scope
 
-## Milestone 1 — Core Components และ Responsive UI
+## Milestone 2 — UI และ Components
 
-### เนื้อหาที่ใช้
+### เป้าหมายการเรียนรู้
 
-View, Text, Image, Pressable, TextInput, ScrollView, FlatList, StyleSheet และ Flexbox
+สร้าง typed reusable components และ responsive list UI
 
-### งานที่ต้องทำ
+### ความสามารถที่ต้องมี
 
-- สร้าง Home และ Event Card จาก mock data
-- แสดงรายการด้วย `FlatList` และ stable key
-- รองรับ Loading Skeleton และ Empty State แบบจำลอง
-- ทำ UI ให้ใช้ได้บนหน้าจอเล็ก/ใหญ่และแนวตั้ง
-- เพิ่ม accessibilityLabel และ touch target ที่เหมาะสม
-
-```tsx
-<FlatList
-  data={events}
-  keyExtractor={(item) => item.id}
-  renderItem={({ item }) => (
-    <EventCard event={item} onPress={() => openEvent(item.id)} />
-  )}
-  ListEmptyComponent={<Text>ยังไม่มีกิจกรรม</Text>}
-/>
-```
+- `EventCard`, Event list และ mock data
+- Loading, Empty และ Error states
+- Safe area, responsive layout และ accessibility labels
 
 ### สิ่งที่ส่ง
 
-Component catalog และภาพจากอย่างน้อยสองขนาดหน้าจอ
+Component catalog และภาพสองขนาดหน้าจอ
 
-### เกณฑ์ผ่าน
+### Checklist
 
-- [ ] ไม่ใช้ `ScrollView` render list จำนวนมาก
-- [ ] Component รับข้อมูลผ่าน typed props
-- [ ] UI ไม่ล้นเมื่อเพิ่มขนาดตัวอักษรของระบบ
+- [ ] Props มี type และ Component ไม่ผูกกับ mock data
+- [ ] List ใช้ `FlatList` และ stable key
+- [ ] UI ไม่ล้นเมื่อเพิ่ม font scale
 
-## Milestone 2 — Navigation ด้วย Expo Router
+## Milestone 3 — Navigation
 
-### เนื้อหาที่ใช้
+### เป้าหมายการเรียนรู้
 
-File-based routing, Stack, Tabs, Dynamic Route และ Route Parameters
+ออกแบบ file-based routing, Stack, Tabs, Dynamic routes และ Deep links
 
-### งานที่ต้องทำ
+### ความสามารถที่ต้องมี
 
-- สร้าง Tabs: Events, Favorites และ Profile
-- สร้าง `/events/[id]` สำหรับรายละเอียด
-- ส่งเฉพาะ ID ผ่าน route แล้วค้นข้อมูลจาก repository/store
-- ตั้ง Header และ Back behavior
-- จัดการ Deep Link ที่ ID ไม่มีอยู่
-
-```tsx
-router.push({
-  pathname: '/events/[id]',
-  params: { id: event.id },
-});
-```
+- `/events`, `/events/[id]`, `/favorites`, `/profile`
+- Not found/invalid ID state
+- Android Back และ deep link behavior
 
 ### สิ่งที่ส่ง
 
-Route diagram และวิดีโอสาธิต Stack/Tab/Deep Link
+Route diagram และวิดีโอสาธิต navigation/deep link
 
-### เกณฑ์ผ่าน
+### Checklist
 
-- [ ] ปุ่ม Back ของ Android ทำงานตามคาด
-- [ ] Reload/deep link เข้าหน้ารายละเอียดได้
-- [ ] Route parameter มี type และ validate ก่อนใช้
+- [ ] Expo Router เป็นเส้นทางหลักและไม่มี NavigationContainer ซ้ำ
+- [ ] ส่งเฉพาะ ID ผ่าน route และ validate ก่อนใช้
+- [ ] Deep link เข้า Detail ได้โดยตรง
 
-## Milestone 3 — State Management และ Form
+## Milestone 4 — Forms และ State
 
-### เนื้อหาที่ใช้
+### เป้าหมายการเรียนรู้
 
-`useState`, `useReducer`, Context API, Controlled Input และ Validation
+จัด ownership ของ state และสร้าง form ที่ให้ feedback ชัดเจน
 
-### งานที่ต้องทำ
+### ความสามารถที่ต้องมี
 
-- เพิ่ม Favorite state ที่ใช้ร่วมระหว่าง List/Detail/Favorites
-- สร้างฟอร์มค้นหาและฟอร์มลงทะเบียนกิจกรรม
-- แยก State เป็น idle, loading, success และ error
-- ป้องกัน submit ซ้ำ
-- ย้าย business logic ออกจาก Screen ไป hook/reducer
-
-```typescript
-type EventState =
-  | { status: 'idle'; data: CampusEvent[] }
-  | { status: 'loading'; data: CampusEvent[] }
-  | { status: 'success'; data: CampusEvent[] }
-  | { status: 'error'; data: CampusEvent[]; message: string };
-```
+- Event search และ shared Favorite state
+- Event registration form พร้อม validation
+- Reducer/custom hooks และ submitting state
 
 ### สิ่งที่ส่ง
 
-State diagram และ reducer/custom hook พร้อม test ของ transition หลัก
+State diagram, form demo และ reducer/hook
 
-### เกณฑ์ผ่าน
+### Checklist
 
-- [ ] ไม่ใช้ boolean หลายตัวที่สร้าง state ขัดแย้งกันได้
-- [ ] Form แสดง error ใกล้ field และรักษาค่าที่กรอกเมื่อ submit ล้มเหลว
-- [ ] Screen ไม่มี API/storage logic โดยตรง
+- [ ] ไม่มี derived state ซ้ำโดยไม่จำเป็น
+- [ ] Error อยู่ใกล้ field และอ่านด้วย screen reader ได้
+- [ ] ป้องกัน submit ซ้ำและรักษาค่าเมื่อส่งล้มเหลว
 
-## Milestone 4 — REST API และ Networking
+## Milestone 5 — API
 
-### เนื้อหาที่ใช้
+### เป้าหมายการเรียนรู้
 
-Fetch, HTTP methods, JSON, Custom Hook และ Error Handling
+เชื่อม REST API อย่างทนทานและแยก network boundary
 
-### งานที่ต้องทำ
+### ความสามารถที่ต้องมี
 
-- โหลดรายการและรายละเอียดจาก API
-- ส่งข้อมูลลงทะเบียนด้วย POST
-- เพิ่ม timeout หรือ abort request เมื่อออกจากหน้า
-- รองรับ Loading, Empty, Error และ Retry
-- เพิ่ม Pull-to-refresh และ Pagination หาก API รองรับ
-
-```typescript
-export async function getEvents(signal?: AbortSignal): Promise<CampusEvent[]> {
-  const response = await fetch(`${API_URL}/events`, { signal });
-  if (!response.ok) {
-    throw new Error(`Request failed: ${response.status}`);
-  }
-  return response.json();
-}
-```
+- GET event list/detail และ POST registration
+- Loading, Error, Retry และ Pull-to-refresh
+- Request cancellation และ runtime response validation
 
 ### สิ่งที่ส่ง
 
-API documentation, Network state screenshots และ test ด้วย mock response
+API contract, service code และ network-state test matrix
 
-### เกณฑ์ผ่าน
+### Checklist
 
-- [ ] ตรวจ `response.ok` และไม่สมมติว่าทุก response เป็น JSON ที่ถูกต้อง
-- [ ] ยกเลิก request ที่ไม่ใช้แล้วหรือป้องกัน state update หลัง unmount
-- [ ] Retry ไม่สร้างรายการซ้ำจาก POST
+- [ ] ตรวจ `response.ok`
+- [ ] Screen ไม่เรียก `fetch` โดยตรง
+- [ ] Retry ไม่สร้าง registration ซ้ำ
 
-## Milestone 5 — Storage และ Offline Experience
+## Milestone 6 — Offline และ Cache
 
-### เนื้อหาที่ใช้
+### เป้าหมายการเรียนรู้
 
-AsyncStorage, SecureStore, Serialization และ Offline-first
+เลือก storage ตามชนิดข้อมูลและออกแบบ offline-first read flow
 
-### งานที่ต้องทำ
+### ความสามารถที่ต้องมี
 
-- บันทึกรายการโปรดด้วย AsyncStorage
-- Cache รายการกิจกรรมล่าสุดและเวลาอัปเดต
-- แสดง cached data เมื่อ Offline พร้อมข้อความบอกผู้ใช้
-- เก็บ token จำลองใน SecureStore ไม่ใช้ AsyncStorage
-- เพิ่ม Logout ที่ล้างข้อมูล session อย่างเหมาะสม
-
-```typescript
-await AsyncStorage.setItem('favorite_event_ids', JSON.stringify(ids));
-
-const raw = await AsyncStorage.getItem('favorite_event_ids');
-const storedIds: string[] = raw ? JSON.parse(raw) : [];
-```
+- Favorite persistence ด้วย AsyncStorage
+- Event cache พร้อมเวลาอัปเดต
+- SQLite proof-of-concept และ Offline banner
 
 ### สิ่งที่ส่ง
 
-Storage matrix ระบุข้อมูล/เครื่องมือ/อายุ/วิธีล้าง และวิดีโอทดสอบ Offline
+Storage matrix และวิดีโอ restart/offline flow
 
-### เกณฑ์ผ่าน
+### Checklist
 
-- [ ] Restart แอปแล้ว Favorite ยังอยู่
-- [ ] Offline state ไม่แสดงข้อมูลเก่าเหมือนเป็นข้อมูลสดโดยไม่บอกผู้ใช้
-- [ ] Token ไม่ปรากฏใน AsyncStorage หรือ log
+- [ ] Favorite คงอยู่หลัง restart
+- [ ] Cache เก่าแสดงสถานะและเวลาอัปเดต
+- [ ] Token ไม่อยู่ใน AsyncStorage/log
 
-## Milestone 6 — Authentication และ App Security
+## Milestone 7 — Authentication
 
-### เนื้อหาที่ใช้
+### เป้าหมายการเรียนรู้
 
-Login, Session, SecureStore, Local Authentication และ Route Protection
+จัดการ session, route protection และ mobile security fundamentals
 
-### งานที่ต้องทำ
+### ความสามารถที่ต้องมี
 
-- สร้าง Login/Logout และ Session restoration
-- ป้องกันหน้าลงทะเบียนกิจกรรมสำหรับผู้ที่ยังไม่ Login
-- แนบ access token ใน API request
-- รองรับ token หมดอายุและกลับไป Login
-- ใช้ Biometrics เป็นการปลดล็อก session ที่มีอยู่ ไม่ใช้แทน backend authentication
+- Login/Logout และ session restoration
+- Protected registration route
+- Token expiry flow และ biometric unlock เป็นงานต่อยอด
 
 ### สิ่งที่ส่ง
 
-Authentication flow, Threat checklist และบัญชีทดสอบ
+Auth flow, threat checklist และบัญชีทดสอบ
 
-### เกณฑ์ผ่าน
+### Checklist
 
-- [ ] ไม่มี password/token ใน source code หรือ log
-- [ ] Backend ยังตรวจสิทธิ์แม้ UI ซ่อนปุ่มแล้ว
-- [ ] ผู้ใช้ยกเลิก biometric แล้วมีทางเลือกที่เหมาะสม
+- [ ] Token อยู่ใน SecureStore
+- [ ] API ตรวจ authorization ซ้ำ
+- [ ] Logout ล้าง session และข้อมูลที่กำหนด
 
-## Milestone 7 — Camera, Location และ Permissions
+## Milestone 8 — Camera และ Image
 
-### เนื้อหาที่ใช้
+### เป้าหมายการเรียนรู้
 
-Camera, Image Picker, Location, Map และ Permission lifecycle
+ใช้ Camera/Image Picker พร้อม Permission lifecycle และ file validation
 
-### งานที่ต้องทำ
+### ความสามารถที่ต้องมี
 
-- ให้ผู้จัดกิจกรรมถ่ายหรือเลือกรูป
-- อ่านตำแหน่งปัจจุบันและแสดงบน Map
-- จัดการ Granted, Denied และ Permanently Denied
-- ตรวจ permission ใหม่เมื่อกลับจาก Settings
-- ลดขนาดรูปและ validate ซ้ำที่ backend ก่อน upload
-
-```typescript
-const permission = await Location.requestForegroundPermissionsAsync();
-if (permission.status !== 'granted') {
-  setMessage('ไม่สามารถแสดงตำแหน่งได้หากไม่ได้รับอนุญาต');
-  return;
-}
-```
+- ถ่ายหรือเลือกรูปกิจกรรม
+- Preview, Remove และ Replace
+- Granted/Denied/Permanently denied UX
 
 ### สิ่งที่ส่ง
 
-Permission test matrix ของ Android/iOS และวิดีโอสาธิต Camera/Location
+Permission diagram และวิดีโอทุกเส้นทางสำคัญ
 
-### เกณฑ์ผ่าน
+### Checklist
 
-- [ ] แอปไม่ crash เมื่อปฏิเสธ Permission
-- [ ] ขอ Permission เมื่อเริ่มใช้ Feature ไม่ใช่ขอทั้งหมดตอนเปิดแอป
-- [ ] มีคำอธิบายว่าข้อมูลตำแหน่ง/รูปถูกใช้และเก็บอย่างไร
+- [ ] ขอ Permission เมื่อเริ่มใช้ฟีเจอร์
+- [ ] ปฏิเสธ/ยกเลิกแล้วแอปไม่ crash และ form ไม่หาย
+- [ ] Backend validation requirements ระบุชัดเจน
 
-## Milestone 8 — Testing, EAS Build และ Release
+## Milestone 9 — Location และ Maps
 
-### เนื้อหาที่ใช้
+### เป้าหมายการเรียนรู้
 
-Unit/Component/E2E Testing, Performance, EAS Build และ Mobile Release
+ใช้พิกัดและแผนที่โดยคำนึงถึง platform, accuracy และ privacy
 
-### งานที่ต้องทำ
+### ความสามารถที่ต้องมี
 
-- Unit Test reducer, formatter และ validation
-- Component Test สำหรับ EventCard, Form และ Error state
-- End-to-End Test flow Login → Favorite → Register
-- ตรวจ performance ของ FlatList และ image loading
-- กำหนด app icon, splash, version และ environment
-- สร้าง Android preview/production build ด้วย EAS
-
-```bash
-npx expo-doctor
-npm test
-eas build --platform android --profile preview
-```
+- Event venue map และ marker
+- Current location กับ manual venue selection
+- Permission denied fallback
 
 ### สิ่งที่ส่ง
 
-- Installable build หรือ EAS download link
-- Test report และ Known Issues
-- README: setup, environment, architecture, permissions และ test accounts
-- วิดีโอสาธิต 5–8 นาทีบนอุปกรณ์จริง
+Platform test matrix, privacy note และวิดีโอ map flow
 
-### เกณฑ์ผ่าน
+### Checklist
 
-- [ ] Clean install แล้วเปิดแอปและ flow หลักทำงาน
-- [ ] Build ไม่มี development secret หรือ test endpoint โดยไม่ตั้งใจ
-- [ ] Permission, Offline, expired session และ API error ถูกทดสอบ
-- [ ] README ทำให้ผู้ตรวจเริ่มโปรเจกต์ได้
+- [ ] Venue map ใช้ได้แม้ไม่ให้ current location
+- [ ] ไม่ขอ background location โดยไม่มี requirement
+- [ ] พิกัดที่เลือกกลับเข้าสู่ form ถูกต้อง
+
+## Milestone 10 — Notifications และ Device Features
+
+### เป้าหมายการเรียนรู้
+
+เชื่อม notification lifecycle กับ deep link และ app states
+
+### ความสามารถที่ต้องมี
+
+- ตั้ง/ยกเลิก Local Event reminder
+- เปิด Event detail จาก notification
+- รองรับ foreground, background และ cold start
+
+### สิ่งที่ส่ง
+
+Lifecycle diagram และวิดีโอ reminder flow
+
+### Checklist
+
+- [ ] Payload เก็บเฉพาะข้อมูลจำเป็นและ validate ID
+- [ ] Cold start เปิด route ที่ถูกต้อง
+- [ ] Event not found/unauthorized มี fallback
+
+## Milestone 11 — Architecture, Performance และ Testing
+
+### เป้าหมายการเรียนรู้
+
+ปรับโครงสร้างตาม boundary จริง วัด performance และสร้าง regression protection
+
+### ความสามารถที่ต้องมี
+
+- Services/repositories/hooks แยกจาก screens
+- Accessibility audit และ FlatList performance review
+- Validation, reducer/hook, EventCard และ Login flow tests
+
+### สิ่งที่ส่ง
+
+Architecture diagram, audit report และ test report
+
+### Checklist
+
+- [ ] Optimization มีหลักฐานก่อน/หลัง
+- [ ] Flow หลักใช้ screen reader และ font scale 200% ได้
+- [ ] Static checks/tests ผ่าน
+
+## Milestone 12 — Build และ Release
+
+### เป้าหมายการเรียนรู้
+
+สร้าง release candidate ที่ทำซ้ำได้และอธิบาย deployment/update workflow
+
+### ความสามารถที่ต้องมี
+
+- Development/Preview/Production profiles
+- Icon, splash, version, environment และ permission descriptions
+- EAS Preview/Production build และ EAS Update demo
+
+### สิ่งที่ส่ง
+
+Build link/artifact, release notes, README, test report และวิดีโอนำเสนอ 6–8 นาที
+
+### Checklist
+
+- [ ] Clean install และ flow หลักผ่าน
+- [ ] Build ตรงกับ commit/tag ที่ส่ง
+- [ ] ไม่มี secret/debug endpoint/test data หลุดไป
+- [ ] OTA update เข้ากับ native runtime และมี rollback plan
+
+## Checkpoints ที่แนะนำ
+
+| หลังสัปดาห์ | Milestones | รูปแบบตรวจ |
+| --- | --- | --- |
+| 4 | 1–3 | Demo UI + Navigation |
+| 8 | 4–7 | Demo Data + Offline + Auth |
+| 11 | 8–10 | Demo Device features |
+| 14 | 11–12 | Release review + Presentation |
 
 ## เกณฑ์ประเมินรวม
 
-| ด้าน | สัดส่วนแนะนำ |
+| ด้าน | น้ำหนักแนะนำ |
 | --- | ---: |
-| Feature และ User Experience | 25% |
-| React Native/TypeScript และโครงสร้างโค้ด | 20% |
-| API, State และ Offline Data | 20% |
-| Authentication, Permission และ Security | 15% |
-| Testing, Performance และ Release Build | 10% |
-| Git, Documentation และการนำเสนอ | 10% |
+| Feature และ Mobile UX | 25% |
+| React Native, TypeScript และ Architecture | 20% |
+| API, State, Offline และ Data | 20% |
+| Security, Permissions และ Device features | 15% |
+| Testing, Performance และ Accessibility | 10% |
+| Git, Documentation, Build และ Presentation | 10% |
 
-ทุก Milestone ต้องนำ Feedback รอบก่อนกลับมาแก้ไข การประเมินจึงดูทั้งความสามารถใหม่และคุณภาพของงานสะสม ไม่ควรรื้อเขียนใหม่ก่อนส่งโดยไม่มีเหตุผลหรือประวัติการเปลี่ยนแปลง
-
+<Callout type="info">
+  ทุก Milestone ต้องนำ feedback รอบก่อนกลับมาแก้ไข การประเมินดูทั้งความสามารถใหม่และคุณภาพสะสมของ codebase ไม่ควรรื้อเขียนใหม่ทั้งหมดก่อนส่งโดยไม่มีเหตุผลหรือประวัติการเปลี่ยนแปลง
+</Callout>

@@ -1,0 +1,130 @@
+---
+title: "สัปดาห์ 13: Testing และ Debugging"
+sidebarTitle: "Testing และ Debugging"
+---
+
+import { Callout } from "nextra/components";
+
+# สัปดาห์ 13: Testing และ Debugging
+
+เป้าหมายของการทดสอบคือให้ทีมเปลี่ยนโค้ดได้อย่างมั่นใจ เลือกระดับ test ตามความเสี่ยงและ feedback speed พร้อมใช้ TypeScript, lint, Expo Doctor และเครื่องมือ debug เป็น quality gates
+
+## ผลลัพธ์การเรียนรู้
+
+- แยก Type checking, linting, unit, component, integration และ E2E tests
+- ทดสอบ pure function, reducer, custom hook และ Component interaction
+- mock network/storage/device boundary แทนการ mock implementation ทุกชั้น
+- ใช้ Expo Doctor และ debugger หา root cause
+- สร้าง EAS Preview Build สำหรับการทดสอบร่วมกัน
+
+## Testing pyramid สำหรับ Campus Events
+
+| ระดับ | ตัวอย่าง | จุดเด่น |
+| --- | --- | --- |
+| Static | TypeScript, ESLint, Expo Doctor | เร็ว จับ configuration และชนิดข้อมูล |
+| Unit | validation, reducer, formatter | เร็วและระบุสาเหตุง่าย |
+| Component | EventCard, Login form | ตรวจ UI กับ interaction |
+| Integration | Login + session + protected route | ตรวจหลาย boundary ร่วมกัน |
+| E2E | Login → Favorite → Register | ใกล้ประสบการณ์จริง แต่ช้า/ดูแลยากกว่า |
+
+## Quality commands
+
+ใช้ scripts ที่มีอยู่ในโปรเจกต์จริง อย่าคัดลอกชื่อคำสั่งโดยไม่ตรวจ `package.json`
+
+```bash
+npx tsc --noEmit
+npx expo lint
+npx expo-doctor
+npm test
+```
+
+## Unit test: reducer
+
+```tsx
+import { favoriteReducer } from '../favorites-reducer';
+
+describe('favoriteReducer', () => {
+  it('adds and removes the same event id', () => {
+    const added = favoriteReducer([], { type: 'toggle', id: 'event-1' });
+    expect(added).toEqual(['event-1']);
+
+    const removed = favoriteReducer(added, { type: 'toggle', id: 'event-1' });
+    expect(removed).toEqual([]);
+  });
+});
+```
+
+## Component test: EventCard
+
+ทดสอบสิ่งที่ผู้ใช้มองเห็นและกระทำ ไม่ผูก test กับชื่อ state หรือโครงสร้างภายใน
+
+```tsx
+const onOpen = jest.fn();
+render(<EventCard event={event} isFavorite={false} onOpen={onOpen} />);
+
+fireEvent.press(screen.getByText(event.title));
+expect(onOpen).toHaveBeenCalledWith(event.id);
+```
+
+## Integration และ E2E scope
+
+- Validation: invalid email แสดง error และไม่เรียก API
+- Login flow: token สำเร็จ → เก็บ SecureStore → เปิด protected route
+- Offline: API ล้มเหลว → แสดง cache พร้อม banner
+- Notification: event ID → เปิด Detail หรือ Not found
+- E2E smoke: Login → Favorite → Register → Logout
+
+<Callout type="warning">
+  อย่าใช้ production account หรือข้อมูลจริงในการทดสอบ และอย่า hard-code secret ใน test fixture ใช้ test environment ที่ล้างข้อมูลได้
+</Callout>
+
+## Debugging workflow
+
+1. ทำให้ปัญหาเกิดซ้ำด้วยขั้นตอนสั้นที่สุด
+2. อ่าน error แรกและ stack trace
+3. ตรวจ input/state/network ก่อนแก้แบบเดา
+4. ลดขอบเขตด้วย pure function หรือ component test
+5. เพิ่ม regression test ก่อนหรือพร้อม fix
+6. ลบ temporary log และตรวจ flow เดิมซ้ำ
+
+## EAS Preview Build
+
+```bash
+npx eas-cli@latest build --platform android --profile preview
+```
+
+Preview build ใช้แจกทีม/ผู้สอนทดสอบก่อน production และต้องชี้ไป environment สำหรับทดสอบที่ถูกต้อง
+
+## Lab 13 — Test และ Preview build
+
+1. เพิ่ม validation test และ favorite reducer/hook test
+2. เพิ่ม EventCard component test
+3. เพิ่ม Login/protected route integration test
+4. รัน typecheck, lint, tests และ Expo Doctor
+5. สร้าง EAS Preview Build และทดสอบบน clean install
+
+## สิ่งที่ส่ง
+
+- Test report พร้อมคำสั่งและผลลัพธ์
+- Bug report หนึ่งรายการพร้อม reproduction และ regression test
+- Preview build link หรือ installable artifact
+
+## Definition of Done
+
+- [ ] Static checks และ tests ผ่าน
+- [ ] Test สำคัญไม่พึ่ง network จริง
+- [ ] Assertions อิง behavior ของผู้ใช้
+- [ ] Preview build ติดตั้งใหม่และเปิดได้
+- [ ] Known issues ระบุผลกระทบและวิธีหลีกเลี่ยง
+
+## Exit ticket
+
+1. ปัญหาใดเหมาะกับ unit test และปัญหาใดต้อง E2E?
+2. เพราะเหตุใดการ mock ภายในมากเกินไปทำให้ test เปราะ?
+3. Preview build ลดความเสี่ยงก่อน production อย่างไร?
+
+## อ่านเพิ่ม
+
+- [Expo: Unit testing](https://docs.expo.dev/develop/unit-testing/)
+- [Expo Doctor](https://docs.expo.dev/workflow/expo-cli/#expo-doctor)
+- [React Native Testing Library](https://callstack.github.io/react-native-testing-library/)

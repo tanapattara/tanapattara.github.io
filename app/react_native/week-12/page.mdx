@@ -1,0 +1,117 @@
+---
+title: "สัปดาห์ 12: Architecture, Performance และ Accessibility"
+sidebarTitle: "Architecture, Performance และ Accessibility"
+---
+
+import { Callout } from "nextra/components";
+
+# สัปดาห์ 12: Architecture, Performance และ Accessibility
+
+เมื่อฟีเจอร์หลักครบแล้ว ให้หยุดเพิ่ม scope และปรับโครงสร้างตามปัญหาจริง วัด performance ก่อน optimize และตรวจ accessibility ด้วยการใช้งานจริง ไม่ใช่ดูจากหน้าจออย่างเดียว
+
+## ผลลัพธ์การเรียนรู้
+
+- แยก screens, components, hooks, services, repositories และ types
+- ระบุ source of truth และทิศทางการไหลของข้อมูล
+- ตรวจ render/list/image performance ด้วยหลักฐาน
+- ใช้ memoization เมื่อมี bottleneck ที่พิสูจน์ได้
+- ทำ accessibility audit ด้วย screen reader, font scale และ touch interaction
+
+## โครงสร้างแนะนำ
+
+```text
+campus-events/
+├── app/                     # routes และ screen composition
+├── components/              # reusable presentational components
+├── features/
+│   ├── events/
+│   │   ├── components/
+│   │   ├── hooks/
+│   │   └── types.ts
+│   ├── auth/
+│   └── notifications/
+├── services/                # HTTP/device API wrappers
+├── repositories/            # API + cache orchestration
+├── storage/                 # AsyncStorage/SecureStore/SQLite
+└── test/
+```
+
+โครงสร้างเป็นเครื่องมือสื่อสาร ไม่ใช่กฎตายตัว อย่าสร้างชั้น abstraction ที่มีเพียงการส่งค่าต่อโดยไม่มีเหตุผล
+
+## Data flow
+
+```text
+Screen → feature hook → repository → API/storage/device service
+   ↑           ↓             ↓
+ render     typed state   normalized data/error
+```
+
+Screen ควรประกอบ UI และเรียก use case ส่วนรายละเอียด `fetch`, storage key และ permission API ควรอยู่หลัง service/repository boundary
+
+## Performance review
+
+- ใช้ React DevTools/Profiler ระบุ component ที่ render บ่อย
+- `FlatList`: stable key, หลีกเลี่ยงงานหนักใน `renderItem`, ใช้ pagination
+- รูปภาพ: กำหนดขนาด ลด resolution และใช้ placeholder/cache ตามความเหมาะสม
+- อย่าใส่ `useMemo`, `useCallback` หรือ `memo` ทุกที่โดยไม่มีการวัด
+- ทดสอบ Development Build/Release-like build เพราะ dev mode มี overhead ต่างกัน
+
+```tsx
+const renderEvent = useCallback(
+  ({ item }: { item: CampusEvent }) => (
+    <EventCard event={item} onOpen={openEvent} />
+  ),
+  [openEvent]
+);
+```
+
+โค้ดนี้มีประโยชน์เมื่อ `EventCard`/list พบปัญหา reference เปลี่ยนจากการวัดแล้ว ไม่ใช่เพราะ callback ทุกตัวต้อง memoize
+
+## Accessibility audit
+
+| ตรวจ | คำถาม |
+| --- | --- |
+| Semantics | ปุ่ม รูป และหัวข้อมี role/label ที่ถูกต้องหรือไม่ |
+| Focus | ลำดับ focus และ focus หลัง navigation/error เหมาะสมหรือไม่ |
+| Text | font scale 200% แล้วยังอ่านและกดได้หรือไม่ |
+| Contrast | ข้อความ/สถานะไม่พึ่งสีอย่างเดียวหรือไม่ |
+| Motion | animation เคารพ reduce motion หรือไม่ |
+| Touch | target ใหญ่และห่างพอหรือไม่ |
+
+<Callout type="info">
+  Accessibility ที่ดีมักช่วยผู้ใช้ทุกคน เช่น label ที่ชัดเจน, error ที่อยู่ใกล้ field, touch target ใหญ่ และ layout ที่รองรับข้อความยาว
+</Callout>
+
+## Lab 12 — Refactor และ Quality audit
+
+1. วาด dependency/data-flow จาก codebase ปัจจุบัน
+2. ย้าย API/storage/device logic ออกจาก screen
+3. ตรวจ Event list ด้วย profiler และแก้ bottleneck ที่วัดได้ 1 จุด
+4. ทดสอบด้วย TalkBack/VoiceOver และ font scale 200%
+5. แก้ accessibility issues อย่างน้อย 5 จุดและบันทึก before/after
+
+## สิ่งที่ส่ง
+
+- Architecture diagram และเหตุผลของแต่ละ boundary
+- Performance trace หรือหลักฐานก่อน/หลัง
+- Accessibility audit report
+
+## Definition of Done
+
+- [ ] ไม่มี screen ที่ทำ API, storage และ render logic รวมกันทั้งหมด
+- [ ] Source of truth ของ event/favorite/session ชัดเจน
+- [ ] Optimization ทุกจุดอ้างอิงหลักฐาน
+- [ ] Flow หลักใช้งานด้วย screen reader ได้
+- [ ] UI ยังทำงานเมื่อ font scale 200%
+
+## Exit ticket
+
+1. Abstraction แบบใดเพิ่มความซับซ้อนโดยไม่ให้ประโยชน์?
+2. เพราะเหตุใดต้องวัดก่อน optimize?
+3. Accessibility issue ใดส่งผลกับผู้ใช้ทั่วไปด้วย?
+
+## อ่านเพิ่ม
+
+- [React Native: Optimizing FlatList](https://reactnative.dev/docs/optimizing-flatlist-configuration)
+- [React Native: Performance](https://reactnative.dev/docs/performance)
+- [React Native: Accessibility](https://reactnative.dev/docs/accessibility)
