@@ -38,13 +38,16 @@ import { Callout } from "nextra/components";
   "build": {
     "development": {
       "developmentClient": true,
-      "distribution": "internal"
+      "distribution": "internal",
+      "channel": "development"
     },
     "preview": {
-      "distribution": "internal"
+      "distribution": "internal",
+      "channel": "preview"
     },
     "production": {
-      "autoIncrement": true
+      "autoIncrement": true,
+      "channel": "production"
     }
   }
 }
@@ -55,6 +58,38 @@ import { Callout } from "nextra/components";
 | Development | พัฒนา/debug native modules | นักพัฒนา |
 | Preview | UAT/ตรวจงานก่อน release | ทีม ผู้สอน ผู้ทดสอบ |
 | Production | ส่ง store หรือ release จริง | ผู้ใช้ปลายทาง |
+
+ก่อนสร้าง Preview/Production Build ให้ติดตั้งและตั้งค่า EAS Update เพื่อให้ binary มี update URL, project ID และ runtime policy ที่ถูกต้อง:
+
+```bash
+npx expo install expo-updates
+npx eas-cli@latest update:configure
+```
+
+คำสั่ง `update:configure` จะเพิ่มค่าจริงของโปรเจกต์ใน app config ตัวอย่างโครงสร้างผลลัพธ์ที่เป็น JSON ถูกต้อง:
+
+```json
+{
+  "expo": {
+    "name": "Campus Events",
+    "slug": "campus-events",
+    "version": "1.0.0",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/PROJECT_ID"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "PROJECT_ID"
+      }
+    }
+  }
+}
+```
+
+อย่าพิมพ์ `PROJECT_ID` ตามตัวอย่าง ให้ใช้ค่าที่ EAS สร้างให้และ commit เฉพาะ configuration ที่ไม่ใช่ secret
 
 ## Build commands
 
@@ -80,12 +115,29 @@ iOS production build ต้องมี Apple Developer account และ signin
 
 EAS Update ส่ง JavaScript/assets ที่เข้ากันกับ native runtime เดิมได้ เหมาะกับ bug fix ในส่วน JS แต่ไม่แทน store build เมื่อเปลี่ยน native dependency, permission, app identity หรือ native configuration
 
+### Branch, Channel และ Runtime Version
+
+- **Branch** เก็บลำดับของ update groups เช่น branch สำหรับ preview หรือ production
+- **Channel** ถูกฝังใน native build และชี้ไป branch ที่ build นั้นควรรับ update
+- **Runtime version** ป้องกันไม่ให้ build ดาวน์โหลด update ที่ต้องใช้ native code คนละชุด
+
+`eas.json` ด้านบนผูก Preview Build กับ channel `preview` และ Production Build กับ channel `production` หลังตั้งค่าและสร้าง build แล้วจึงเผยแพร่ update:
+
 ```bash
 npx eas-cli@latest update --channel preview --message "แก้ empty state"
 ```
 
+| การเปลี่ยนแปลง | EAS Update ได้ | ต้องสร้าง Native Build ใหม่ |
+| --- | :---: | :---: |
+| ข้อความ, TypeScript logic, style, bundled image | ✓ | |
+| เพิ่ม/อัปเดต native module | | ✓ |
+| เปลี่ยน permission หรือ config plugin | | ✓ |
+| เปลี่ยน app icon, package/bundle ID หรือ signing | | ✓ |
+
+ก่อนส่ง production ให้เผยแพร่ที่ preview channel และทดสอบกับ build ที่ใช้ runtime เดียวกัน หาก update มีปัญหา ให้หยุด rollout และ republish update group ที่ทราบว่าเสถียรจาก EAS dashboard พร้อมบันทึกเหตุการณ์และ regression test
+
 <Callout type="warning">
-  ก่อน OTA update ต้องตรวจ runtime compatibility, rollback plan และนโยบายของแพลตฟอร์ม อย่าใช้ Update เพื่อหลบกระบวนการตรวจของ store
+  `eas update:configure` และการสร้าง build ที่มี `expo-updates` ต้องเกิดก่อนการสาธิต OTA ตรวจ runtime compatibility, rollback plan และนโยบายของแพลตฟอร์มเสมอ
 </Callout>
 
 ## Release checklist

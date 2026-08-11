@@ -1,53 +1,10 @@
 ---
-title: "Building with Expo EAS"
-sidebarTitle: "Building with Expo EAS"
+title: "EAS Build และ EAS Update (URL เดิม)"
+sidebarTitle: "EAS Build และ EAS Update"
 ---
 
-# Building with Expo EAS
+# EAS Build และ EAS Update
 
-เนื้อหาการสร้าง Development, Preview และ Production Build รวมถึง EAS Update ถูกรวมไว้ใน [สัปดาห์ 14](/react_native/week-14) หน้านี้เก็บไว้เพื่อรักษา URL เดิม
+เนื้อหาการสร้าง Development, Preview และ Production Build รวมถึง EAS Update ที่ตั้งค่า `expo-updates`, channel และ runtime version ครบถ้วน อยู่ใน [สัปดาห์ 14: Build, Release และ Presentation](/react_native/week-14)
 
-https://expo.dev/eas
-
-ไม่จำเป็นต้องติดตั้ง EAS CLI แบบ global ให้เรียกเวอร์ชันล่าสุดผ่าน `npx`:
-
-หลังจากทำการติดตั้งแล้ว เราจะต้องทำการลงชื่อเข้าใช้งาน โดยมีอีเมลและพาสเวอร์สำหรับเข้าสู่ระบบของ `eas`
-
-```bash
-npx eas-cli@latest login
-```
-
-ทำการตั้งค่าโปรเจคของเราโดยใช้คำสั่ง
-
-```bash
-npx eas-cli@latest build:configure
-```
-
-`app.json` ทำการเพิ่ม `bundleIdentifier` สำหรับ ios และ `package` สำหรับแอนดรอย
-
-```bash
-{
-  "expo": { 
-    "ios": {
-      "supportsTablet": true,
-      "bundleIdentifier": "com.yourcompany.profileapp"
-    },
-    "android": {
-      "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
-      },
-      "edgeToEdgeEnabled": true,
-      "package": "com.yourcompany.profileapp"
-    },    
-  }
-}
-```
-
-build app โดยใช้คำสั่ง
-
-```bash
-npx eas-cli@latest build --platform all --profile preview
-npx eas-cli@latest build --platform android --profile production
-npx eas-cli@latest build --platform ios --profile production
-```
+URL นี้เก็บไว้สำหรับลิงก์เดิม ตัวอย่าง configuration ที่ไม่สมบูรณ์ถูกนำออกเพื่อให้ผู้เรียนใช้ workflow ปัจจุบันเพียงชุดเดียว

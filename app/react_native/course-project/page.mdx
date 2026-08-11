@@ -200,46 +200,50 @@ Auth flow, threat checklist และบัญชีทดสอบ
 - [ ] API ตรวจ authorization ซ้ำ
 - [ ] Logout ล้าง session และข้อมูลที่กำหนด
 
-## Milestone 8 — Camera และ Image
+## Milestone 8 — Development Build และ Device API Foundation
 
 ### เป้าหมายการเรียนรู้
 
-ใช้ Camera/Image Picker พร้อม Permission lifecycle และ file validation
+เปลี่ยนจาก Expo Go ไปสู่ development client ที่มี native modules/configuration ของโปรเจกต์ และวาง Permission lifecycle ก่อนเริ่ม Device APIs
 
 ### ความสามารถที่ต้องมี
 
-- ถ่ายหรือเลือกรูปกิจกรรม
-- Preview, Remove และ Replace
-- Granted/Denied/Permanently denied UX
+- ติดตั้ง `expo-dev-client` และสร้าง Development Build profile
+- เปิดแอปด้วย `npx expo start --dev-client`
+- เตรียม native modules/config สำหรับ Camera, Location และ Notifications
+- สร้าง Permission matrix: Granted, Denied และ Ask again ไม่ได้
 
 ### สิ่งที่ส่ง
 
-Permission diagram และวิดีโอทุกเส้นทางสำคัญ
+Development Build link/QR, native configuration inventory และ Permission diagram
 
 ### Checklist
 
-- [ ] ขอ Permission เมื่อเริ่มใช้ฟีเจอร์
-- [ ] ปฏิเสธ/ยกเลิกแล้วแอปไม่ crash และ form ไม่หาย
-- [ ] Backend validation requirements ระบุชัดเจน
+- [ ] Development Build ติดตั้งและเชื่อม dev server ได้
+- [ ] ทีมอธิบายได้ว่าการเปลี่ยนแปลงใดต้อง rebuild
+- [ ] ไม่ติดตั้ง CLI แบบ global และไม่ commit credentials
 
-## Milestone 9 — Location และ Maps
+## Milestone 9 — Camera, Image, Location และ Maps
 
 ### เป้าหมายการเรียนรู้
 
-ใช้พิกัดและแผนที่โดยคำนึงถึง platform, accuracy และ privacy
+ใช้ Camera/Image Picker และ Location/Maps โดยขอ Permission ตาม action ของผู้ใช้ คำนึงถึง file validation, platform, accuracy และ privacy
 
 ### ความสามารถที่ต้องมี
 
+- ถ่าย/เลือกรูป พร้อม Preview, Remove และ Replace
 - Event venue map และ marker
 - Current location กับ manual venue selection
-- Permission denied fallback
+- Permission denied/canceled fallback
 
 ### สิ่งที่ส่ง
 
-Platform test matrix, privacy note และวิดีโอ map flow
+Platform/Permission test matrix, privacy note และวิดีโอ photo + map flow
 
 ### Checklist
 
+- [ ] ขอ Permission เมื่อผู้ใช้เริ่มฟีเจอร์ ไม่ขอทั้งหมดตอนเปิดแอป
+- [ ] ปฏิเสธ/ยกเลิกแล้วแอปไม่ crash และ form ไม่หาย
 - [ ] Venue map ใช้ได้แม้ไม่ให้ current location
 - [ ] ไม่ขอ background location โดยไม่มี requirement
 - [ ] พิกัดที่เลือกกลับเข้าสู่ form ถูกต้อง
@@ -266,7 +270,7 @@ Lifecycle diagram และวิดีโอ reminder flow
 - [ ] Cold start เปิด route ที่ถูกต้อง
 - [ ] Event not found/unauthorized มี fallback
 
-## Milestone 11 — Architecture, Performance และ Testing
+## Milestone 11 — Architecture, Performance, Accessibility และ Testing
 
 ### เป้าหมายการเรียนรู้
 
@@ -299,6 +303,7 @@ Architecture diagram, audit report และ test report
 - Development/Preview/Production profiles
 - Icon, splash, version, environment และ permission descriptions
 - EAS Preview/Production build และ EAS Update demo
+- Preview/Production channels และ runtime version policy
 
 ### สิ่งที่ส่ง
 

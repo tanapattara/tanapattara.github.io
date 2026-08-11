@@ -25,9 +25,14 @@ import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 export type CampusEvent = {
   id: string;
   title: string;
-  venue: string;
+  description: string;
   startsAt: string;
-  imageUrl: string;
+  imageUrl?: string;
+  location: {
+    name: string;
+    latitude: number;
+    longitude: number;
+  };
 };
 
 type EventCardProps = {
@@ -45,10 +50,16 @@ export function EventCard({
 }: EventCardProps) {
   return (
     <Pressable style={styles.card} onPress={() => onOpen(event.id)}>
-      <Image source={{ uri: event.imageUrl }} style={styles.image} />
+      {event.imageUrl ? (
+        <Image
+          source={{ uri: event.imageUrl }}
+          style={styles.image}
+          accessibilityLabel={`ภาพกิจกรรม ${event.title}`}
+        />
+      ) : null}
       <View style={styles.body}>
         <Text style={styles.title}>{event.title}</Text>
-        <Text>{event.venue}</Text>
+        <Text>{event.location.name}</Text>
         <Pressable
           accessibilityRole="button"
           accessibilityLabel={`${isFavorite ? 'นำออกจาก' : 'เพิ่มใน'}รายการโปรด`}

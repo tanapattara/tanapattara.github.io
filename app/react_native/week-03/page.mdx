@@ -64,7 +64,14 @@ type EventListState =
 <FlatList
   data={events}
   keyExtractor={(item) => item.id}
-  renderItem={({ item }) => <EventCard event={item} />}
+  renderItem={({ item }) => (
+    <EventCard
+      event={item}
+      isFavorite={favoriteIds.includes(item.id)}
+      onOpen={openEvent}
+      onToggleFavorite={toggleFavorite}
+    />
+  )}
   contentContainerStyle={events.length === 0 ? styles.emptyList : styles.list}
   ListEmptyComponent={
     <EmptyState

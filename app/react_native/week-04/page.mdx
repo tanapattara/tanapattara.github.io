@@ -25,15 +25,15 @@ app/
 ├── index.tsx                 # redirect ไป /events
 ├── (tabs)/
 │   ├── _layout.tsx
-│   ├── events/
-│   │   ├── index.tsx        # /events
-│   │   └── [id].tsx         # /events/:id
+│   ├── events.tsx            # /events
 │   ├── favorites.tsx        # /favorites
 │   └── profile.tsx          # /profile
+├── events/
+│   └── [id].tsx              # /events/:id (อยู่ใน Root Stack)
 └── +not-found.tsx
 ```
 
-วงเล็บใน `(tabs)` ใช้จัดกลุ่มไฟล์โดยไม่เพิ่ม segment ใน URL
+โครงสร้างนี้ใช้ **Root Stack ครอบ Tabs** หน้า Events, Favorites และ Profile จึงแสดง Tab bar ตามปกติ ส่วน Event detail อยู่นอก `(tabs)` เมื่อเปิดรายละเอียด Root Stack จะวางหน้าใหม่ทับ Tabs และให้ปุ่มย้อนกลับอัตโนมัติ วงเล็บใน `(tabs)` ใช้จัดกลุ่มไฟล์โดยไม่เพิ่ม segment ใน URL
 
 ## Root Stack และ Tabs
 
@@ -42,7 +42,15 @@ app/
 import { Stack } from 'expo-router';
 
 export default function RootLayout() {
-  return <Stack screenOptions={{ headerBackTitle: 'กลับ' }} />;
+  return (
+    <Stack screenOptions={{ headerBackTitle: 'กลับ' }}>
+      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+      <Stack.Screen
+        name="events/[id]"
+        options={{ title: 'รายละเอียดกิจกรรม' }}
+      />
+    </Stack>
+  );
 }
 ```
 
@@ -60,6 +68,17 @@ export default function TabsLayout() {
   );
 }
 ```
+
+```tsx
+// app/index.tsx
+import { Redirect } from 'expo-router';
+
+export default function IndexScreen() {
+  return <Redirect href="/events" />;
+}
+```
+
+Layout แต่ละชั้นสร้าง Navigator ให้ routes ที่อยู่ข้างใต้: `app/_layout.tsx` สร้าง Stack และ `app/(tabs)/_layout.tsx` สร้าง Tabs การแยก Detail ออกนอกกลุ่ม Tabs ทำให้โครงสร้าง Stack → Tabs เข้าใจง่ายและไม่ต้องสร้าง `NavigationContainer` เอง
 
 ## Dynamic route และ Parameters
 

@@ -19,6 +19,28 @@ import { Callout } from "nextra/components";
 - สร้างและรัน Expo project บน Android Emulator และอุปกรณ์จริง
 - สร้าง Profile screen ด้วย Core Components และ typed data
 
+## Course Technology Baseline
+
+รายวิชาใช้ baseline เดียวตลอดงานที่ให้คะแนน เพื่อให้ทุกคนติดตั้ง package และแก้ปัญหาจาก environment ชุดเดียวกัน
+
+| รายการ | นโยบายของรายวิชา |
+| --- | --- |
+| Mobile framework | React Native ผ่าน Expo |
+| Expo SDK/Template | ผู้สอนประกาศ template และ Expo SDK ที่อนุมัติก่อนเปิดภาคเรียน |
+| ภาษา | TypeScript และไฟล์ `.ts`/`.tsx` |
+| Navigation | Expo Router |
+| Node.js | Node.js LTS รุ่นที่ผู้สอนประกาศ |
+| Package manager | ใช้ `npm` ในตัวอย่างและเก็บ `package-lock.json` |
+
+`create-expo-app@latest` เปลี่ยนค่าเริ่มต้นได้ตามเวลา งานที่ให้คะแนนจึงต้องใช้คำสั่งที่ผู้สอนประกาศ เช่น `--template default@sdk-XX` และห้ามเปลี่ยน Expo SDK กลางภาคโดยไม่ประสานผู้สอน
+
+```bash
+# รูปแบบคำสั่ง ผู้สอนจะแทน sdk-XX ด้วย baseline ของภาคเรียนนั้น
+npx create-expo-app@latest campus-events --template default@sdk-XX
+```
+
+หลังสร้างโปรเจกต์ให้บันทึกเวอร์ชันจาก `package.json` ไว้ใน README ของทีม หากเอกสารออนไลน์ต่างจาก baseline ให้เปิดเอกสารของ Expo SDK ที่รายวิชาใช้ก่อนคัดลอกตัวอย่าง
+
 ## ภาพรวมสถาปัตยกรรม
 
 | ชั้น | หน้าที่ใน Campus Events Mobile |
@@ -31,15 +53,17 @@ import { Callout } from "nextra/components";
 
 React Native ไม่ได้แสดงเว็บใน WebView แต่สร้าง UI ด้วย native components ของแพลตฟอร์ม ส่วน Expo ช่วยจัดการ toolchain, native modules และ build workflow ให้สม่ำเสมอขึ้น
 
-## Expo Go หรือ Development Build
+## Expo Go, Development, Preview และ Production Build
 
 | เลือกใช้ | เหมาะกับ | ข้อจำกัดสำคัญ |
 | --- | --- | --- |
-| Expo Go | เรียน UI, Router และ module ที่รวมมาแล้ว | เพิ่ม native library ที่กำหนดเองไม่ได้ |
-| Development Build | ทดสอบ native configuration และ module ของโปรเจกต์ | ต้องสร้าง build ก่อนและติดตั้งบนเครื่อง |
+| Expo Go | เรียนรู้และทำ prototype อย่างรวดเร็ว | ใช้ได้เฉพาะ native modules ที่รวมมากับ Expo Go |
+| Development Build | พัฒนาแอปจริงด้วย native modules/configuration ของโปรเจกต์ | ต้องสร้างและติดตั้ง development client |
+| Preview Build | แจกให้ทีม ผู้สอน หรือผู้ทดสอบตรวจงาน | ไม่มีเครื่องมือพัฒนาเต็มรูปแบบ |
+| Production Build | รุ่นสำหรับส่ง Store หรือเผยแพร่จริง | ต้องผ่าน release checklist และ signing |
 
 <Callout type="info">
-  เริ่มด้วย Expo Go ในสัปดาห์ 1–4 แล้วเปลี่ยนเป็น Development Build เมื่อบทเรียนหรืออุปกรณ์ต้องใช้ native configuration เฉพาะ เช่น Face ID และ Push Notifications บางรูปแบบ
+  เริ่มด้วย Expo Go ในบทพื้นฐาน แล้วเปลี่ยนเป็น Development Build ภายในสัปดาห์ 8 ก่อนทำงานที่พึ่ง native configuration เช่น Face ID, notification configuration และการทดสอบใกล้เคียงแอปจริง
 </Callout>
 
 ## สร้าง Campus Events Mobile
@@ -47,12 +71,13 @@ React Native ไม่ได้แสดงเว็บใน WebView แต่�
 ต้องมี Node.js รุ่น LTS, Git และ Android Studio หรืออุปกรณ์จริง ไม่ต้องติดตั้ง `expo-cli` แบบ global
 
 ```bash
-npx create-expo-app@latest campus-events
+# ใช้คำสั่ง baseline ที่ผู้สอนประกาศแทน sdk-XX
+npx create-expo-app@latest campus-events --template default@sdk-XX
 cd campus-events
 npx expo start
 ```
 
-Template เริ่มต้นของ `create-expo-app` มี TypeScript และ Expo Router พร้อมใช้งาน ตรวจ `package.json` และ `app/` ก่อนเพิ่ม package ใด ๆ
+Template ที่รายวิชาอนุมัติต้องมี TypeScript และ Expo Router พร้อมใช้งาน ตรวจ `package.json` และ `app/` ก่อนเพิ่ม package ใด ๆ
 
 ```text
 campus-events/

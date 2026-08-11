@@ -29,6 +29,27 @@ import { Callout } from "nextra/components";
 
 ## Quality commands
 
+ติดตั้ง Jest preset สำหรับ Expo และ React Native Testing Library โดยใช้เวอร์ชันที่เข้ากับ baseline ของโปรเจกต์:
+
+```bash
+npx expo install jest jest-expo @types/jest @testing-library/react-native --dev
+```
+
+เพิ่ม script และ preset ใน `package.json`:
+
+```json
+{
+  "scripts": {
+    "test": "jest",
+    "typecheck": "tsc --noEmit",
+    "lint": "expo lint"
+  },
+  "jest": {
+    "preset": "jest-expo"
+  }
+}
+```
+
 ใช้ scripts ที่มีอยู่ในโปรเจกต์จริง อย่าคัดลอกชื่อคำสั่งโดยไม่ตรวจ `package.json`
 
 ```bash
@@ -59,11 +80,70 @@ describe('favoriteReducer', () => {
 ทดสอบสิ่งที่ผู้ใช้มองเห็นและกระทำ ไม่ผูก test กับชื่อ state หรือโครงสร้างภายใน
 
 ```tsx
-const onOpen = jest.fn();
-render(<EventCard event={event} isFavorite={false} onOpen={onOpen} />);
+import { fireEvent, render, screen } from '@testing-library/react-native';
+import { EventCard } from '../EventCard';
+import type { CampusEvent } from '../types';
 
-fireEvent.press(screen.getByText(event.title));
-expect(onOpen).toHaveBeenCalledWith(event.id);
+const event: CampusEvent = {
+  id: 'event-1',
+  title: 'Mobile Dev Meetup',
+  description: 'แลกเปลี่ยนประสบการณ์พัฒนา Mobile App',
+  startsAt: '2026-09-10T09:00:00+07:00',
+  imageUrl: 'https://example.com/event.jpg',
+  location: {
+    name: 'อาคารวิทยวิภาส',
+    latitude: 13.7563,
+    longitude: 100.5018,
+  },
+};
+
+it('opens the selected event', () => {
+  const onOpen = jest.fn();
+  const onToggleFavorite = jest.fn();
+
+  render(
+    <EventCard
+      event={event}
+      isFavorite={false}
+      onOpen={onOpen}
+      onToggleFavorite={onToggleFavorite}
+    />
+  );
+
+  fireEvent.press(screen.getByText(event.title));
+  expect(onOpen).toHaveBeenCalledWith(event.id);
+});
+```
+
+## Integration-style test: Registration form
+
+ทดสอบหลาย Component ร่วมกับ validation และ submission boundary โดย mock เฉพาะ API function:
+
+```tsx
+import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
+import { RegistrationForm } from '../RegistrationForm';
+
+it('submits valid registration data', async () => {
+  const registerForEvent = jest
+    .fn()
+    .mockResolvedValue({ registrationId: 'reg-1' });
+
+  render(
+    <RegistrationForm eventId="event-1" onSubmit={registerForEvent} />
+  );
+
+  fireEvent.changeText(screen.getByLabelText('ชื่อ-นามสกุล'), 'สมชาย ใจดี');
+  fireEvent.changeText(screen.getByLabelText('อีเมล'), 'somchai@example.com');
+  fireEvent.press(screen.getByRole('button', { name: 'ลงทะเบียน' }));
+
+  await waitFor(() => {
+    expect(registerForEvent).toHaveBeenCalledWith({
+      eventId: 'event-1',
+      fullName: 'สมชาย ใจดี',
+      email: 'somchai@example.com',
+    });
+  });
+});
 ```
 
 ## Integration และ E2E scope
@@ -73,6 +153,22 @@ expect(onOpen).toHaveBeenCalledWith(event.id);
 - Offline: API ล้มเหลว → แสดง cache พร้อม banner
 - Notification: event ID → เปิด Detail หรือ Not found
 - E2E smoke: Login → Favorite → Register → Logout
+
+### E2E introduction: Maestro
+
+ใช้ Maestro เป็นบทนำสำหรับ smoke test บน Preview Build เพราะอ่าน flow ได้ง่ายและไม่ต้องเขียน test framework ขนาดใหญ่ใน Lab นี้
+
+```yaml
+appId: th.ac.example.campusevents
+---
+- launchApp
+- tapOn: "เข้าสู่ระบบ"
+- inputText: "student@example.com"
+- tapOn: "ดำเนินการต่อ"
+- assertVisible: "กิจกรรม"
+```
+
+E2E เป็นงานต่อยอด ไม่บังคับให้ทุกทีมติดตั้ง environment เต็มรูปแบบภายใน 2 ชั่วโมง แต่ต้องอธิบาย smoke flow และทดสอบ Preview Build ด้วยตนเอง
 
 <Callout type="warning">
   อย่าใช้ production account หรือข้อมูลจริงในการทดสอบ และอย่า hard-code secret ใน test fixture ใช้ test environment ที่ล้างข้อมูลได้
@@ -88,6 +184,22 @@ expect(onOpen).toHaveBeenCalledWith(event.id);
 6. ลบ temporary log และตรวจ flow เดิมซ้ำ
 
 ## EAS Preview Build
+
+เพิ่ม profile นี้ใน `eas.json` เดิมจากสัปดาห์ 8 โดยไม่ลบ `development` profile:
+
+```json
+{
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal"
+    },
+    "preview": {
+      "distribution": "internal"
+    }
+  }
+}
+```
 
 ```bash
 npx eas-cli@latest build --platform android --profile preview

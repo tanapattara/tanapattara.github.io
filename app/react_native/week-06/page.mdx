@@ -30,6 +30,41 @@ TypeScript ตรวจชนิดตอน compile แต่ JSON จากเ
 ```tsx
 const API_URL = process.env.EXPO_PUBLIC_API_URL;
 
+if (!API_URL) {
+  throw new Error('ไม่พบ EXPO_PUBLIC_API_URL กรุณาตรวจไฟล์ .env');
+}
+
+function isCampusEvent(value: unknown): value is CampusEvent {
+  if (typeof value !== 'object' || value === null) return false;
+
+  const event = value as Record<string, unknown>;
+  const location = event.location;
+  if (typeof location !== 'object' || location === null) return false;
+
+  const eventLocation = location as Record<string, unknown>;
+
+  return (
+    typeof event.id === 'string' &&
+    typeof event.title === 'string' &&
+    typeof event.description === 'string' &&
+    typeof event.startsAt === 'string' &&
+    (event.imageUrl === undefined || typeof event.imageUrl === 'string') &&
+    typeof eventLocation.name === 'string' &&
+    typeof eventLocation.latitude === 'number' &&
+    Number.isFinite(eventLocation.latitude) &&
+    typeof eventLocation.longitude === 'number' &&
+    Number.isFinite(eventLocation.longitude)
+  );
+}
+
+function parseEvents(payload: unknown): CampusEvent[] {
+  if (!Array.isArray(payload) || !payload.every(isCampusEvent)) {
+    throw new Error('รูปแบบข้อมูลกิจกรรมจาก API ไม่ถูกต้อง');
+  }
+
+  return payload;
+}
+
 export async function getEvents(signal?: AbortSignal): Promise<CampusEvent[]> {
   const response = await fetch(`${API_URL}/events`, { signal });
 
@@ -41,6 +76,8 @@ export async function getEvents(signal?: AbortSignal): Promise<CampusEvent[]> {
   return parseEvents(payload);
 }
 ```
+
+Type guard ข้างต้นตรวจ required fields ของ `CampusEvent` และตรวจ `imageUrl` เมื่อ API ส่งมา เหมาะกับการเริ่มต้นโดยไม่เพิ่ม library ขนาดใหญ่ เมื่อ API ซับซ้อนขึ้นจึงพิจารณา schema library และเพิ่ม validation สำหรับช่วง latitude/longitude กับรูปแบบวันที่ ISO 8601
 
 ตัวแปรที่ขึ้นต้น `EXPO_PUBLIC_` จะอยู่ใน client bundle จึงใช้ได้เฉพาะค่าที่เปิดเผยได้ เช่น base URL ห้ามใส่ secret
 
@@ -84,7 +121,7 @@ useEffect(() => {
 2. โหลดรายการและรายละเอียดกิจกรรมจาก API
 3. เพิ่ม POST registration จากฟอร์มสัปดาห์ 5
 4. เพิ่ม Loading/Empty/Error/Retry และ Pull-to-refresh
-5. จำลอง offline, 404, 500, slow response และ invalid JSON
+5. จำลอง missing configuration, offline, 404, 500, slow response, invalid JSON และ JSON ที่มีโครงสร้างผิด
 
 ## สิ่งที่ส่ง
 
@@ -98,6 +135,7 @@ useEffect(() => {
 - [ ] Screen ไม่เรียก `fetch` โดยตรง
 - [ ] Request ถูกยกเลิกเมื่อออกจากหน้าหรือผลลัพธ์เก่าไม่ทับผลใหม่
 - [ ] Retry ไม่ทำให้ registration ซ้ำ
+- [ ] Missing URL และ malformed payload ให้ error ที่วินิจฉัยได้
 - [ ] ผู้ใช้เห็นสถานะระหว่าง refresh โดยรายการไม่กระพริบหายโดยไม่จำเป็น
 
 ## Exit ticket

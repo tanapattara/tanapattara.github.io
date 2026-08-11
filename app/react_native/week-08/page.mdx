@@ -49,21 +49,37 @@ async function restoreSession(): Promise<SessionState> {
 
 จัดการกรณี token ใช้ไม่ได้ด้วยการลบ token และกลับสู่ anonymous state ไม่ปล่อยให้แอปค้างที่ loading
 
-## Protected route ด้วย Expo Router
+## Protected routes ด้วย Expo Router
 
-ตรวจ session ที่ layout ของ route group และใช้ `Redirect` เมื่อ state พร้อมแล้ว
+Expo Router รุ่นปัจจุบันใช้ `Stack.Protected` หรือ `Tabs.Protected` เพื่อกำหนดว่า route ใดเข้าถึงได้ตาม session โดย Router จะนำผู้ใช้ออกจากหน้าที่ถูกป้องกันเมื่อ guard เปลี่ยนเป็น `false`
 
 ```tsx
-import { Redirect, Slot } from 'expo-router';
+// app/_layout.tsx
+import { Stack } from 'expo-router';
 
-export default function ProtectedLayout() {
+export default function RootLayout() {
   const { session } = useSession();
 
   if (session.status === 'loading') return <SessionLoading />;
-  if (session.status === 'anonymous') return <Redirect href="/login" />;
-  return <Slot />;
+
+  const isAuthenticated = session.status === 'authenticated';
+
+  return (
+    <Stack>
+      <Stack.Protected guard={!isAuthenticated}>
+        <Stack.Screen name="login" options={{ title: 'เข้าสู่ระบบ' }} />
+      </Stack.Protected>
+
+      <Stack.Protected guard={isAuthenticated}>
+        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen name="register" options={{ title: 'ลงทะเบียนกิจกรรม' }} />
+      </Stack.Protected>
+    </Stack>
+  );
 }
 ```
+
+โปรเจกต์ที่ใช้ Expo Router รุ่นเก่ายังใช้ `<Redirect href="/login" />` ใน layout ได้ แต่ baseline ใหม่ของรายวิชาให้ใช้ Protected routes เป็นหลัก ตรวจเวอร์ชัน `expo-router` ใน `package.json` ก่อนใช้ตัวอย่าง
 
 การซ่อนปุ่มหรือ redirect ใน client ไม่ใช่ authorization ฝั่ง server API ต้องตรวจ token และสิทธิ์ทุก request
 
@@ -78,6 +94,37 @@ npx expo install expo-local-authentication
 <Callout type="warning">
   Face ID บน iOS ต้องใช้ Development Build และตั้ง usage description ให้ถูกต้อง ต้องมี fallback เมื่อเครื่องไม่รองรับ ผู้ใช้ยังไม่ลงทะเบียน หรือผู้ใช้กดยกเลิก
 </Callout>
+
+## เปลี่ยนจาก Expo Go เป็น Development Build
+
+ตั้งแต่สัปดาห์นี้ Campus Events เริ่มใช้ native configuration ของโปรเจกต์ จึงสร้าง development client ของตัวเองแทนการพึ่ง Expo Go เพียงอย่างเดียว
+
+```bash
+npx expo install expo-dev-client
+npx eas-cli@latest build:configure
+```
+
+สร้างหรือปรับ `eas.json`:
+
+```json
+{
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal"
+    }
+  }
+}
+```
+
+สร้าง Development Build สำหรับ Android แล้วติดตั้งจากลิงก์/QR Code ที่ EAS แสดงบน Emulator หรืออุปกรณ์ทดสอบ:
+
+```bash
+npx eas-cli@latest build --platform android --profile development
+npx expo start --dev-client
+```
+
+หลังติดตั้งครั้งแรก ไม่ต้อง build ใหม่เมื่อแก้เฉพาะ TypeScript/JavaScript แต่ต้องสร้าง native build ใหม่เมื่อเพิ่ม native module หรือเปลี่ยน native configuration ที่ binary เดิมไม่มี
 
 ## Security checklist เบื้องต้น
 
@@ -95,7 +142,8 @@ npx expo install expo-local-authentication
 3. Restore session เมื่อเปิดแอป
 4. ป้องกัน Event Registration route
 5. เพิ่ม logout และจำลอง token หมดอายุ
-6. ทดลอง biometric unlock เป็นงานต่อยอด
+6. สร้างและเปิดแอปด้วย Development Build
+7. ทดลอง biometric unlock เป็นงานต่อยอด
 
 ## สิ่งที่ส่ง
 
@@ -110,6 +158,7 @@ npx expo install expo-local-authentication
 - [ ] API ตรวจสิทธิ์แม้ client ซ่อนปุ่มแล้ว
 - [ ] Logout ล้าง token และ state ที่เกี่ยวข้อง
 - [ ] มี fallback เมื่อ biometric ใช้ไม่ได้หรือถูกยกเลิก
+- [ ] Development Build เปิดด้วย `npx expo start --dev-client` ได้
 
 ## Exit ticket
 

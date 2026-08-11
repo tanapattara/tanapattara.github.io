@@ -59,9 +59,14 @@ Screen ควรประกอบ UI และเรียก use case ส่�
 ```tsx
 const renderEvent = useCallback(
   ({ item }: { item: CampusEvent }) => (
-    <EventCard event={item} onOpen={openEvent} />
+    <EventCard
+      event={item}
+      isFavorite={favoriteIds.includes(item.id)}
+      onOpen={openEvent}
+      onToggleFavorite={toggleFavorite}
+    />
   ),
-  [openEvent]
+  [favoriteIds, openEvent, toggleFavorite]
 );
 ```
 
